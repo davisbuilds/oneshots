@@ -2,7 +2,7 @@
 
 A Geometry-Wars-style arcade survival game in a single HTML file. Built by
 Claude in the final 7 minutes before a weekly usage reset; originally lived in
-`../seventeen/` and was later extracted into its own repo.
+`../seventeen/` and was later split into its own folder.
 
 **One HTML file. Zero dependencies. `open index.html` to play.**
 

@@ -45,5 +45,5 @@ Last run: zero errors, ~120 fps headless.
 ## Bonus round
 
 A second single-file artifact was built in the final 7 minutes: **NEON SWARM**,
-a Geometry-Wars-style arcade survival game. It now lives in its own repo at
+a Geometry-Wars-style arcade survival game. It now lives alongside this one at
 [`../neon-swarm/`](../neon-swarm/).
