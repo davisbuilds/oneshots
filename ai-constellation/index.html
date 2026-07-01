@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>The AI Constellation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+  :root{
+    --bg:#080a10;
+    --bg-panel:#12151f;
+    --bg-panel-2:#1a1f2c;
+    --text:#edeef2;
+    --text-dim:#8a91a6;
+    --line:#262c3c;
+    --amber:#d98e4a;
+    --gold:#e8c468;
+    --cyan:#4ac8e8;
+    --violet:#b57eff;
+    --font-display:'Fraunces', serif;
+    --font-body:'IBM Plex Sans', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{ height:100%; margin:0; background:var(--bg); overscroll-behavior:none; }
+  #app{ position:fixed; inset:0; overflow:hidden; font-family:var(--font-body); color:var(--text); }
+
+  #stars{ position:absolute; inset:0; pointer-events:none; }
+  #stars span{
+    position:absolute; width:2px; height:2px; border-radius:50%;
+    background:#cfe0ff; opacity:.35; animation:twinkle 4s ease-in-out infinite;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:.15} 50%{opacity:.7} }
+
+  svg#graph{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:grab; }
+  svg#graph:active{ cursor:grabbing; }
+
+  #hero{
+    position:absolute; top:18px; left:18px; right:18px; max-width:360px;
+    pointer-events:none; z-index:5;
+  }
+  #hero .eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--cyan); margin:0 0 6px;
+  }
+  #hero h1{
+    font-family:var(--font-display); font-style:italic; font-weight:600;
+    font-size:clamp(26px,7vw,34px); line-height:1.05; margin:0 0 8px; color:var(--text);
+  }
+  #hero p.sub{
+    font-family:var(--font-body); font-size:12.5px; line-height:1.5; color:var(--text-dim);
+    margin:0 0 12px; max-width:300px;
+  }
+  #filters{ display:flex; flex-wrap:wrap; gap:6px; pointer-events:auto; margin-bottom:8px; }
+  .chip{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.02em;
+    padding:6px 11px; border-radius:999px; border:1px solid var(--line);
+    background:rgba(18,21,31,.72); backdrop-filter:blur(6px); color:var(--text-dim);
+    cursor:pointer; transition:all .18s ease;
+  }
+  .chip.active{ background:var(--text); color:var(--bg); border-color:var(--text); }
+  #hint{
+    font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim); opacity:.7;
+    margin:0; pointer-events:none;
+  }
+
+  #legend{
+    position:absolute; left:18px; bottom:18px; z-index:5; pointer-events:none;
+    font-family:var(--font-mono); font-size:10.5px; color:var(--text-dim);
+  }
+  #legend .lg-row{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  #legend .lg-item{ display:flex; align-items:center; gap:5px; }
+  #legend .shape{ display:inline-block; width:9px; height:9px; background:var(--text-dim); }
+  #legend .shape.circle{ border-radius:50%; }
+  #legend .shape.diamond{ transform:rotate(45deg); }
+  #legend .shape.square{ border-radius:2px; }
+  #legend .shape.triangle{
+    width:0; height:0; background:transparent; border-radius:0;
+    border-left:5px solid transparent; border-right:5px solid transparent;
+    border-bottom:9px solid var(--text-dim);
+  }
+  #legend .era-bar{
+    display:inline-block; width:90px; height:6px; border-radius:3px; margin:0 6px;
+    background:linear-gradient(90deg, var(--amber), var(--gold), var(--cyan), var(--violet));
+  }
+
+  #fitBtn{
+    position:absolute; right:16px; bottom:16px; z-index:5; pointer-events:auto;
+    font-family:var(--font-mono); font-size:11px; color:var(--text-dim);
+    background:rgba(18,21,31,.72); border:1px solid var(--line); border-radius:999px;
+    padding:8px 13px; cursor:pointer; backdrop-filter:blur(6px);
+  }
+  #fitBtn:active{ background:var(--bg-panel-2); }
+
+  .node{ cursor:pointer; opacity:0; transition:opacity .5s ease var(--d, 0ms); }
+  .node.in{ opacity:1; }
+  .node .shape{ transition:filter .2s ease, stroke .2s ease, stroke-width .2s ease; stroke:rgba(255,255,255,.28); stroke-width:1.3px; }
+  .node .label{
+    font-family:var(--font-mono); font-size:9px; fill:var(--text-dim); text-anchor:middle;
+    opacity:0; transition:opacity .3s ease; pointer-events:none;
+  }
+  .viewport.zoomed .node .label{ opacity:.85; }
+  .node.dim{ opacity:.14; }
+  .node.dim .label{ opacity:0 !important; }
+  .node.neighbor .shape{ stroke:#fff; stroke-width:1.6px; }
+  .node.active .shape{ stroke:#fff; stroke-width:2px; filter:drop-shadow(0 0 6px var(--glow)) drop-shadow(0 0 16px var(--glow)); }
+  .node.active .label{ opacity:1 !important; fill:var(--text); }
+  .node.filtered-out{ opacity:.06; pointer-events:none; }
+
+  .lnk{ fill:none; stroke:#3a4258; stroke-width:1.1px; opacity:0; transition:opacity .6s ease, stroke .2s ease, stroke-width .2s ease; }
+  .lnk.in{ opacity:.5; }
+  .lnk.dim{ opacity:.05; }
+  .lnk.active{ stroke:#c9d4ee; opacity:.85; stroke-width:1.6px; }
+  .lnk.filtered-out{ opacity:.03; }
+
+  .axis-line{ stroke:var(--line); stroke-width:1px; }
+  .axis-tick{ stroke:var(--line); stroke-width:1px; }
+  .axis-label{ font-family:var(--font-mono); font-size:10px; fill:var(--text-dim); opacity:.55; text-anchor:middle; }
+  .lane-label{ font-family:var(--font-mono); font-size:10px; fill:var(--text-dim); opacity:.35; letter-spacing:.14em; }
+
+  #scrim{
+    position:fixed; inset:0; background:rgba(4,5,9,.55); opacity:0; pointer-events:none;
+    transition:opacity .3s ease; z-index:8;
+  }
+  #scrim.show{ opacity:1; pointer-events:auto; }
+
+  #sheet{
+    position:fixed; left:50%; bottom:0; width:min(560px,92vw); max-height:72vh;
+    background:var(--bg-panel); border:1px solid var(--line); border-bottom:none;
+    border-radius:20px 20px 0 0; box-shadow:0 -24px 60px rgba(0,0,0,.55);
+    transform:translate(-50%,105%); transition:transform .38s cubic-bezier(.32,.9,.35,1);
+    z-index:9; padding:20px 22px 26px; overflow-y:auto;
+  }
+  #sheet.open{ transform:translate(-50%,0); }
+  #sheet-close{
+    position:absolute; top:12px; right:14px; background:none; border:none;
+    color:var(--text-dim); font-size:22px; line-height:1; cursor:pointer; padding:4px 8px;
+  }
+  .tag{
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono);
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--tag-color);
+    margin-bottom:10px;
+  }
+  .tag .dot{ width:8px; height:8px; border-radius:50%; background:var(--tag-color); box-shadow:0 0 8px var(--tag-color); }
+  #sheet-content h2{
+    font-family:var(--font-display); font-style:italic; font-weight:600;
+    font-size:23px; margin:0 0 6px; color:var(--text); line-height:1.15;
+  }
+  #sheet-content .people{ font-family:var(--font-body); font-size:12.5px; color:var(--text-dim); margin:0 0 12px; }
+  #sheet-content .desc{ font-family:var(--font-body); font-size:15px; line-height:1.55; color:var(--text); margin:0 0 14px; }
+  .connLabel{ font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--text-dim); margin:0 0 8px; }
+  .connRow{ display:flex; flex-wrap:wrap; gap:7px; }
+  .connChip{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--text-dim);
+    background:transparent; border:1px solid var(--line); border-radius:999px;
+    padding:6px 11px; cursor:pointer; transition:background .15s ease, color .15s ease;
+  }
+  .connChip:active{ background:var(--bg-panel-2); color:var(--text); }
+
+  @media (prefers-reduced-motion: reduce){
+    #stars span{ animation:none; }
+    .node, .node .shape, .node .label, .lnk, #sheet{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stars"></div>
+
+  <header id="hero">
+    <p class="eyebrow">1943 &rarr; 2026</p>
+    <h1>The AI Constellation</h1>
+    <p class="sub">The research, the events, the products, and the people behind them — wired together across eight decades. Tap a star to explore.</p>
+    <div id="filters">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="research">Research</button>
+      <button class="chip" data-filter="person">People</button>
+      <button class="chip" data-filter="event">Events</button>
+      <button class="chip" data-filter="product">Products</button>
+    </div>
+    <p id="hint">pinch / drag to explore &middot; tap a star to open</p>
+  </header>
+
+  <div id="legend">
+    <div class="lg-row">
+      <span class="lg-item"><i class="shape circle"></i>&nbsp;Research</span>
+      <span class="lg-item"><i class="shape diamond"></i>&nbsp;People</span>
+      <span class="lg-item"><i class="shape triangle"></i>&nbsp;Event</span>
+      <span class="lg-item"><i class="shape square"></i>&nbsp;Product</span>
+    </div>
+    <div class="lg-row">1940s<span class="era-bar"></span>today</div>
+  </div>
+
+  <button id="fitBtn">&#10021; fit view</button>
+
+  <svg id="graph"></svg>
+
+  <div id="scrim"></div>
+  <div id="sheet">
+    <button id="sheet-close" aria-label="Close">&times;</button>
+    <div id="sheet-content"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---------- data ----------
+  const nodes = [
+    { id:'mcp', year:1943, category:'research', name:'The Artificial Neuron', people:'Warren McCulloch & Walter Pitts', desc:'Proposed the first mathematical model of a neuron, showing simple threshold units could compute logical functions — the theoretical seed of every neural network to follow.' },
+    { id:'turing', year:1950, category:'research', name:'The Turing Test', people:'Proposed by Alan Turing', desc:'In "Computing Machinery and Intelligence," Turing reframed "Can machines think?" as an imitation game — a benchmark still argued over today.' },
+    { id:'dartmouth', year:1956, category:'event', name:'The Dartmouth Workshop', people:'Organized by John McCarthy, Marvin Minsky, Claude Shannon & Nathaniel Rochester', desc:'A summer workshop at Dartmouth College coined the term "artificial intelligence" and launched it as a field with its own name and ambition.' },
+    { id:'perceptron', year:1958, category:'research', name:'The Perceptron', people:'Frank Rosenblatt', desc:'Rosenblatt built the first trainable neural network, a machine that learned to classify simple images and sparked wild optimism about machine learning.' },
+    { id:'eliza', year:1966, category:'product', name:'ELIZA', people:'Joseph Weizenbaum', desc:'An early chatbot that mimicked a therapist through pattern matching. People grew attached to it, foreshadowing debates about AI and human connection that still run today.' },
+    { id:'perceptronsbook', year:1969, category:'research', name:'Perceptrons (the book)', people:'Marvin Minsky & Seymour Papert', desc:'A rigorous critique exposing the limits of single-layer perceptrons. It chilled funding for neural networks and helped trigger the first "AI winter."' },
+    { id:'expert', year:1980, category:'event', name:'The Expert Systems Boom', people:'Edward Feigenbaum and industry labs', desc:'Rule-based systems like XCON automated specialist knowledge for business, briefly making AI commercially real before cost and brittleness caused another bust.' },
+    { id:'backprop', year:1986, category:'research', name:'Backpropagation, Popularized', people:'David Rumelhart, Geoffrey Hinton, Ronald Williams', desc:'Their paper showed backpropagation could train multi-layer networks efficiently, reviving neural networks as a serious path toward machine learning.' },
+    { id:'lenet', year:1989, category:'research', name:'Convolutional Networks', people:'Yann LeCun', desc:'LeCun applied backpropagation to convolutional networks that read handwritten digits — a design that would later become the backbone of computer vision.' },
+    { id:'deepblue', year:1997, category:'event', name:'Deep Blue Beats Kasparov', people:'IBM', desc:'IBM\u2019s chess computer defeated reigning world champion Garry Kasparov, a landmark showing machines could out-calculate humans at complex strategy.' },
+    { id:'lstm', year:1997, category:'research', name:'LSTM Networks', people:'Sepp Hochreiter & J\u00fcrgen Schmidhuber', desc:'Long Short-Term Memory networks solved the problem of learning long-range patterns in sequences, becoming the backbone of speech and language models for two decades.' },
+    { id:'dbn', year:2006, category:'research', name:'Deep Belief Networks', people:'Geoffrey Hinton, Simon Osindero, Yee-Whye Teh', desc:'Showed that deep, many-layered networks could actually be trained well, popularizing the term "deep learning" and reigniting the whole field.' },
+    { id:'watson', year:2011, category:'event', name:'Watson Wins Jeopardy!', people:'IBM', desc:'IBM\u2019s Watson defeated champions Ken Jennings and Brad Rutter on live television, showing off natural-language understanding at a scale the public could watch.' },
+    { id:'siri', year:2011, category:'product', name:'Siri', people:'Apple (originally an SRI International spin-off)', desc:'Brought a voice assistant to the iPhone\u2019s home screen, putting natural-language AI into hundreds of millions of pockets years before anyone said "chatbot."' },
+    { id:'alexnet', year:2012, category:'research', name:'AlexNet', people:'Alex Krizhevsky, Ilya Sutskever, Geoffrey Hinton', desc:'A deep convolutional network crushed the ImageNet competition using GPUs — the moment that convinced the field deep learning was the future.' },
+    { id:'gan', year:2014, category:'research', name:'Generative Adversarial Networks', people:'Ian Goodfellow', desc:'Two competing networks, a forger and a detective, learned to generate strikingly realistic images together, launching the era of generative AI.' },
+    { id:'resnet', year:2015, category:'research', name:'ResNet', people:'Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun (Microsoft Research)', desc:'Introduced "skip connections" that let networks stack over a hundred layers deep without collapsing during training, pushing image recognition past human-level accuracy.' },
+    { id:'alphago', year:2016, category:'event', name:'AlphaGo Defeats Lee Sedol', people:'DeepMind', desc:'AlphaGo beat a Go world champion at a game long thought too intuitive for computers to ever master, stunning experts worldwide.' },
+    { id:'transformer', year:2017, category:'research', name:'"Attention Is All You Need"', people:'Ashish Vaswani et al., Google', desc:'Introduced the Transformer architecture, trading recurrence for self-attention — the design underneath nearly every large language model today.' },
+    { id:'diffusion', year:2020, category:'research', name:'Diffusion Models', people:'Jascha Sohl-Dickstein; Jonathan Ho, Ajay Jain, Pieter Abbeel (UC Berkeley)', desc:'Reframed image generation as gradually reversing noise, a technique that would soon power a wave of text-to-image generators.' },
+    { id:'alphafold', year:2020, category:'research', name:'AlphaFold 2', people:'DeepMind', desc:'Predicted the 3D shape of proteins from their genetic sequence with startling accuracy, cracking a 50-year grand challenge in biology.' },
+    { id:'gpt3', year:2020, category:'product', name:'GPT-3', people:'OpenAI', desc:'A 175-billion-parameter language model produced startlingly fluent text, proof that scale alone could unlock new capabilities.' },
+    { id:'githubcopilot', year:2021, category:'product', name:'GitHub Copilot', people:'GitHub & OpenAI', desc:'Turned a large language model loose on writing code alongside developers in their editor — the first mainstream "AI coworker" product.' },
+    { id:'chatgpt', year:2022, category:'product', name:'ChatGPT Launches', people:'OpenAI', desc:'A conversational front end for GPT brought generative AI to hundreds of millions of people within months — the field\u2019s biggest public inflection point.' },
+    { id:'stablediffusion', year:2022, category:'product', name:'Stable Diffusion', people:'Stability AI, Runway, LMU Munich', desc:'An openly released, run-it-yourself image generator that put diffusion-based AI art directly into anyone\u2019s hands, not just big labs.' },
+    { id:'llama', year:2023, category:'product', name:'Llama', people:'Meta AI', desc:'Meta\u2019s decision to openly release a capable large language model kicked off a wave of open-source alternatives to closed, proprietary AI.' },
+    { id:'agentic', year:2025, category:'event', name:'The Agentic Era', people:'OpenAI, Anthropic, Google, Meta, and others', desc:'Reasoning models and AI agents began completing multi-step tasks on their own — writing code, browsing, using tools — nudging AI from chatbot toward coworker.' },
+
+    { id:'alanturing', year:1950, category:'person', name:'Alan Turing', people:'Mathematician & computer scientist', desc:'Laid the theoretical foundation for computing itself, then asked whether machines could think — a question the field is still answering.' },
+    { id:'johnmccarthy', year:1956, category:'person', name:'John McCarthy', people:'Computer scientist, Stanford & MIT', desc:'Coined the term "artificial intelligence" and organized the workshop that gave the field its name, then went on to invent the Lisp programming language.' },
+    { id:'marvinminsky', year:1957, category:'person', name:'Marvin Minsky', people:'Co-founder, MIT AI Lab', desc:'Helped launch the field at Dartmouth, then a decade later co-authored the book that nearly ended it — AI\u2019s history has always run in both directions.' },
+    { id:'geoffreyhinton', year:1986, category:'person', name:'Geoffrey Hinton', people:'"Godfather of deep learning"', desc:'Spent three decades on an unfashionable idea — that layered neural networks could learn — and lived to see it become the dominant approach to AI.' },
+    { id:'yannlecun', year:1989, category:'person', name:'Yann LeCun', people:'Chief AI Scientist, Meta', desc:'Built the convolutional networks that taught computers to see, starting with handwritten digits and ending up, decades later, in nearly every camera and phone.' },
+    { id:'yoshuabengio', year:2000, category:'person', name:'Yoshua Bengio', people:'Professor, Universit\u00e9 de Montr\u00e9al', desc:'A leading architect of the deep learning revival, whose students and ideas — including a late-night bar conversation that led to GANs — kept pushing the field forward.' },
+    { id:'feifeili', year:2009, category:'person', name:'Fei-Fei Li', people:'Computer scientist, Stanford', desc:'Built ImageNet, a dataset of millions of labeled images, on a bet that more data — not just cleverer algorithms — was the missing key to real progress in vision.' },
+    { id:'demishassabis', year:2010, category:'person', name:'Demis Hassabis', people:'Co-founder & CEO, DeepMind', desc:'A former child chess prodigy and game designer who set out to solve intelligence itself, then built the systems that mastered Go and learned to fold proteins.' },
+    { id:'ilyasutskever', year:2012, category:'person', name:'Ilya Sutskever', people:'Co-creator of AlexNet; co-founder, OpenAI', desc:'Co-built the network that kicked off the deep learning boom, then co-founded the lab that pushed language models to a whole new scale.' },
+    { id:'samaltman', year:2019, category:'person', name:'Sam Altman', people:'CEO, OpenAI', desc:'Took OpenAI from research lab to household name, betting that scaling language models — and shipping them straight to the public — would change how people work.' }
+  ];
+
+  const rawLinks = [
+    ['mcp','perceptron'], ['turing','dartmouth'], ['dartmouth','perceptron'], ['dartmouth','eliza'],
+    ['perceptron','perceptronsbook'], ['perceptronsbook','backprop'], ['backprop','lenet'], ['backprop','dbn'],
+    ['lenet','alexnet'], ['dbn','alexnet'], ['lstm','transformer'], ['alexnet','gan'], ['alexnet','alphago'],
+    ['transformer','gpt3'], ['gpt3','chatgpt'], ['eliza','chatgpt'], ['deepblue','alphago'],
+    ['expert','watson'], ['watson','chatgpt'], ['alphago','agentic'], ['chatgpt','agentic'], ['gan','agentic'],
+
+    ['alanturing','turing'], ['johnmccarthy','dartmouth'], ['marvinminsky','dartmouth'], ['marvinminsky','perceptronsbook'],
+    ['geoffreyhinton','backprop'], ['geoffreyhinton','dbn'], ['geoffreyhinton','alexnet'], ['yannlecun','lenet'],
+    ['yoshuabengio','dbn'], ['yoshuabengio','gan'], ['feifeili','alexnet'], ['demishassabis','alphago'],
+    ['ilyasutskever','alexnet'], ['ilyasutskever','gpt3'], ['samaltman','gpt3'], ['samaltman','chatgpt'],
+
+    ['resnet','alexnet'], ['resnet','feifeili'], ['diffusion','gan'], ['diffusion','stablediffusion'],
+    ['alphafold','demishassabis'], ['alphafold','alphago'], ['siri','eliza'], ['siri','chatgpt'],
+    ['githubcopilot','gpt3'], ['githubcopilot','agentic'], ['stablediffusion','gan'],
+    ['llama','transformer'], ['llama','chatgpt'], ['llama','yannlecun']
+  ];
+
+  const nodeById = new Map(nodes.map(n => [n.id, n]));
+  const linksForSim = rawLinks.map(([source,target]) => ({ source, target }));
+
+  // ---------- era color scale ----------
+  const eraScale = d3.scaleLinear()
+    .domain([1943, 1969, 1997, 2012, 2026])
+    .range(['#d98e4a', '#e0a85c', '#e8c468', '#4ac8e8', '#b57eff'])
+    .interpolate(d3.interpolateRgb);
+
+  // ---------- layout ----------
+  const W = 2200, H = 1420;
+  const xScale = d3.scaleLinear().domain([1943, 2026]).range([120, 2080]);
+  const laneY = { research:200, person:530, event:900, product:1220 };
+  const laneLabelText = { research:'RESEARCH', person:'PEOPLE', event:'EVENTS', product:'PRODUCTS' };
+
+  nodes.forEach(n => { n.x = xScale(n.year); n.y = laneY[n.category] + (Math.random()-0.5)*20; });
+
+  const simulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(linksForSim).id(d => d.id).distance(85).strength(0.08))
+    .force('charge', d3.forceManyBody().strength(-180))
+    .force('x', d3.forceX(d => xScale(d.year)).strength(0.85))
+    .force('y', d3.forceY(d => laneY[d.category]).strength(0.28))
+    .force('collide', d3.forceCollide(34))
+    .stop();
+  for (let i = 0; i < 550; i++) simulation.tick();
+
+  // ---------- svg setup ----------
+  const svg = d3.select('#graph');
+  const g = svg.append('g').attr('class', 'viewport');
+
+  // background click-catcher
+  g.append('rect')
+    .attr('x', -400).attr('y', -400)
+    .attr('width', W + 800).attr('height', H + 800)
+    .attr('fill', 'transparent')
+    .on('click', () => clearSelection());
+
+  // axis
+  const axisY = H - 50;
+  g.append('line').attr('class','axis-line').attr('x1', 60).attr('y1', axisY).attr('x2', W-60).attr('y2', axisY);
+  const decades = d3.range(1940, 2031, 10);
+  const axisG = g.append('g');
+  decades.forEach(dec => {
+    const x = xScale(dec);
+    axisG.append('line').attr('class','axis-tick').attr('x1',x).attr('y1',axisY-5).attr('x2',x).attr('y2',axisY+5);
+    axisG.append('text').attr('class','axis-label').attr('x',x).attr('y',axisY+20).text(dec);
+  });
+  Object.keys(laneY).forEach(cat => {
+    g.append('text').attr('class','lane-label').attr('x', 60).attr('y', laneY[cat] - 55).text(laneLabelText[cat]);
+  });
+
+  // links as gentle arcs
+  const linkSel = g.append('g').attr('class','links')
+    .selectAll('path').data(linksForSim).enter().append('path')
+    .attr('class','lnk')
+    .attr('d', d => arcPath(d.source, d.target));
+
+  function arcPath(s, t){
+    const dx = t.x - s.x, dy = t.y - s.y;
+    const mx = (s.x + t.x)/2, my = (s.y + t.y)/2 - Math.abs(dx)*0.12 - 14;
+    return `M${s.x},${s.y} Q${mx},${my} ${t.x},${t.y}`;
+  }
+
+  // nodes
+  const order = [...nodes].sort((a,b) => a.year - b.year);
+  order.forEach((n,i) => n._order = i);
+
+  const nodeSel = g.append('g').attr('class','nodes')
+    .selectAll('g').data(nodes).enter().append('g')
+    .attr('class','node')
+    .attr('transform', d => `translate(${d.x},${d.y})`)
+    .style('--glow', d => eraScale(d.year))
+    .style('--d', d => `${d._order * 55}ms`)
+    .on('click', (event, d) => { event.stopPropagation(); selectNode(d); });
+
+  nodeSel.each(function(d){
+    const sel = d3.select(this);
+    const color = eraScale(d.year);
+    if (d.category === 'research'){
+      sel.append('circle').attr('class','shape').attr('r', 13).attr('fill', color);
+    } else if (d.category === 'product'){
+      sel.append('rect').attr('class','shape').attr('x',-11).attr('y',-11).attr('width',22).attr('height',22).attr('rx',4).attr('fill', color);
+    } else if (d.category === 'event'){
+      sel.append('polygon').attr('class','shape').attr('points','0,-15 13,9 -13,9').attr('fill', color);
+    } else {
+      sel.append('rect').attr('class','shape').attr('x',-10).attr('y',-10).attr('width',20).attr('height',20)
+        .attr('transform','rotate(45)').attr('fill', color);
+    }
+    sel.append('text').attr('class','label').attr('y', 28).text(d.name.length > 22 ? d.name.slice(0,20)+'\u2026' : d.name);
+  });
+
+  // ---------- zoom ----------
+  const zoom = d3.zoom().scaleExtent([0.4, 4]).on('zoom', (event) => {
+    g.attr('transform', event.transform);
+    g.classed('zoomed', event.transform.k > 1.15);
+  });
+  svg.call(zoom);
+
+  let userMoved = false;
+  zoom.on('start.track', () => { userMoved = true; });
+
+  function fitToScreen(animate){
+    const rect = svg.node().getBoundingClientRect();
+    const pad = 60;
+    const bw = W - 40, bh = H - 40;
+    const scale = Math.min(rect.width / (bw + pad*2), rect.height / (bh + pad*2), 1.1);
+    const tx = rect.width/2 - scale * (W/2);
+    const ty = rect.height/2 - scale * (H/2 - 20);
+    const t = d3.zoomIdentity.translate(tx, ty).scale(scale);
+    if (animate) svg.transition().duration(500).call(zoom.transform, t);
+    else svg.call(zoom.transform, t);
+  }
+  fitToScreen(false);
+  window.addEventListener('resize', () => { if(!userMoved) fitToScreen(false); });
+  document.getElementById('fitBtn').addEventListener('click', () => fitToScreen(true));
+
+  // entrance animation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      nodeSel.classed('in', true);
+      linkSel.style('transition-delay', '850ms').classed('in', true);
+    });
+  });
+
+  // ---------- selection & neighbors ----------
+  const neighborMap = new Map(nodes.map(n => [n.id, new Set()]));
+  rawLinks.forEach(([a,b]) => { neighborMap.get(a).add(b); neighborMap.get(b).add(a); });
+
+  let selected = null;
+  let activeFilter = 'all';
+
+  function selectNode(d){
+    selected = d;
+    renderHighlight();
+    openSheet(d);
+    centerOnNode(d);
+  }
+
+  function clearSelection(){
+    selected = null;
+    renderHighlight();
+    closeSheet();
+  }
+
+  function renderHighlight(){
+    if (!selected){
+      nodeSel.classed('dim', false).classed('active', false).classed('neighbor', false);
+      linkSel.classed('dim', false).classed('active', false);
+    } else {
+      const nbrs = neighborMap.get(selected.id);
+      nodeSel
+        .classed('active', d => d.id === selected.id)
+        .classed('neighbor', d => nbrs.has(d.id))
+        .classed('dim', d => d.id !== selected.id && !nbrs.has(d.id));
+      linkSel
+        .classed('active', l => l.source.id === selected.id || l.target.id === selected.id)
+        .classed('dim', l => l.source.id !== selected.id && l.target.id !== selected.id);
+    }
+    applyFilterClasses();
+  }
+
+  function centerOnNode(d){
+    const rect = svg.node().getBoundingClientRect();
+    const scale = 1.3;
+    const tx = rect.width/2 - scale * d.x;
+    const ty = rect.height*0.4 - scale * d.y;
+    svg.transition().duration(550).call(zoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+  }
+
+  // ---------- sheet ----------
+  const sheet = document.getElementById('sheet');
+  const scrim = document.getElementById('scrim');
+  const sheetContent = document.getElementById('sheet-content');
+  const catLabel = { research:'Research breakthrough', person:'Key figure', event:'Milestone event', product:'Product' };
+
+  function openSheet(d){
+    const color = eraScale(d.year);
+    const nbrIds = neighborMap.get(d.id);
+    const nbrs = nodes.filter(n => nbrIds.has(n.id)).sort((a,b)=>a.year-b.year);
+    sheetContent.innerHTML = `
+      <div class="tag" style="--tag-color:${color}"><span class="dot"></span>${catLabel[d.category]} &middot; ${d.year}</div>
+      <h2>${d.name}</h2>
+      <p class="people">${d.people}</p>
+      <p class="desc">${d.desc}</p>
+      ${nbrs.length ? `<p class="connLabel">Connects to</p><div class="connRow">${nbrs.map(n => `<button class="connChip" data-id="${n.id}">${n.name} \u2019${String(n.year).slice(2)}</button>`).join('')}</div>` : ''}
+    `;
+    sheetContent.querySelectorAll('.connChip').forEach(btn => {
+      btn.addEventListener('click', () => selectNode(nodeById.get(btn.dataset.id)));
+    });
+    sheet.classList.add('open');
+    scrim.classList.add('show');
+  }
+  function closeSheet(){
+    sheet.classList.remove('open');
+    scrim.classList.remove('show');
+  }
+  document.getElementById('sheet-close').addEventListener('click', clearSelection);
+  scrim.addEventListener('click', clearSelection);
+
+  // ---------- filters ----------
+  document.getElementById('filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    if (selected) clearSelection();
+    applyFilterClasses();
+  });
+
+  function applyFilterClasses(){
+    if (selected) return; // selection highlight takes precedence
+    if (activeFilter === 'all'){
+      nodeSel.classed('filtered-out', false);
+      linkSel.classed('filtered-out', false);
+    } else {
+      nodeSel.classed('filtered-out', d => d.category !== activeFilter);
+      linkSel.classed('filtered-out', l => l.source.category !== activeFilter && l.target.category !== activeFilter);
+    }
+  }
+
+  // ---------- ambient starfield ----------
+  const starsEl = document.getElementById('stars');
+  const starCount = 70;
+  for (let i = 0; i < starCount; i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100 + '%';
+    s.style.top = Math.random()*100 + '%';
+    s.style.animationDuration = (3 + Math.random()*4) + 's';
+    s.style.animationDelay = (Math.random()*4) + 's';
+    s.style.width = s.style.height = (Math.random() > 0.85 ? 2.4 : 1.4) + 'px';
+    starsEl.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>

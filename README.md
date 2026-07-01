@@ -1,9 +1,10 @@
 # oneshots
 
 A public collection of **agent oneshot capability demos** — self-contained
-artifacts each built by an AI agent in a single session, with zero
-dependencies and zero build step. Every project is one HTML file you can
-`open` directly in a browser.
+artifacts each built by an AI agent in a single session, with (almost always)
+zero dependencies and zero build step. Every project is one HTML file you can
+`open` directly in a browser. The lone exception is `ai-constellation`, which
+loads D3 and its fonts from a CDN at runtime; the rest depend on nothing.
 
 Each project's README states the **model** used to create it.
 
@@ -14,6 +15,7 @@ Each project's README states the **model** used to create it.
 | [seventeen](seventeen/) | **GASKET∞** — a realtime ray-marched flythrough of an infinite Apollonian gasket, built in under 17 minutes. | Fable 5 (xhigh) |
 | [neon-swarm](neon-swarm/) | A Geometry-Wars-style arcade survival game with procedural audio. | Fable 5 (xhigh) |
 | [lumen](lumen/) | **Lumen** — a physically based, progressive Monte Carlo path tracer. | Fable 5 (xhigh) |
+| [ai-constellation](ai-constellation/) | **The AI Constellation** — an interactive, force-directed map of eight decades of AI history. | Claude Sonnet 5 (high) |
 
 ## What "oneshot" means here
 
