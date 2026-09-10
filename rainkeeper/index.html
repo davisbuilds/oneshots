@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#eee9da"><link rel="icon" href="data:,">
+<title>The Rainkeeper — a little earth, in your care</title>
+<style>
+:root{--paper:#eee9da;--ink:#333e37;--muted:#76796c;--line:#343f3629;--green:#456a53;--accent:#a65636}*{box-sizing:border-box}body{margin:0;overflow:hidden;background:var(--paper);color:var(--ink);font:12px/1.5 system-ui,sans-serif}canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:none}button,input{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:4px}button{border:1px solid var(--line);background:var(--paper);padding:10px 15px;border-radius:3px;transition:background .2s,color .2s}button:hover{background:#dedecb}button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}header{position:fixed;left:4vw;top:28px;pointer-events:none}.kicker{font:10px ui-monospace,monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}h1{font:italic 62px/.98 Georgia,serif;letter-spacing:-.06em;margin:17px 0 13px}header p{font:13px/1.65 Georgia,serif;color:var(--muted);margin:0}.header-right{position:fixed;right:4vw;top:31px;display:flex;gap:8px}.tools{position:fixed;left:4vw;top:37%;display:grid;gap:7px;width:113px}.tool{display:flex;align-items:center;text-align:left;gap:11px;padding:11px 12px}.tool svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.3}.tool small{margin-left:auto;opacity:.45;font:9px ui-monospace,monospace}.tools label{margin-top:12px;color:var(--muted);font-size:10px}input{accent-color:var(--green);width:100%}.notes{position:fixed;right:4vw;top:37%;width:140px}.notes h2{font:italic 24px/1.2 Georgia,serif;font-weight:normal;margin:16px 0}.notes p{font:11px/1.9 system-ui,sans-serif;color:var(--muted)}.notes hr{border:0;border-top:1px solid var(--line);margin:20px 0}.specimen{font:10px ui-monospace,monospace;color:var(--muted)}footer{position:fixed;bottom:24px;left:4vw;right:4vw;border-top:1px solid var(--line);padding-top:14px;display:flex;gap:25px;align-items:center}.stat{min-width:70px}.stat strong{font:23px Georgia,serif;display:block;font-weight:400}.stat span{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}#event{margin-left:auto;text-align:right;font:italic 16px Georgia,serif;max-width:340px}#hint{position:fixed;left:50%;bottom:125px;transform:translateX(-50%);text-align:center;white-space:nowrap;font:italic 14px Georgia,serif;color:var(--muted);pointer-events:none}.legend{position:fixed;left:50%;top:35px;transform:translateX(-50%);font:9px ui-monospace,monospace;letter-spacing:.12em;text-align:center;color:var(--muted);line-height:1.8}dialog{padding:30px;background:var(--paper);color:var(--ink);border:1px solid var(--line);max-width:460px;box-shadow:0 20px 100px #25332840}dialog::backdrop{background:#353d3655;backdrop-filter:blur(6px)}dialog h2{font:italic 33px Georgia,serif;font-weight:400;margin:0 0 18px}dialog p{font-size:13px;line-height:1.9;color:#596153}dialog kbd{color:var(--accent)}dialog button{margin-top:10px}button:disabled{opacity:.4;cursor:default}
+@media(max-width:800px){header{left:22px;top:21px}h1{font-size:43px;margin:12px 0}header p{font-size:12px}.kicker{font-size:8px}.header-right{top:157px;left:22px;right:22px;justify-content:flex-end;gap:6px}.header-right button{padding:8px 10px;font-size:10px}.legend{display:none}.notes{display:none}.tools{top:auto;bottom:145px;left:22px;right:22px;width:auto;display:flex;gap:5px}.tool{flex:1;padding:9px 7px;gap:5px;font-size:10px;justify-content:center}.tool small{display:none}.tool svg{width:15px;height:15px}.tools label,.tools input{display:none}footer{left:22px;right:22px;bottom:18px;gap:17px;padding-top:11px;flex-wrap:wrap}.stat{min-width:50px}.stat strong{font-size:19px}.stat span{font-size:8px}#event{font-size:12px;flex-basis:100%;max-width:none;margin-left:0;text-align:left}footer{row-gap:7px}.stat{flex:1}#hint{bottom:114px;font-size:11px;white-space:normal;width:85%}#keep{display:none}}
+@media(max-height:600px){header{top:14px}h1{font-size:32px;margin:8px 0}header p,.legend,.notes,#hint{display:none}.header-right{top:18px;left:auto;right:4vw}.tools{top:35%;bottom:auto;width:100px;display:grid;left:4vw;right:auto}.tool{padding:5px 8px}footer{bottom:12px;padding-top:7px}.stat strong{font-size:18px}}
+</style>
+</head>
+<body>
+<canvas id="earth" aria-label="A living cutaway landscape. Use the tools to dig soil, pour water, plant seeds, or build earth. Arrow keys move the tool cursor and Space applies it."></canvas>
+<header><div class="kicker">Field notebook / an interactive ecology</div><h1>The Rainkeeper.</h1><p>A little earth, in your care.<br>Make a river. Give something a place to grow.</p></header>
+<div class="legend">SOIL · WATER · ROOT · LIGHT<br><span id="landscape-id">EST. LANDSCAPE 001</span></div>
+<div class="header-right"><button id="rain" aria-pressed="false">☂ Send rain</button><button id="pause" aria-pressed="false" aria-label="Pause the ecosystem">Ⅱ</button><button id="new">New earth ↻</button><button id="keep">Keep a page ↗</button><button id="help" aria-label="Open field notes">?</button></div>
+<nav class="tools" aria-label="Tending tools">
+<button class="tool" data-tool="dig" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="m17 3 4 4-12 12-6 2 2-6Z M14 6l4 4"/></svg><span>Carve</span><small>1</small></button>
+<button class="tool" data-tool="water" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 2C10 7 5 11 5 15a7 7 0 0 0 14 0c0-4-5-8-7-13Z M8 15q0 4 4 4"/></svg><span>Water</span><small>2</small></button>
+<button class="tool" data-tool="seed" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 22V10 M12 15C3 16 3 6 3 6s9-1 9 9Z M12 10C12 2 21 2 21 2s0 9-9 8Z"/></svg><span>Plant</span><small>3</small></button>
+<button class="tool" data-tool="earth" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="m2 17 6-7 4 4 5-9 5 12Z M2 21h20"/></svg><span>Build</span><small>4</small></button>
+<label for="size">Tool width</label><input id="size" type="range" min="1" max="9" value="4" aria-label="Tool width">
+</nav>
+<aside class="notes"><div class="kicker">An observation</div><h2 id="note-title">Everything finds<br>its own way.</h2><p id="note-body">Water follows the land.<br>Roots follow the water.<br>You may change the land.</p><hr><div class="specimen">THE DARKER SOIL<br>IS HOLDING WATER.</div><p>Try carving a channel from the pond toward the little seed on the right.</p></aside>
+<div id="hint">Drag to carve a channel. The water will find it.</div>
+<footer><div class="stat"><strong id="water-count">0</strong><span>Water drops</span></div><div class="stat"><strong id="plant-count">0</strong><span>Living plants</span></div><div class="stat"><strong id="leaf-count">0</strong><span>Leaves unfurled</span></div><div id="event" role="status">There is no score. Just a place to tend.</div></footer>
+<dialog id="guide"><h2>Small acts. Living consequences.</h2><p><b>Carve</b> a channel through the soil. <b>Water</b> it, or send a passing shower. <b>Plant</b> seeds on the ground. <b>Build</b> a little dam.</p><p>Blue drops fall and spread. Soil absorbs nearby water and shares moisture with its neighbors. Plants draw from the soil at their roots; growth slows when that water is gone. Dark soil is damp soil.</p><p>The pale stone at the bottom cannot be carved. Earth you build stays where you put it, like clay. This is a small cellular ecology, not a scientific watershed model.</p><p>Keys <kbd>1–4</kbd> choose tools. <kbd>Arrow keys</kbd> move the circular cursor. Hold <kbd>Space</kbd> to use it. <kbd>R</kbd> brings rain, <kbd>P</kbd> pauses, and <kbd>[ ]</kbd> change tool width. New earth begins again.</p><p>Everything lives in this file. No downloads, accounts, or network required. “Keep a page” saves an illustrated PNG of your landscape.</p><button id="close">Back to the garden</button></dialog>
+<script>
+'use strict';
+(() => {
+  const $ = id => document.getElementById(id);
+  const canvas = $('earth'), ctx = canvas.getContext('2d', {alpha: false});
+  const GW = 300, GH = 180, LEN = GW * GH, AIR = 0, SOIL = 1, WATER = 2, ROCK = 3;
+  const cells = new Uint8Array(LEN), moisture = new Float32Array(LEN);
+  const nextMoisture = new Float32Array(LEN), visited = new Int32Array(LEN), grain = new Uint8Array(LEN);
+  const layer = document.createElement('canvas'); layer.width = GW; layer.height = GH;
+  const lc = layer.getContext('2d'), pixels = lc.createImageData(GW, GH);
+  let width = 0, height = 0, dpr = 1, zoom = 1, ox = 0, oy = 0;
+  let tool = 'dig', radius = 4, pointer = {x: 203, y: 66, visible: false}, held = false;
+  let plants = [], clouds = [], motes = [], fossils = [], tick = 0, landscape = 0, rng = 937;
+  let rainLeft = 0, paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let previous = 0, accumulator = 0, waterCount = 0, leafCount = 0, lastPlant = -100;
+  let paperPattern, dirty = true;
+  const palette = [[170,115,77],[182,130,86],[157,103,72],[191,144,97],[150,105,80],[181,139,103]];
+  const rand = () => ((rng = (Math.imul(rng, 1664525) + 1013904223) >>> 0) / 4294967296);
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+  const index = (x,y) => y * GW + x;
+  function paper() {
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const g = c.getContext('2d'); g.fillStyle = '#eee9da'; g.fillRect(0,0,128,128);
+    for(let i=0;i<2400;i++){g.fillStyle = i%2 ? '#504f3910' : '#ffffff30';g.fillRect(rand()*128,rand()*128,1,1)}
+    paperPattern = ctx.createPattern(c, 'repeat');
+  }
+  function resize() {
+    width = innerWidth; height = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width*dpr); canvas.height = Math.round(height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const narrow = width <= 800, short = height <= 600;
+    zoom = Math.min((width*(narrow?.96:.70))/GW, (height-(short?130:narrow?375:250))/GH);
+    zoom = Math.max(.55,zoom); ox=(width-GW*zoom)/2; oy=short?65:narrow?200+Math.max(0,(height-390-GH*zoom)/2):155;
+    if(!narrow && !short)oy += Math.max(0,(height-800)*.09);
+    dirty = true;
+  }
+  function terrainSurface(x) {
+    return 65 + Math.sin(x*.025 + landscape*.7)*11 + Math.sin(x*.068)*7 + (x/GW)*10;
+  }
+  function createPlant(x,y,initial=0) {
+    if(plants.length>=28 || plants.some(p=>Math.abs(p.x-x)<9 && Math.abs(p.y-y)<12))return false;
+    const kind = plants.length%3;
+    plants.push({x,y,kind,growth:initial,hydration:initial?0.6:0.12,phase:rand()*6,
+      height:kind===0?31+rand()*12:kind===1?19+rand()*10:27+rand()*12,
+      roots:[{x,y:y+1,angle:Math.PI/2,length:0,active:true}],segments:[],seed:rand()*100});
+    return true;
+  }
+  function newEarth() {
+    landscape++; rng=937+landscape*517; cells.fill(0); moisture.fill(0);visited.fill(0);
+    plants=[];motes=[];clouds=[];fossils=[{x:65,y:130,kind:0,found:false},{x:207,y:127,kind:1,found:false}];tick=0;rainLeft=0;lastPlant=-100;held=false;
+    for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+      const i=index(x,y);grain[i]=rand()*255;
+      const edge=(x-150)/145;
+      const bottom=151+17*Math.sqrt(Math.max(0,1-edge*edge));
+      if(x<7||x>292||y<terrainSurface(x)||y>bottom)continue;
+      cells[i]=y>bottom-5?ROCK:SOIL;
+      moisture[i]=y>125?.3:.018;
+      // The perched pond has a carved bowl and a shallow clay floor.
+      if(x>78 && x<134 && y<96 && y>64){
+        const bowl=76+19*Math.sin((x-78)/56*Math.PI);
+        if(y<bowl){cells[i]=y>73?WATER:AIR;moisture[i]=0}
+      }
+    }
+    for(const x of [45,155,238]) {
+      let y=0;while(y<GH && cells[index(x,y)]!==SOIL)y++;
+      if(y<GH){createPlant(x,y, x===238?.08:x===45?.68:.48);for(let yy=y;yy<Math.min(GH,y+20);yy++)for(let xx=x-7;xx<x+8;xx++)moisture[index(xx,yy)]=x===238?.04:.65}
+    }
+    for(let i=0;i<4;i++)clouds.push({x:35+i*70,y:15+rand()*15,s:.7+rand()*.5});
+    for(let i=0;i<12;i++)grow();
+    $('landscape-id').textContent='EST. LANDSCAPE '+String(landscape).padStart(3,'0');
+    $('event').textContent='There is no score. Just a place to tend.';
+    $('note-title').innerHTML='Everything finds<br>its own way.';$('note-body').innerHTML='Water follows the land.<br>Roots follow the water.<br>You may change the land.';
+    updateRain(); dirty=true; updateStats();
+  }
+  function chooseTool(t) {
+    tool=t;
+    document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
+    $('hint').textContent={dig:'Drag to carve a channel. The water will find it.',water:'Hold to pour. A little water goes a long way.',seed:'Touch the earth to plant a small possibility.',earth:'Draw a dam, a bridge, a new direction.'}[t];
+  }
+  function addDrop(x,y) {
+    x=Math.round(x);y=Math.round(y);
+    if(x<1||x>=GW-1||y<0||y>=GH-1)return false;
+    const i=index(x,y);if(cells[i]===AIR){cells[i]=WATER;return true}
+    if(cells[i]===SOIL)moisture[i]=Math.min(1,moisture[i]+.16);
+    return false;
+  }
+  function applyTool() {
+    const x=Math.round(pointer.x),y=Math.round(pointer.y);
+    if(x<1||x>=GW-1||y<1||y>=GH-1)return;
+    if(tool==='seed'){
+      if(performance.now()-lastPlant<160)return;
+      let yy=y;
+      if(cells[index(x,yy)]===SOIL){while(yy>1&&cells[index(x,yy-1)]===SOIL)yy--}
+      else {while(yy<GH-2&&cells[index(x,yy)]!==SOIL)yy++}
+      if(cells[index(x,yy)]===SOIL&&createPlant(x,yy)){
+        lastPlant=performance.now();$('event').textContent='A seed is a very small act of faith.';dirty=true;updateStats();
+      }
+      return;
+    }
+    if(tool==='water'){
+      for(let i=0;i<4;i++)addDrop(x+(rand()-.5)*radius*2,y-rand()*2);
+    } else {
+      for(let yy=Math.max(1,y-radius);yy<Math.min(GH-1,y+radius+1);yy++)for(let xx=Math.max(1,x-radius);xx<Math.min(GW-1,x+radius+1);xx++){
+        if((xx-x)**2+(yy-y)**2>radius*radius)continue;
+        const i=index(xx,yy);
+        if(tool==='dig'&&cells[i]===SOIL){cells[i]=AIR;moisture[i]=0}
+        if(tool==='earth'&&(cells[i]===AIR||cells[i]===WATER)){cells[i]=SOIL;moisture[i]=.05}
+      }
+    }
+    for(const f of fossils){
+      if(f.found)continue;
+      let open=0;
+      for(let yy=f.y-4;yy<=f.y+4;yy++)for(let xx=f.x-4;xx<=f.x+4;xx++)if(cells[index(xx,yy)]!==SOIL)open++;
+      if(open>24){f.found=true;$('event').textContent=f.kind?'Another garden was here first.':'A sea, before this garden.';
+        $('note-title').textContent=f.kind?'A leaf out of time.':'The earth remembers.';
+        $('note-body').textContent=f.kind?'A fern left its shape in the soil. Your new roots have found an old neighbor.':'You found a little shell beneath the roots. Even a small garden can contain an older world.';
+      }
+    }
+    dirty=true;
+  }
+  function moveWater(i,j) {cells[j]=WATER;cells[i]=AIR;visited[j]=tick}
+  function flow() {
+    const direction=tick%2===0?1:-1;
+    for(let y=GH-1;y>=0;y--)for(let k=1;k<GW-1;k++){
+      const x=direction===1?k:GW-1-k,i=index(x,y);
+      if(cells[i]!==WATER||visited[i]===tick)continue;
+      if(y>=GH-2||x<=1||x>=GW-2){cells[i]=AIR;continue}
+      const below=i+GW;
+      if(cells[below]===AIR){moveWater(i,below);continue}
+      const sign=rand()<.5?-1:1;
+      if(cells[below+sign]===AIR){moveWater(i,below+sign);continue}
+      if(cells[below-sign]===AIR){moveWater(i,below-sign);continue}
+      let absorbed=false;
+      for(const j of [below,i-1,i+1])if(cells[j]===SOIL&&moisture[j]<.97&&rand()<.006){moisture[j]=Math.min(1,moisture[j]+.17);cells[i]=AIR;absorbed=true;break}
+      if(absorbed)continue;
+      // Alternating the traversal direction avoids a persistent left or right bias.
+      for(const s of [sign,-sign]){
+        if(cells[i+s]===AIR){moveWater(i,i+s);break}
+      }
+      if(cells[i]===WATER&&cells[i-GW]===AIR&&rand()<.0006)cells[i]=AIR;
+    }
+  }
+  function diffuse() {
+    nextMoisture.set(moisture);
+    for(let y=1;y<GH-1;y++)for(let x=1;x<GW-1;x++){
+      const i=index(x,y);if(cells[i]!==SOIL)continue;
+      let sum=0,n=0;
+      for(const j of [i-1,i+1,i-GW,i+GW])if(cells[j]===SOIL){sum+=moisture[j];n++}else if(cells[j]===WATER){sum+=1;n++}
+      nextMoisture[i]=Math.max(0,moisture[i]+(n?sum/n-moisture[i]:0)*.19-.00009);
+    }
+    moisture.set(nextMoisture);
+  }
+  function grow() {
+    const rooted=plants.filter(p=>cells[index(Math.round(p.x),Math.round(p.y))]===SOIL);
+    if(rooted.length<plants.length){plants=rooted;$('event').textContent='An uprooted plant makes room for another beginning.'}
+    for(const p of plants){
+      let available=0,samples=0;
+      const tips=p.roots.filter(r=>r.active);
+      const points=[{x:p.x,y:p.y+2},...tips];
+      for(const r of points){const x=Math.round(r.x),y=Math.round(r.y);if(x<1||x>=GW-1||y<1||y>=GH-1)continue;
+        const i=index(x,y);if(cells[i]===SOIL){available+=moisture[i];samples++;moisture[i]=Math.max(0,moisture[i]-.0025)}else if(cells[i]===WATER){available+=1;samples++}
+      }
+      const wet=samples?available/samples:0;
+      p.hydration+=(wet-p.hydration)*.05;
+      if(p.hydration>.06)p.growth=Math.min(1,p.growth+(p.hydration-.05)*.009);
+      if(tick%15!==0 || p.growth<.03)continue;
+      for(const r of tips){
+        if(r.length>22+p.growth*25){r.active=false;continue}
+        let best=null,bestScore=-Infinity;
+        for(const turn of [-.65,-.3,0,.3,.65]){
+          const a=clamp(r.angle+turn,.12,Math.PI-.12),nx=r.x+Math.cos(a)*1.7,ny=r.y+Math.sin(a)*1.7;
+          const ix=Math.round(nx),iy=Math.round(ny);if(ix<1||ix>=GW-1||iy<1||iy>=GH-1)continue;
+          const j=index(ix,iy);if(cells[j]!==SOIL)continue;
+          const score=moisture[j]*2+Math.sin(a)*.12+rand()*.14-Math.abs(turn)*.06;
+          if(score>bestScore){bestScore=score;best={x:nx,y:ny,a}}
+        }
+        if(!best){r.active=false;continue}
+        p.segments.push([r.x,r.y,best.x,best.y]);r.x=best.x;r.y=best.y;r.angle=best.a;r.length++;
+        if(r.length%9===0&&p.roots.length<10)p.roots.push({x:r.x,y:r.y,angle:clamp(r.angle+(rand()<.5?-.8:.8),.15,Math.PI-.15),length:r.length*.4,active:true});
+      }
+      if(p.growth>.6 && rand()<.03 && motes.length<16)motes.push({x:p.x,y:p.y-p.height*p.growth,age:0});
+    }
+  }
+  function updateStats() {
+    waterCount=0;for(let i=0;i<LEN;i++)if(cells[i]===WATER)waterCount++;
+    leafCount=plants.reduce((sum,p)=>sum+Math.floor(p.growth*12),0);
+    $('water-count').textContent=waterCount.toLocaleString();$('plant-count').textContent=plants.length;$('leaf-count').textContent=leafCount;
+  }
+  function updateRain() {$('rain').setAttribute('aria-pressed',rainLeft>0);$('rain').textContent=rainLeft>0?'☂ Raining…':'☂ Send rain'}
+  function rain() {rainLeft=rainLeft>0?0:360;updateRain();$('event').textContent=rainLeft?'The sky is lending you a little water.':'The shower passes. The soil remembers.'}
+  function step() {
+    tick++;
+    if(held)applyTool();
+    if(rainLeft>0){for(let i=0;i<9;i++)addDrop(14+rand()*272,3+rand()*3);rainLeft--;if(!rainLeft){updateRain();$('event').textContent='The shower passes. The soil remembers.'}}
+    flow();if(tick%4===0)diffuse();if(tick%3===0)grow();
+    for(const m of motes){m.x+=.12+Math.sin(m.age*.05)*.05;m.y-=.04;m.age++}motes=motes.filter(m=>m.age<360);
+    dirty=true;if(tick%6===0)updateStats();
+  }
+  function renderSoil() {
+    const d=pixels.data;
+    for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+      const i=index(x,y),o=i*4,type=cells[i];
+      if(type===AIR){d[o+3]=0;continue}
+      if(type===WATER&&y<GH-1&&cells[i+GW]===AIR){d[o+3]=0;continue}
+      if(type===WATER){const shine=cells[i-GW]!==WATER;d[o]=shine?118:65;d[o+1]=shine?165:119;d[o+2]=shine?172:136;d[o+3]=shine?230:220;continue}
+      const noise=(grain[i]-128)*.10;
+      if(type===ROCK){d[o]=141+noise;d[o+1]=137+noise;d[o+2]=111+noise;d[o+3]=255;continue}
+      const stratum=Math.floor((y+4*Math.sin(x*.028)+2*Math.sin(x*.09))/10)%palette.length;
+      const col=palette[stratum],wet=moisture[i]*.32;
+      d[o]=col[0]*(1-wet)+noise;d[o+1]=col[1]*(1-wet)+noise;d[o+2]=col[2]*(1-wet)+noise;
+      if(grain[i]>248){d[o]+=25;d[o+1]+=20;d[o+2]+=12}
+      if(y>0&&cells[i-GW]===AIR){d[o]=95+noise;d[o+1]=104+noise;d[o+2]=65+noise}
+      d[o+3]=255;
+    }
+    lc.putImageData(pixels,0,0);dirty=false;
+  }
+  function leaf(x,y,length,angle,color) {
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(length*.2,-length*.45,length*.85,-length*.45,length,0);ctx.bezierCurveTo(length*.65,length*.22,length*.3,length*.3,0,0);ctx.fill();ctx.restore();
+  }
+  function drawPlant(p,now) {
+    const growth=p.growth,h=p.height*growth;
+    const sway=paused?0:Math.sin(tick*.025+p.phase)*.9*growth;
+    const green=p.hydration<.07?'#8b8559':p.kind===1?'#59775b':'#476c50';
+    // Roots are drawn only where soil still exists; excavation exposes a real gap.
+    ctx.strokeStyle='#e8d7ae9c';ctx.lineWidth=.35;ctx.beginPath();
+    for(const s of p.segments){const i=index(Math.round(s[2]),Math.round(s[3]));if(cells[i]!==SOIL)continue;ctx.moveTo(s[0],s[1]);ctx.lineTo(s[2],s[3])}ctx.stroke();
+    ctx.strokeStyle=green;ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.quadraticCurveTo(p.x+sway*2,p.y-h*.5,p.x+sway,p.y-h);ctx.stroke();
+    const count=Math.floor(growth*12);
+    for(let k=0;k<count;k++){
+      const f=(k+1)/13,side=k%2?1:-1,ly=p.y-h*f,lx=p.x+sway*f;
+      const size=(p.kind===1?9:7)*(1-f*.45)*Math.min(1,growth*2);
+      leaf(lx,ly,size,side===1?-.5:-Math.PI+.5,green);
+      if(p.kind===1){for(let j=1;j<4;j++)leaf(lx+side*j*1.8,ly-j*.8,2.8,side===1?-1:-2.1,'#6e865d')}
+    }
+    if(p.kind!==1&&growth>.58){const size=(growth-.58)*7+1;const px=p.x+sway,py=p.y-h;
+      ctx.fillStyle=p.kind===0?'#b65e3c':'#d7b35f';
+      for(let k=0;k<6;k++){const a=k*Math.PI/3;ctx.beginPath();ctx.ellipse(px+Math.cos(a)*size,py+Math.sin(a)*size,size*.85,size*.65,a,0,Math.PI*2);ctx.fill()}
+      ctx.fillStyle='#725137';ctx.beginPath();ctx.arc(px,py,size*.7,0,Math.PI*2);ctx.fill();
+    }
+    if(growth<.1){leaf(p.x,p.y-1,2,-.6,'#687957');leaf(p.x,p.y-1,2,-2.6,'#687957')}
+  }
+  function draw(now) {
+    ctx.fillStyle=paperPattern;ctx.fillRect(0,0,width,height);
+    ctx.save();ctx.translate(ox,oy);ctx.scale(zoom,zoom);
+    // A faint surveying frame surrounds the specimen without enclosing the sky.
+    ctx.strokeStyle='#54664e22';ctx.lineWidth=.35;
+    for(let x=0;x<=GW;x+=10){ctx.beginPath();ctx.moveTo(x,175);ctx.lineTo(x,175+(x%50===0?2.5:1));ctx.stroke()}
+    ctx.font='3px ui-monospace,monospace';ctx.fillStyle='#71776a';ctx.fillText('SECTION A — A′',0,179);ctx.textAlign='right';ctx.fillText('A SMALL, WORKING WORLD',GW,179);ctx.textAlign='left';
+    // Sun and clouds are drawn in the same world coordinates as the land.
+    ctx.strokeStyle='#b69a5d66';ctx.fillStyle='#dac88f66';ctx.lineWidth=.4;ctx.beginPath();ctx.arc(246,21,10,0,Math.PI*2);ctx.fill();ctx.stroke();
+    for(let i=0;i<12;i++){let a=i*Math.PI/6;ctx.beginPath();ctx.moveTo(246+Math.cos(a)*13,21+Math.sin(a)*13);ctx.lineTo(246+Math.cos(a)*15,21+Math.sin(a)*15);ctx.stroke()}
+    for(const c of clouds){const x=c.x+Math.sin(tick*.003+c.y)*3;ctx.fillStyle=rainLeft?'#a5aca370':'#fbf8efbb';ctx.beginPath();ctx.ellipse(x,c.y,17*c.s,3*c.s,0,0,Math.PI*2);ctx.ellipse(x-5*c.s,c.y-3*c.s,8*c.s,5*c.s,0,0,Math.PI*2);ctx.ellipse(x+4*c.s,c.y-2*c.s,8*c.s,4*c.s,0,0,Math.PI*2);ctx.fill()}
+    // A soft contact shadow makes the cutaway sit on the page.
+    const shadow=ctx.createRadialGradient(150,168,2,150,168,130);shadow.addColorStop(0,'#57492e12');shadow.addColorStop(1,'#57492e00');ctx.save();ctx.translate(0,153);ctx.scale(1,.1);ctx.fillStyle=shadow;ctx.fillRect(0,20,GW,280);ctx.restore();
+    if(dirty)renderSoil();ctx.imageSmoothingEnabled=false;ctx.drawImage(layer,0,0);
+    ctx.strokeStyle='#537f8999';ctx.lineWidth=.35;ctx.beginPath();
+    for(let y=1;y<GH-1;y++)for(let x=1;x<GW-1;x++){const i=index(x,y);if(cells[i]===WATER&&cells[i+GW]===AIR){ctx.moveTo(x+.5,y-.8);ctx.lineTo(x+.5,y+.8)}}ctx.stroke();
+    for(const f of fossils){
+      ctx.save();ctx.translate(f.x,f.y);ctx.strokeStyle=f.found?'#6f573c':'#75563828';ctx.lineWidth=f.found?.65:.45;
+      ctx.beginPath();
+      if(f.kind===0){for(let a=0;a<Math.PI*5;a+=.08){const r=.35+a*.35;const x=Math.cos(a)*r,y=Math.sin(a)*r;if(a===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}}
+      else {ctx.moveTo(0,7);ctx.quadraticCurveTo(-2,-1,2,-9);for(let i=0;i<7;i++){const y=5-i*1.8;ctx.moveTo(0,y);ctx.quadraticCurveTo(-5,y-1,-(4-i*.35),y-3);ctx.moveTo(.5,y-1);ctx.quadraticCurveTo(5,y-2,4-i*.3,y-4)}}ctx.stroke();
+      if(f.found){ctx.strokeStyle='#86735766';ctx.lineWidth=.3;ctx.beginPath();ctx.arc(0,0,11,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#6f573c';ctx.font='italic 3.5px Georgia';ctx.textAlign='center';ctx.fillText(f.kind?'an older garden':'a memory of the sea',0,16);ctx.textAlign='left'}ctx.restore();
+    }
+    plants.forEach(p=>drawPlant(p,now));
+    // Fine grass grows only on damp, open soil.
+    ctx.strokeStyle='#62754f';ctx.lineWidth=.4;ctx.beginPath();
+    for(let x=10;x<GW-10;x+=3)for(let y=30;y<GH-10;y++){
+      const i=index(x,y);if(cells[i]===SOIL&&cells[i-GW]===AIR&&moisture[i]>.18){const h=2+grain[i]/100;ctx.moveTo(x,y);ctx.lineTo(x-1+Math.sin(tick*.03+x)*.5,y-h);break}
+    }ctx.stroke();
+    for(const m of motes){ctx.fillStyle=`rgba(139,110,57,${Math.min(.5,(360-m.age)/200)})`;ctx.beginPath();ctx.arc(m.x,m.y,.4,0,Math.PI*2);ctx.fill()}
+    // A label pins the dormant seed to its place in the initial scene.
+    if(plants[2]&&plants[2].growth<.15){const p=plants[2];ctx.strokeStyle='#74796366';ctx.lineWidth=.3;ctx.beginPath();ctx.moveTo(p.x+2,p.y-3);ctx.lineTo(p.x+10,p.y-18);ctx.lineTo(p.x+30,p.y-18);ctx.stroke();ctx.fillStyle='#6d735e';ctx.font='italic 4px Georgia';ctx.fillText('waiting for water',p.x+10,p.y-20)}
+    if(pointer.visible){ctx.strokeStyle=tool==='water'?'#3b758c':tool==='seed'?'#456b42':'#785038';ctx.lineWidth=.6;ctx.setLineDash([1,1]);ctx.beginPath();ctx.arc(pointer.x,pointer.y,tool==='seed'?3:radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(pointer.x-1,pointer.y);ctx.lineTo(pointer.x+1,pointer.y);ctx.moveTo(pointer.x,pointer.y-1);ctx.lineTo(pointer.x,pointer.y+1);ctx.stroke()}
+    ctx.restore();
+  }
+  function animate(now) {
+    const dt=Math.min(.1,(now-previous)/1000||0);previous=now;
+    if(!document.hidden){accumulator+=dt;if(!paused){let n=0;while(accumulator>=1/30&&n++<3){step();accumulator-=1/30}}else accumulator=0;draw(now)}
+    requestAnimationFrame(animate);
+  }
+  function pointerPosition(e){pointer.x=clamp((e.clientX-ox)/zoom,1,GW-2);pointer.y=clamp((e.clientY-oy)/zoom,1,GH-2);pointer.visible=true}
+  canvas.addEventListener('pointerdown',e=>{pointerPosition(e);held=true;canvas.setPointerCapture(e.pointerId);applyTool();if(paused)updateStats()});
+  canvas.addEventListener('pointermove',e=>{const old={...pointer};pointerPosition(e);if(held){const next={...pointer},distance=Math.hypot(next.x-old.x,next.y-old.y);const steps=Math.min(100,Math.ceil(distance/Math.max(1,radius/2)));for(let i=1;i<=steps;i++){pointer.x=old.x+(next.x-old.x)*i/steps;pointer.y=old.y+(next.y-old.y)*i/steps;applyTool()}Object.assign(pointer,next);if(paused)updateStats()}});
+  canvas.addEventListener('pointerup',()=>{held=false});canvas.addEventListener('pointercancel',()=>{held=false});canvas.addEventListener('pointerleave',()=>{if(!held)pointer.visible=false});
+  document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>chooseTool(b.dataset.tool));
+  $('size').oninput=()=>radius=Number($('size').value);
+  $('rain').onclick=rain;$('new').onclick=newEarth;
+  function togglePause(){paused=!paused;$('pause').textContent=paused?'▶':'Ⅱ';$('pause').setAttribute('aria-pressed',paused);$('pause').setAttribute('aria-label',paused?'Resume the ecosystem':'Pause the ecosystem')}
+  $('pause').onclick=togglePause;
+  $('help').onclick=()=>$('guide').showModal();$('close').onclick=()=>$('guide').close();
+  function keepPage(){pointer.visible=false;draw(performance.now());const c=document.createElement('canvas');c.width=canvas.width;c.height=canvas.height;const g=c.getContext('2d');g.drawImage(canvas,0,0);g.scale(dpr,dpr);g.fillStyle='#333e37';g.font='italic 35px Georgia';g.fillText('The Rainkeeper.',34,53);g.font='10px monospace';g.fillText(`LANDSCAPE ${String(landscape).padStart(3,'0')} · ${plants.length} PLANTS · ${leafCount} LEAVES`,35,76);g.font='italic 15px Georgia';g.fillText('A little earth, in your care.',35,height-32);c.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`rainkeeper-${landscape}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})}
+  $('keep').onclick=keepPage;
+  addEventListener('keydown',e=>{if($('guide').open||e.target.matches('input,button'))return;const key=e.key.toLowerCase();if(key.startsWith('arrow')||key===' ')e.preventDefault();
+    if('1234'.includes(key)&&key.length===1)chooseTool(['dig','water','seed','earth'][Number(key)-1]);
+    if(key==='r'&&!e.repeat)rain();if(key==='p'&&!e.repeat)togglePause();
+    if(key==='['||key===']'){$('size').value=radius=clamp(radius+(key==='['?-1:1),1,9)}
+    if(key.startsWith('arrow')){pointer.visible=true;pointer.x=clamp(pointer.x+(key==='arrowright'?2:key==='arrowleft'?-2:0),1,GW-2);pointer.y=clamp(pointer.y+(key==='arrowdown'?2:key==='arrowup'?-2:0),1,GH-2);if(held)applyTool()}
+    if(key===' '){pointer.visible=true;held=true;applyTool();if(paused)updateStats()}
+  });
+  addEventListener('keyup',e=>{if(e.key===' ')held=false});addEventListener('blur',()=>held=false);
+  document.addEventListener('visibilitychange',()=>{held=false;accumulator=0;previous=performance.now()});addEventListener('resize',resize);
+  paper();resize();newEarth();if(paused){paused=false;togglePause()}requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
