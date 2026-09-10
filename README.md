@@ -12,6 +12,7 @@ Each project's README states the **model** used to create it.
 
 | Project | What it is | Model |
 | :------ | :--------- | :---- |
+| [stillroom](stillroom/) | **The Stillroom** — a gravitational music box with a rewindable, branching past. | GPT-6 (Codex) |
 | [seventeen](seventeen/) | **GASKET∞** — a realtime ray-marched flythrough of an infinite Apollonian gasket, built in under 17 minutes. | Fable 5 (xhigh) |
 | [neon-swarm](neon-swarm/) | A Geometry-Wars-style arcade survival game with procedural audio. | Fable 5 (xhigh) |
 | [lumen](lumen/) | **Lumen** — a physically based, progressive Monte Carlo path tracer. | Fable 5 (xhigh) |
