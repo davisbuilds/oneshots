@@ -56,9 +56,18 @@
     canvas.width = Math.round(width*dpr); canvas.height = Math.round(height*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     const narrow = width <= 800, short = height <= 600;
-    zoom = Math.min((width*(narrow?.96:.70))/GW, (height-(short?130:narrow?375:250))/GH);
-    zoom = Math.max(.55,zoom); ox=(width-GW*zoom)/2; oy=short?65:narrow?200+Math.max(0,(height-390-GH*zoom)/2):155;
-    if(!narrow && !short)oy += Math.max(0,(height-800)*.09);
+    // Fit the entire specimen, including its ruler, above the live UI bounds.
+    const footerTop = document.querySelector('footer').getBoundingClientRect().top;
+    const hint = $('hint').getBoundingClientRect();
+    const tools = document.querySelector('.tools').getBoundingClientRect();
+    const top = short ? 65 : narrow
+      ? document.querySelector('.header-right').getBoundingClientRect().bottom + 16
+      : Math.max(155, document.querySelector('header').getBoundingClientRect().bottom + 8);
+    const bottom = Math.min(footerTop, hint.height ? hint.top : height,
+      narrow && !short ? tools.top : height) - 24;
+    zoom = Math.max(.1, Math.min((width*(narrow?.96:.70))/GW, (bottom-top)/GH));
+    ox = (width-GW*zoom)/2;
+    oy = top + Math.max(0, (bottom-top-GH*zoom)/2);
     dirty = true;
   }
   function terrainSurface(x) {
@@ -327,6 +336,8 @@
   });
   addEventListener('keyup',e=>{if(e.key===' ')held=false});addEventListener('blur',()=>held=false);
   document.addEventListener('visibilitychange',()=>{held=false;accumulator=0;previous=performance.now()});addEventListener('resize',resize);
+  const layoutObserver = new ResizeObserver(resize);
+  for(const element of [document.querySelector('footer'), $('hint'), document.querySelector('.tools')])layoutObserver.observe(element);
   paper();resize();newEarth();if(paused){paused=false;togglePause()}requestAnimationFrame(animate);
 })();
 </script>
