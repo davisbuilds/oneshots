@@ -27,8 +27,9 @@ Run that from the repository root, or open `index.html` directly in a browser.
   into the dark; the **Afterglow** control decides how long the room remembers.
 - Editable geometry. Draw reflective walls, erase passages, ring tones from any
   point, and move the listening point through the field.
-- Procedural Web Audio. Each strike is synthesized in the file, while three
-  quiet oscillators let the pressure at the listening point become audible.
+- Procedural Web Audio. Enabling sound plays a confirmation peal, each strike is
+  synthesized in the file, and three oscillators make the pressure at the
+  listening point audible.
 - Keyboard and pointer controls, touch-friendly narrow-screen layout, a reduced
   motion path, hidden-tab audio suspension, and illustrated PNG atlas export.
 

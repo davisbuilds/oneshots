@@ -110,7 +110,7 @@ function pulse(x,y,ch=tone,audible=true){
     const d=Math.hypot(xx-x,yy-y);if(d<radius&&!walls[cell(xx,yy)]){const env=(1-d/radius)**2;w.cur[cell(xx,yy)]+=Math.cos(d*freq)*env*.9;}
   }
   lastPulse=performance.now();lastReturn=0;returnArmed=true;hasActed=true;$('hint').style.opacity=0;$('echo').textContent='Outbound…';$('status').textContent=names[ch].toLowerCase()+' is crossing the room';
-  if(audible) ping(ch,.18);
+  if(audible) ping(ch,.26);
 }
 function step(){
   const decay=.994+Number($('decay').value)/100000, c2=.23;
@@ -150,7 +150,7 @@ function updateEar(){
   const x=Math.max(1,Math.min(GW-2,Math.floor(ear.x*GW))),y=Math.max(1,Math.min(GH-2,Math.floor(ear.y*GH))),i=cell(x,y);
   const amp=waves.map(w=>Math.abs(w.cur[i]));const total=amp[0]+amp[1]+amp[2];
   $('earData').textContent='LISTENING  ·  '+(total>.03?'FIELD '+Math.min(99,Math.round(total*180)).toString().padStart(2,'0'):'QUIET');
-  if(audio&&soundOn)gains.forEach((g,j)=>g.gain.setTargetAtTime(Math.min(.055,amp[j]*.12),audio.currentTime,.025));
+  if(audio&&soundOn)gains.forEach((g,j)=>g.gain.setTargetAtTime(Math.min(.12,amp[j]*.26),audio.currentTime,.025));
   if(returnArmed&&performance.now()-lastPulse>160&&total>.045){lastReturn=(performance.now()-lastPulse)/1000;returnArmed=false;$('echo').textContent=lastReturn.toFixed(2)+' seconds.';$('status').textContent='The room has answered';ping(tone,.08)}
 }
 function loop(){if(!paused){step();step()}draw();requestAnimationFrame(loop)}
@@ -175,12 +175,12 @@ async function initAudio(){
   if(audio)return;audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=0;master.connect(audio.destination);
   [110,196,329.63].forEach((f,j)=>{const o=audio.createOscillator(),g=audio.createGain(),filter=audio.createBiquadFilter();o.type=j===1?'triangle':'sine';o.frequency.value=f;filter.type='lowpass';filter.frequency.value=900+j*450;g.gain.value=0;o.connect(filter);filter.connect(g);g.connect(master);o.start();osc.push(o);gains.push(g)});
 }
-async function toggleSound(){try{await initAudio();await audio.resume();soundOn=!soundOn;master.gain.setTargetAtTime(soundOn?.75:0,audio.currentTime,.12);$('sound').textContent=soundOn?'Sound on':'Sound off';$('sound').setAttribute('aria-pressed',soundOn);$('status').textContent=soundOn?'The listening point is audible':'The chamber is silent'}catch(e){$('status').textContent='Audio is unavailable here'}}
-function ping(ch,volume){if(!audio||!soundOn)return;const now=audio.currentTime,o=audio.createOscillator(),g=audio.createGain(),d=audio.createDelay(.8),fb=audio.createGain();o.type='sine';o.frequency.setValueAtTime([110,196,329.63][ch]*2,now);o.frequency.exponentialRampToValueAtTime([110,196,329.63][ch],now+.5);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(volume,now+.012);g.gain.exponentialRampToValueAtTime(.0001,now+.8);d.delayTime.value=.23+scene*.07;fb.gain.value=.28;g.connect(master);g.connect(d);d.connect(fb);fb.connect(d);d.connect(master);o.connect(g);o.start(now);o.stop(now+.82)}
+async function toggleSound(){try{await initAudio();await audio.resume();soundOn=!soundOn;master.gain.cancelScheduledValues(audio.currentTime);master.gain.setTargetAtTime(soundOn?.85:0,audio.currentTime,.06);$('sound').textContent=soundOn?'Sound on':'Sound off';$('sound').setAttribute('aria-pressed',soundOn);$('status').textContent=soundOn?'Sound is on · ring the chamber':'The chamber is silent';if(soundOn)setTimeout(()=>soundOn&&ping(tone,.3),35)}catch(e){$('status').textContent='Audio is unavailable here'}}
+function ping(ch,volume){if(!audio||!soundOn)return;const now=audio.currentTime,o=audio.createOscillator(),g=audio.createGain(),d=audio.createDelay(.8),fb=audio.createGain();o.type='sine';o.frequency.setValueAtTime([110,196,329.63][ch]*2,now);o.frequency.exponentialRampToValueAtTime([110,196,329.63][ch],now+.5);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(volume,now+.012);g.gain.exponentialRampToValueAtTime(.0001,now+.8);d.delayTime.value=.23+scene*.07;fb.gain.value=.28;g.connect(master);g.connect(d);d.connect(fb);fb.connect(d);d.connect(master);o.connect(g);o.start(now);o.stop(now+.82);setTimeout(()=>{o.disconnect();g.disconnect();d.disconnect();fb.disconnect()},2600)}
 function keep(){const out=document.createElement('canvas'),g=out.getContext('2d');out.width=canvas.width;out.height=canvas.height;g.drawImage(canvas,0,0);g.scale(DPR,DPR);const grad=g.createLinearGradient(0,0,0,125);grad.addColorStop(0,'#05070bee');grad.addColorStop(1,'#05070b00');g.fillStyle=grad;g.fillRect(0,0,W,140);g.fillStyle='#e9e3d7';g.font='42px Georgia';g.fillText('Echo Atlas.',31,56);g.fillStyle='#9da6ad';g.font='10px ui-monospace,monospace';g.fillText(`${notes[scene][1]}  ·  ${names[tone]}  ·  A ROOM DRAWN BY SOUND`,34,80);out.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='echo-atlas-'+notes[scene][1].slice(4).toLowerCase()+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)})}
 $('sound').onclick=toggleSound;$('keep').onclick=keep;$('help').onclick=()=>$('guide').showModal();$('closeGuide').onclick=()=>$('guide').close();$('guide').onclick=e=>{if(e.target===$('guide'))$('guide').close()};
 addEventListener('keydown',e=>{if($('guide').open||e.target.matches('button,input'))return;const k=e.key.toLowerCase();if(k===' ')e.preventDefault();if('123'.includes(k))buildScene(+k-1);if(k==='q'||k==='w'||k==='e')document.querySelector(`[data-tone="${{q:0,w:1,e:2}[k]}"]`).click();if(k==='r')pulse(Math.floor(GW/2),Math.floor(GH/2));if(k===' ')togglePause();if(k==='m')toggleSound();if(k==='c')clearTrace();if(k==='s')keep();if(k==='?')$('guide').showModal()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&audio)master.gain.setTargetAtTime(0,audio.currentTime,.05);else if(audio&&soundOn)master.gain.setTargetAtTime(.75,audio.currentTime,.1)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&audio)master.gain.setTargetAtTime(0,audio.currentTime,.05);else if(audio&&soundOn)master.gain.setTargetAtTime(.85,audio.currentTime,.1)});
 addEventListener('resize',resize);resize();buildScene(0,false);setTimeout(()=>{if(!paused)pulse(Math.floor(GW*.19),Math.floor(GH*.5),1,false)},450);loop();
 })();
 </script>
