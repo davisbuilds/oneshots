@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070b">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='16' fill='%2305070b'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23e7bd72'/><circle cx='16' cy='16' r='3' fill='%23e7bd72'/></svg>">
+<title>Echo Atlas — rooms drawn by sound</title>
+<style>
+:root{color-scheme:dark;--paper:#e9e3d7;--dim:#8f98a2;--faint:#ffffff1d;--ink:#05070b;--gold:#e7bd72;--blue:#65bdff;--pink:#df72ed}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font:12px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif}
+canvas{position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;background:#05070b}
+button,input{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:1px solid var(--gold);outline-offset:4px}
+.brand{position:fixed;z-index:2;top:33px;left:4.2vw;pointer-events:none}
+.kicker,.micro{text-transform:uppercase;letter-spacing:.24em;font:9px ui-monospace,SFMono-Regular,monospace;color:#818c98}
+h1{margin:10px 0 4px;font:400 clamp(42px,5.8vw,82px)/.95 Georgia,serif;letter-spacing:-.075em}
+.brand p{margin:11px 0 0;max-width:310px;color:#9aa3aa;font:italic 15px/1.55 Georgia,serif}
+.top{position:fixed;z-index:3;right:4.2vw;top:36px;display:flex;gap:8px}
+.pill{border:1px solid var(--faint);border-radius:30px;padding:9px 14px;background:#080c12a6;backdrop-filter:blur(12px);transition:border-color .2s,background .2s,color .2s}
+.pill:hover{border-color:#ffffff55;background:#101822dd}.pill[aria-pressed=true]{border-color:#e7bd7290;color:var(--gold)}
+.scenes{position:fixed;z-index:3;left:4.2vw;top:43%;display:grid;gap:17px}
+.scene{display:flex;align-items:baseline;gap:11px;color:#687580;text-align:left;padding:0}
+.scene span{font:9px ui-monospace,monospace;color:#58646f}.scene strong{font:400 18px Georgia,serif}.scene[aria-pressed=true]{color:var(--paper)}.scene[aria-pressed=true] span{color:var(--gold)}
+.readout{position:fixed;z-index:2;right:4.2vw;top:44%;width:185px;pointer-events:none}
+.readout .echo{font:italic 28px Georgia,serif;color:#d9dfdd;margin:10px 0 8px}.readout p{color:#7f8b94;line-height:1.8;margin:0}.ear-data{color:var(--gold)!important;font:9px ui-monospace,monospace!important;letter-spacing:.12em;margin-top:18px!important}
+.dock{position:fixed;z-index:4;left:4.2vw;right:4.2vw;bottom:28px;border-top:1px solid var(--faint);padding-top:15px;display:grid;grid-template-columns:auto auto 1fr auto;gap:25px;align-items:center}
+.cluster{display:flex;align-items:center;gap:6px}.cluster-label{margin-right:8px;color:#74808b;text-transform:uppercase;letter-spacing:.18em;font-size:8px}
+.tool,.tone{border:1px solid transparent;border-radius:22px;min-width:35px;padding:8px 11px;color:#86919a;transition:.2s}
+.tool:hover,.tone:hover{color:var(--paper);background:#ffffff0b}.tool[aria-pressed=true]{border-color:#ffffff32;color:var(--paper);background:#ffffff0c}
+.tone{width:31px;min-width:31px;height:31px;padding:0;border-color:#ffffff18;position:relative;color:transparent;font-size:0}.tone:after{content:'';position:absolute;inset:9px;border-radius:50%;background:currentColor;box-shadow:0 0 13px currentColor}.tone[data-tone="0"]{color:var(--blue)}.tone[data-tone="1"]{color:var(--gold)}.tone[data-tone="2"]{color:var(--pink)}.tone[aria-pressed=true]{border-color:currentColor;box-shadow:inset 0 0 10px currentColor}
+.decay{display:grid;grid-template-columns:auto minmax(80px,250px);gap:12px;align-items:center;justify-self:end}.decay label{color:#74808b;text-transform:uppercase;letter-spacing:.18em;font-size:8px}.decay input{accent-color:var(--gold);width:100%}
+.hint{position:fixed;left:50%;bottom:91px;transform:translateX(-50%);color:#79838c;font:italic 14px Georgia,serif;white-space:nowrap;pointer-events:none;transition:opacity .5s}
+.status{position:fixed;top:40px;left:50%;transform:translateX(-50%);text-transform:uppercase;letter-spacing:.22em;color:#7e8992;font:8px ui-monospace,monospace;pointer-events:none}.status:before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold);margin:0 9px 2px 0;box-shadow:0 0 9px var(--gold)}
+dialog{width:min(500px,calc(100% - 36px));border:1px solid #ffffff26;border-radius:18px;background:#0b1018;color:var(--paper);padding:34px;box-shadow:0 35px 160px #000}
+dialog::backdrop{background:#020408dc;backdrop-filter:blur(9px)}dialog h2{font:400 34px/1.1 Georgia,serif;letter-spacing:-.035em;margin:0 0 18px}dialog p{color:#a1abb2;line-height:1.8}dialog b,dialog kbd{color:#e9d5aa;font-weight:400}dialog .pill{margin-top:11px}
+@media(max-width:780px){.brand{left:22px;top:22px}.brand h1{font-size:47px}.brand p{font-size:13px;max-width:230px}.top{right:20px;top:140px}.top .pill{padding:7px 10px;font-size:10px}.status{top:188px;white-space:nowrap}.scenes{left:22px;top:auto;bottom:173px;display:flex;gap:18px}.scene{gap:5px}.scene strong{font-size:15px}.readout{display:none}.dock{left:20px;right:20px;bottom:18px;grid-template-columns:1fr auto;gap:8px 12px;padding-top:11px}.cluster{gap:2px}.cluster-label{display:none}.tools{grid-column:1}.tones{grid-column:2}.decay{grid-column:1/-1;grid-row:2;justify-self:stretch;grid-template-columns:auto 1fr}.tool{padding:7px 8px;font-size:10px}.tone{width:28px;min-width:28px;height:28px}.hint{bottom:128px;font-size:12px}.micro{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.hint{display:none}}
+</style>
+</head>
+<body>
+<canvas id="field" tabindex="0" aria-label="An invisible room revealed by simulated sound waves. Choose Ring and tap to send an echo; choose Wall to draw reflective architecture. Keyboard controls are in the field notes."></canvas>
+<header class="brand"><div class="kicker">An instrument for invisible architecture</div><h1>Echo Atlas.</h1><p>Every room is waiting to become a note.</p></header>
+<div class="status" id="status" role="status">The chamber is listening</div>
+<div class="top"><button class="pill" id="sound" aria-pressed="false">Sound off</button><button class="pill" id="keep">Keep atlas ↗</button><button class="pill" id="help" aria-label="Open field notes">?</button></div>
+<nav class="scenes" aria-label="Choose a hidden chamber">
+  <button class="scene" data-scene="0" aria-pressed="true"><span>01</span><strong>The Nave</strong></button>
+  <button class="scene" data-scene="1" aria-pressed="false"><span>02</span><strong>The Well</strong></button>
+  <button class="scene" data-scene="2" aria-pressed="false"><span>03</span><strong>The Fold</strong></button>
+</nav>
+<aside class="readout"><div class="micro">Field note</div><div class="echo" id="echo">Unstruck.</div><p id="note">A long room. Six pillars. Something like an altar, though the room has forgotten why.</p><p class="ear-data" id="earData">LISTENING  ·  QUIET</p></aside>
+<div class="hint" id="hint">Tap the darkness. The first sound will draw the room.</div>
+<footer class="dock">
+  <div class="cluster tools"><span class="cluster-label">Gesture</span><button class="tool" data-tool="ring" aria-pressed="true">Ring</button><button class="tool" data-tool="wall" aria-pressed="false">Wall</button><button class="tool" data-tool="ear" aria-pressed="false">Listen</button><button class="tool" data-tool="erase" aria-pressed="false">Erase</button></div>
+  <div class="cluster tones"><span class="cluster-label">Tone</span><button class="tone" data-tone="0" aria-label="Low blue tone" aria-pressed="false">Low</button><button class="tone" data-tone="1" aria-label="Middle gold tone" aria-pressed="true">Middle</button><button class="tone" data-tone="2" aria-label="High violet tone" aria-pressed="false">High</button></div>
+  <div></div>
+  <div class="decay"><label for="decay">Afterglow</label><input id="decay" type="range" min="0" max="100" value="78" aria-label="Echo afterglow"></div>
+</footer>
+<dialog id="guide"><h2>You can only see what the room has heard.</h2><p><b>Ring</b> sends one of three tones into the dark. Each colored wave obeys the same small wave equation: it spreads, bends around corners, interferes with itself, and returns from walls. The phosphor afterglow remembers where sound has been.</p><p><b>Wall</b> draws reflective stone. <b>Erase</b> opens it again. <b>Listen</b> moves the small listening point; turn on sound to hear the field passing through it. Try ringing two colors from opposite sides of The Fold.</p><p>Keys <kbd>1–3</kbd> choose a chamber, <kbd>Q/W/E</kbd> choose a tone, <kbd>R</kbd> rings its center, <kbd>Space</kbd> pauses, <kbd>M</kbd> toggles sound, <kbd>C</kbd> clears the afterglow, and <kbd>S</kbd> keeps an atlas.</p><p>This is an expressive acoustic sketch, not an engineering simulator. Its two-dimensional rooms and softened boundaries favor beautiful, legible echoes. Everything runs inside this file.</p><button class="pill" id="closeGuide">Return to the chamber</button></dialog>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), canvas=$('field'), ctx=canvas.getContext('2d',{alpha:false});
+const buffer=document.createElement('canvas'), btx=buffer.getContext('2d',{alpha:false});
+const palette=[[76,175,255],[240,184,91],[222,89,239]], names=['LOW / BLUE','MIDDLE / GOLD','HIGH / VIOLET'];
+const notes=[
+  ['A long room. Six pillars. Something like an altar, though the room has forgotten why.','THE NAVE'],
+  ['Three broken circles descend toward a center that no foot can reach.','THE WELL'],
+  ['Parallel halls disagree about where the outside is.','THE FOLD']
+];
+let W=innerWidth,H=innerHeight,DPR=1,GW=240,GH=150,N=GW*GH,image;
+let walls,trace,waves,scene=0,tool='ring',tone=1,paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let pointer={down:false,x:0,y:0,px:0,py:0}, ear={x:.72,y:.58}, lastPulse=0,lastReturn=0,returnArmed=false,frame=0,hasActed=false;
+let audio=null,master=null,osc=[],gains=[],soundOn=false;
+
+function arrays(){
+  N=GW*GH; walls=new Uint8Array(N); trace=[new Float32Array(N),new Float32Array(N),new Float32Array(N)];
+  waves=Array.from({length:3},()=>({cur:new Float32Array(N),prev:new Float32Array(N),next:new Float32Array(N)}));
+  buffer.width=GW;buffer.height=GH;image=btx.createImageData(GW,GH);
+}
+const cell=(x,y)=>y*GW+x;
+function dot(x,y,r=2,v=1){for(let yy=Math.max(1,y-r);yy<=Math.min(GH-2,y+r);yy++)for(let xx=Math.max(1,x-r);xx<=Math.min(GW-2,x+r);xx++)if((xx-x)**2+(yy-y)**2<=r*r)walls[cell(xx,yy)]=v}
+function line(x0,y0,x1,y1,r=1,v=1){const d=Math.max(1,Math.ceil(Math.hypot(x1-x0,y1-y0)));for(let i=0;i<=d;i++)dot(Math.round(x0+(x1-x0)*i/d),Math.round(y0+(y1-y0)*i/d),r,v)}
+function arc(cx,cy,r,a0,a1,w=1){const n=Math.ceil(r*Math.abs(a1-a0)*1.4);for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;dot(Math.round(cx+Math.cos(a)*r),Math.round(cy+Math.sin(a)*r),w,1)}}
+function border(){for(let x=0;x<GW;x++){walls[cell(x,0)]=walls[cell(x,1)]=walls[cell(x,GH-1)]=walls[cell(x,GH-2)]=1}for(let y=0;y<GH;y++){walls[cell(0,y)]=walls[cell(1,y)]=walls[cell(GW-1,y)]=walls[cell(GW-2,y)]=1}}
+function buildScene(which,announce=true){
+  scene=which;arrays();border();const sx=GW/240,sy=GH/150;
+  if(scene===0){
+    line(43*sx,23*sy,196*sx,23*sy,2);line(43*sx,127*sy,196*sx,127*sy,2);
+    line(43*sx,23*sy,26*sx,75*sy,2);line(26*sx,75*sy,43*sx,127*sy,2);line(196*sx,23*sy,214*sx,75*sy,2);line(214*sx,75*sy,196*sx,127*sy,2);
+    [70,105,140,175].forEach((x,j)=>{const gap=j%2?21:17;line(x*sx,39*sy,x*sx,(75-gap)*sy,2);line(x*sx,(75+gap)*sy,x*sx,111*sy,2)});
+    arc(196*sx,75*sy,14*sx,-Math.PI/2,Math.PI/2,2);ear={x:.80,y:.5};
+  }else if(scene===1){
+    const cx=GW*.52,cy=GH*.51;[58,43,28].forEach((r,j)=>{const rr=r*Math.min(sx,sy);arc(cx,cy,rr,.25+j*.8,Math.PI*1.75+j*.8,2)});
+    line(cx-9*sx,cy-7*sy,cx+9*sx,cy+7*sy,2);line(cx-9*sx,cy+7*sy,cx+9*sx,cy-7*sy,2);ear={x:.52,y:.51};
+  }else{
+    const ys=[28,52,76,100,124];ys.forEach((y,j)=>{const from=j%2?27:66,to=j%2?174:213;line(from*sx,y*sy,to*sx,y*sy,2)});
+    line(52*sx,28*sy,52*sx,105*sy,2);line(188*sx,49*sy,188*sx,124*sy,2);
+    line(92*sx,52*sy,116*sx,76*sy,2);line(116*sx,76*sy,92*sx,100*sy,2);line(147*sx,52*sy,123*sx,76*sy,2);line(123*sx,76*sy,147*sx,100*sy,2);ear={x:.5,y:.5};
+  }
+  document.querySelectorAll('.scene').forEach((b,i)=>b.setAttribute('aria-pressed',i===scene));
+  $('note').textContent=notes[scene][0];$('echo').textContent=paused?'Held still.':'Unstruck.';$('status').textContent=paused?'The chamber is still':'The chamber is listening';
+  if(announce) pulse(Math.floor(GW*(scene===0?.18:scene===1?.18:.12)),Math.floor(GH*.5),1,false);
+}
+function pulse(x,y,ch=tone,audible=true){
+  if(x<3||y<3||x>GW-4||y>GH-4)return;
+  const w=waves[ch],radius=[10,8,6][ch],freq=[.72,.92,1.18][ch];
+  for(let yy=Math.max(2,y-radius);yy<=Math.min(GH-3,y+radius);yy++)for(let xx=Math.max(2,x-radius);xx<=Math.min(GW-3,x+radius);xx++){
+    const d=Math.hypot(xx-x,yy-y);if(d<radius&&!walls[cell(xx,yy)]){const env=(1-d/radius)**2;w.cur[cell(xx,yy)]+=Math.cos(d*freq)*env*.9;}
+  }
+  lastPulse=performance.now();lastReturn=0;returnArmed=true;hasActed=true;$('hint').style.opacity=0;$('echo').textContent='Outbound…';$('status').textContent=names[ch].toLowerCase()+' is crossing the room';
+  if(audible) ping(ch,.18);
+}
+function step(){
+  const decay=.994+Number($('decay').value)/100000, c2=.23;
+  for(let ch=0;ch<3;ch++){
+    const w=waves[ch],a=w.cur,p=w.prev,n=w.next,t=trace[ch];
+    for(let y=1;y<GH-1;y++)for(let x=1;x<GW-1;x++){
+      const i=cell(x,y);if(walls[i]){n[i]=0;continue}const v=a[i];
+      const l=walls[i-1]?v:a[i-1],r=walls[i+1]?v:a[i+1],u=walls[i-GW]?v:a[i-GW],d=walls[i+GW]?v:a[i+GW];
+      let nv=(2*v-p[i]+c2*(l+r+u+d-4*v))*decay;if(Math.abs(nv)<.00003)nv=0;n[i]=nv;
+      const e=Math.min(1,Math.abs(v)*2.4);t[i]=Math.max(t[i]*(.9985+Number($('decay').value)/800000),e);
+    }
+    w.prev=w.cur;w.cur=w.next;w.next=p;
+  }
+}
+function draw(){
+  const data=image.data,t0=trace[0],t1=trace[1],t2=trace[2],a0=waves[0].cur,a1=waves[1].cur,a2=waves[2].cur;
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){
+    const i=cell(x,y),o=i*4,grain=((x*17+y*31+frame)%19)/19;
+    let e0=t0[i]*.56+Math.abs(a0[i])*2.2,e1=t1[i]*.56+Math.abs(a1[i])*2.2,e2=t2[i]*.56+Math.abs(a2[i])*2.2;
+    if(walls[i]){
+      let near=0;if(x>0)near=Math.max(near,t0[i-1]+t1[i-1]+t2[i-1]);if(x<GW-1)near=Math.max(near,t0[i+1]+t1[i+1]+t2[i+1]);if(y>0)near=Math.max(near,t0[i-GW]+t1[i-GW]+t2[i-GW]);if(y<GH-1)near=Math.max(near,t0[i+GW]+t1[i+GW]+t2[i+GW]);
+      const q=Math.min(1,.04+near*.95);data[o]=10+q*152;data[o+1]=13+q*149;data[o+2]=19+q*142;
+    }else{
+      const bloom=Math.min(1,e0+e1+e2),floor=4+grain*2;
+      data[o]=floor+palette[0][0]*e0+palette[1][0]*e1+palette[2][0]*e2+bloom*7;
+      data[o+1]=floor+palette[0][1]*e0+palette[1][1]*e1+palette[2][1]*e2+bloom*6;
+      data[o+2]=7+palette[0][2]*e0+palette[1][2]*e1+palette[2][2]*e2+bloom*8;
+    }data[o+3]=255;
+  }
+  btx.putImageData(image,0,0);ctx.imageSmoothingEnabled=true;ctx.drawImage(buffer,0,0,W,H);
+  const ex=ear.x*W,ey=ear.y*H,pulseSize=5+Math.sin(performance.now()*.004)*1.5;
+  ctx.save();ctx.globalCompositeOperation='screen';ctx.strokeStyle='#f4dfadbb';ctx.lineWidth=1;ctx.beginPath();ctx.arc(ex,ey,pulseSize,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(ex-10,ey);ctx.lineTo(ex+10,ey);ctx.moveTo(ex,ey-10);ctx.lineTo(ex,ey+10);ctx.stroke();ctx.restore();
+  if(pointer.down&&tool==='ring'){ctx.strokeStyle=palette[tone].map(v=>v).join(',');}
+  updateEar();frame++;
+}
+function updateEar(){
+  const x=Math.max(1,Math.min(GW-2,Math.floor(ear.x*GW))),y=Math.max(1,Math.min(GH-2,Math.floor(ear.y*GH))),i=cell(x,y);
+  const amp=waves.map(w=>Math.abs(w.cur[i]));const total=amp[0]+amp[1]+amp[2];
+  $('earData').textContent='LISTENING  ·  '+(total>.03?'FIELD '+Math.min(99,Math.round(total*180)).toString().padStart(2,'0'):'QUIET');
+  if(audio&&soundOn)gains.forEach((g,j)=>g.gain.setTargetAtTime(Math.min(.055,amp[j]*.12),audio.currentTime,.025));
+  if(returnArmed&&performance.now()-lastPulse>160&&total>.045){lastReturn=(performance.now()-lastPulse)/1000;returnArmed=false;$('echo').textContent=lastReturn.toFixed(2)+' seconds.';$('status').textContent='The room has answered';ping(tone,.08)}
+}
+function loop(){if(!paused){step();step()}draw();requestAnimationFrame(loop)}
+function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);const newGW=W<600?160:240,newGH=Math.max(112,Math.min(W<600?380:190,Math.round(newGW*H/W)));if(newGW!==GW||Math.abs(newGH-GH)>8){GW=newGW;GH=newGH;buildScene(scene,false)}}
+function pos(e){const r=canvas.getBoundingClientRect();return{x:Math.max(1,Math.min(GW-2,Math.floor((e.clientX-r.left)/r.width*GW))),y:Math.max(1,Math.min(GH-2,Math.floor((e.clientY-r.top)/r.height*GH)))}}
+function apply(x,y,from){
+  if(tool==='ring'){if(!from||Math.hypot(x-from.x,y-from.y)>8)pulse(x,y)}
+  if(tool==='wall')line(from?.x??x,from?.y??y,x,y,2,1);
+  if(tool==='erase'){line(from?.x??x,from?.y??y,x,y,5,0);waves.forEach(w=>{dotWave(w,x,y,5)});}
+  if(tool==='ear'){ear={x:x/GW,y:y/GH};$('status').textContent='The listening point moved'}
+}
+function dotWave(w,x,y,r){for(let yy=Math.max(1,y-r);yy<=Math.min(GH-2,y+r);yy++)for(let xx=Math.max(1,x-r);xx<=Math.min(GW-2,x+r);xx++)if((xx-x)**2+(yy-y)**2<=r*r)w.cur[cell(xx,yy)]=w.prev[cell(xx,yy)]=0}
+canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);const p=pos(e);pointer={down:true,x:p.x,y:p.y,px:p.x,py:p.y};apply(p.x,p.y,null)});
+canvas.addEventListener('pointermove',e=>{const p=pos(e);if(pointer.down&&(tool!=='ring'||Math.hypot(p.x-pointer.px,p.y-pointer.py)>9)){apply(p.x,p.y,{x:pointer.px,y:pointer.py});pointer.px=p.x;pointer.py=p.y}pointer.x=p.x;pointer.y=p.y});
+canvas.addEventListener('pointerup',()=>pointer.down=false);canvas.addEventListener('pointercancel',()=>pointer.down=false);
+document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{tool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(x=>x.setAttribute('aria-pressed',x===b));canvas.style.cursor=tool==='wall'||tool==='erase'?'cell':'crosshair';$('status').textContent=tool==='ring'?'The chamber is listening':tool==='wall'?'Draw reflective stone':tool==='ear'?'Place the listening point':'Open a passage'});
+document.querySelectorAll('[data-tone]').forEach(b=>b.onclick=()=>{tone=+b.dataset.tone;document.querySelectorAll('[data-tone]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('status').textContent=names[tone].toLowerCase()+' is ready';ping(tone,.07)});
+document.querySelectorAll('[data-scene]').forEach(b=>b.onclick=()=>buildScene(+b.dataset.scene));
+function clearTrace(){trace.forEach(t=>t.fill(0));$('echo').textContent='Forgotten.';$('status').textContent='The chamber is dark again'}
+function togglePause(){paused=!paused;$('status').textContent=paused?'The chamber is still':'The chamber is listening'}
+async function initAudio(){
+  if(audio)return;audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=0;master.connect(audio.destination);
+  [110,196,329.63].forEach((f,j)=>{const o=audio.createOscillator(),g=audio.createGain(),filter=audio.createBiquadFilter();o.type=j===1?'triangle':'sine';o.frequency.value=f;filter.type='lowpass';filter.frequency.value=900+j*450;g.gain.value=0;o.connect(filter);filter.connect(g);g.connect(master);o.start();osc.push(o);gains.push(g)});
+}
+async function toggleSound(){try{await initAudio();await audio.resume();soundOn=!soundOn;master.gain.setTargetAtTime(soundOn?.75:0,audio.currentTime,.12);$('sound').textContent=soundOn?'Sound on':'Sound off';$('sound').setAttribute('aria-pressed',soundOn);$('status').textContent=soundOn?'The listening point is audible':'The chamber is silent'}catch(e){$('status').textContent='Audio is unavailable here'}}
+function ping(ch,volume){if(!audio||!soundOn)return;const now=audio.currentTime,o=audio.createOscillator(),g=audio.createGain(),d=audio.createDelay(.8),fb=audio.createGain();o.type='sine';o.frequency.setValueAtTime([110,196,329.63][ch]*2,now);o.frequency.exponentialRampToValueAtTime([110,196,329.63][ch],now+.5);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(volume,now+.012);g.gain.exponentialRampToValueAtTime(.0001,now+.8);d.delayTime.value=.23+scene*.07;fb.gain.value=.28;g.connect(master);g.connect(d);d.connect(fb);fb.connect(d);d.connect(master);o.connect(g);o.start(now);o.stop(now+.82)}
+function keep(){const out=document.createElement('canvas'),g=out.getContext('2d');out.width=canvas.width;out.height=canvas.height;g.drawImage(canvas,0,0);g.scale(DPR,DPR);const grad=g.createLinearGradient(0,0,0,125);grad.addColorStop(0,'#05070bee');grad.addColorStop(1,'#05070b00');g.fillStyle=grad;g.fillRect(0,0,W,140);g.fillStyle='#e9e3d7';g.font='42px Georgia';g.fillText('Echo Atlas.',31,56);g.fillStyle='#9da6ad';g.font='10px ui-monospace,monospace';g.fillText(`${notes[scene][1]}  ·  ${names[tone]}  ·  A ROOM DRAWN BY SOUND`,34,80);out.toBlob(blob=>{if(!blob)return;const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='echo-atlas-'+notes[scene][1].slice(4).toLowerCase()+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)})}
+$('sound').onclick=toggleSound;$('keep').onclick=keep;$('help').onclick=()=>$('guide').showModal();$('closeGuide').onclick=()=>$('guide').close();$('guide').onclick=e=>{if(e.target===$('guide'))$('guide').close()};
+addEventListener('keydown',e=>{if($('guide').open||e.target.matches('button,input'))return;const k=e.key.toLowerCase();if(k===' ')e.preventDefault();if('123'.includes(k))buildScene(+k-1);if(k==='q'||k==='w'||k==='e')document.querySelector(`[data-tone="${{q:0,w:1,e:2}[k]}"]`).click();if(k==='r')pulse(Math.floor(GW/2),Math.floor(GH/2));if(k===' ')togglePause();if(k==='m')toggleSound();if(k==='c')clearTrace();if(k==='s')keep();if(k==='?')$('guide').showModal()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&audio)master.gain.setTargetAtTime(0,audio.currentTime,.05);else if(audio&&soundOn)master.gain.setTargetAtTime(.75,audio.currentTime,.1)});
+addEventListener('resize',resize);resize();buildScene(0,false);setTimeout(()=>{if(!paused)pulse(Math.floor(GW*.19),Math.floor(GH*.5),1,false)},450);loop();
+})();
+</script>
+</body>
+</html>

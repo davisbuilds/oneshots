@@ -12,6 +12,7 @@ Each project's README states the **model** used to create it.
 
 | Project | What it is | Model |
 | :------ | :--------- | :---- |
+| [echo-atlas](echo-atlas/) | **Echo Atlas** — invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol |
 | [rainkeeper](rainkeeper/) | **The Rainkeeper** — a living cutaway garden: carve rivers, bring rain, and grow roots through layered earth. | GPT-6 (Codex) |
 | [stillroom](stillroom/) | **The Stillroom** — a gravitational music box with a rewindable, branching past. | GPT-6 (Codex) |
 | [seventeen](seventeen/) | **GASKET∞** — a realtime ray-marched flythrough of an infinite Apollonian gasket, built in under 17 minutes. | Fable 5 (xhigh) |
