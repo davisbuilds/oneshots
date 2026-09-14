@@ -4,7 +4,7 @@
 carve a river, bring a shower, and give a seed somewhere to grow. There is no
 score, deadline, or winning state. There are a few things buried in the earth.
 
-**Model:** GPT-6 (Codex)
+**Model:** GPT-6 Astra (Codex)
 
 One HTML file. No dependencies, external assets, network requests, or build step.
 
