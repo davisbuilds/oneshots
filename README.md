@@ -35,3 +35,9 @@ open <project>/index.html
 ```
 
 That's it — no install, no server.
+
+The optional `verify.mjs` scripts use `@playwright/test` from this repository's
+`node_modules`. To run them, install the test tooling locally with
+`npm install --no-save --no-package-lock @playwright/test` and
+`npx playwright install chromium`, then run `node <project>/verify.mjs`.
+The HTML artifacts themselves have no dependencies.

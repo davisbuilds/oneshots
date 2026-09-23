@@ -37,10 +37,10 @@ capabilities demo.
 
 ## Verification
 
-`verify.mjs` loads the page in headless Chromium (reusing the Playwright install
-from a sibling project), captures console/shader errors, and screenshots two
+`verify.mjs` loads the page in headless Chromium (using a local Playwright install;
+see the repository README), captures console/shader errors, and screenshots two
 moments a few seconds apart to confirm the renderer and autopilot are alive.
-Last run: zero errors, ~120 fps headless.
+The script reports console errors, shader errors, and the live FPS readout.
 
 ## Bonus round
 

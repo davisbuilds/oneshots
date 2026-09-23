@@ -1,5 +1,5 @@
 import { createRequire } from 'module';
-const require = createRequire('/Users/dg-mac-mini/Dev/davisbuilds-site/package.json');
+const require = createRequire(import.meta.url);
 const { chromium } = require('@playwright/test');
 
 const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader'] });
@@ -8,7 +8,7 @@ const errors = [];
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
 
-await page.goto('file:///Users/dg-mac-mini/Dev/one-shots/lumen/index.html');
+await page.goto(new URL('./index.html', import.meta.url).href);
 await page.waitForTimeout(500);
 const errOverlay = await page.$eval('#err', el => el.style.display === 'block' ? el.textContent : '');
 if (errOverlay) { console.log('SHADER FAIL:\n' + errOverlay); process.exit(1); }

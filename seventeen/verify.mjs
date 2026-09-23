@@ -1,5 +1,5 @@
 import { createRequire } from 'module';
-const require = createRequire('/Users/dg-mac-mini/Dev/davisbuilds-site/package.json');
+const require = createRequire(import.meta.url);
 const { chromium } = require('@playwright/test');
 
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--enable-webgl'] });
@@ -8,7 +8,7 @@ const errors = [];
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
 
-await page.goto('file:///Users/dg-mac-mini/Dev/one-shots/seventeen/index.html');
+await page.goto(new URL('./index.html', import.meta.url).href);
 await page.waitForTimeout(2500);
 await page.screenshot({ path: 'shot1.png' });
 await page.waitForTimeout(2500);
