@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
-const require = createRequire('/Users/dg-mac-mini/Dev/davisbuilds-site/package.json');
+const require = createRequire(import.meta.url);
 const { chromium } = require('@playwright/test');
 const browser = await chromium.launch();
 
@@ -49,7 +49,7 @@ try {
     window.webkitAudioContext = ProbedContext;
   });
 
-  await page.goto('file:///Users/dg-mac-mini/Dev/oneshots/echo-atlas/index.html');
+  await page.goto(new URL('./index.html', import.meta.url).href);
   await page.getByRole('button', { name: 'Sound off' }).click();
 
   const result = await page.evaluate(async () => {
