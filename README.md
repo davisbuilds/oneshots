@@ -12,6 +12,7 @@ Each project's README states the **model** used to create it.
 
 | Project | What it is | Model |
 | :------ | :--------- | :---- |
+| [two-kinds-of-fire](two-kinds-of-fire/) | **Two Kinds of Fire** — a nocturne painted entirely by Python code: a kayak in bioluminescent water, a distant launch. Python + NumPy, not HTML. | Claude Opus 5.5 |
 | [echo-atlas](echo-atlas/) | **Echo Atlas** — invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol |
 | [rainkeeper](rainkeeper/) | **The Rainkeeper** — a living cutaway garden: carve rivers, bring rain, and grow roots through layered earth. | GPT-6 (Codex) |
 | [stillroom](stillroom/) | **The Stillroom** — a gravitational music box with a rewindable, branching past. | GPT-6 (Codex) |
