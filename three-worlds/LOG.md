@@ -18,3 +18,5 @@ Resumable: every render step skips outputs that already exist.
 8. Stills: out/matter_copper (Cycles 128spp, 2400x3000, 25 min; saved copper_sculpture.blend),
    out/trace_ink, out/energy_light (t≈24 s moment), out/triptych.jpg. Film finale uses these stills.
 9. Remaining: copper orbit frames -> film frames 0-213 -> encode -> final inspection.
+10. Copper orbit done (150 frames). Film frames 0-719 complete; encoded out/one_equation_three_worlds.mp4
+    (CRF 17, 58 MB) and _web.mp4 (9 MB). Decoded frames inspected across the whole film. DONE.

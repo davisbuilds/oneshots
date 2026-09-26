@@ -10,8 +10,8 @@ One numerically integrated Lorenz trajectory, interpreted three times:
 | II | **Trace** | brush and carbon ink on handmade paper (procedural painter) | the segment accumulating, in the order it happened |
 | III | **Energy** | a travelling light in a dark, hazy room (spectral splat renderer) | only the present, and a fading memory of the past |
 
-**Film:** [`out/one_equation_three_worlds.mp4`](out/one_equation_three_worlds.mp4) — 30 s, 1920×1080, 24 fps, H.264.
-**Stills (2400×3000):** [`out/matter_copper.png`](out/matter_copper.png) · [`out/trace_ink.png`](out/trace_ink.png) · [`out/energy_light.png`](out/energy_light.png) · **Triptych:** [`out/triptych.jpg`](out/triptych.jpg)
+**Film:** [`out/one_equation_three_worlds.mp4`](out/one_equation_three_worlds.mp4) — 30.0 s, 1920×1080, 24 fps, H.264 CRF 17 (58 MB); lighter copy [`…_web.mp4`](out/one_equation_three_worlds_web.mp4) (9 MB).
+**Stills (2400×3000, PNG + JPEG):** [`out/matter_copper.png`](out/matter_copper.png) · [`out/trace_ink.png`](out/trace_ink.png) · [`out/energy_light.png`](out/energy_light.png) · **Triptych (3508×1717 web / full-res):** [`out/triptych_web.jpg`](out/triptych_web.jpg) · [`out/triptych.jpg`](out/triptych.jpg)
 **Editable Blender scene:** [`out/copper_sculpture.blend`](out/copper_sculpture.blend) · **Dataset:** [`data/`](data/) · **Studies:** [`studies/`](studies/)
 
 Made with Claude Code in a single session.
@@ -142,8 +142,12 @@ python3 src/stills.py triptych
 
 ## Limitations
 
-* The Matter film frames use 24 samples/pixel + OIDN to fit a CPU budget (~55 s/frame); the still uses more.
-  Mild denoiser residue is visible on the plinth top at full resolution.
+* Render costs on 4 CPU cores: Matter film frames 24 samples/pixel + OIDN, 52–110 s each (150 frames);
+  copper still 128 spp, 25 min; ink frames ~1.5 s; light frames 5–11 s. Mild denoiser residue is visible
+  on the plinth top of film frames at full resolution.
+* The basalt plinth reads slate-grey rather than black under the overhead key: its top is where the
+  filament's shadow is drawn, so it was kept lit.
+* The Energy act shows the head travelling only t = 18.5 → 27 (see time remapping); t = 8 → 18.5 appears as afterglow.
 * Ink and light are custom renderers, not physical simulations: bleeding, pooling and granulation are
   image-space models driven by a water layer; the haze is single scattering from point samples.
 * The light world's plinth reflection is physically placed and therefore subtle from this camera height.

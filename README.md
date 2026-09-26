@@ -12,6 +12,7 @@ Each project's README states the **model** used to create it.
 
 | Project | What it is | Model |
 | :------ | :--------- | :---- |
+| [three-worlds](three-worlds/) | **One Equation, Three Worlds** — one Lorenz trajectory rendered as a copper sculpture, an ink painting and a travelling light, with a 30 s film. (Python + Blender, not a single HTML file.) | Claude Code |
 | [echo-atlas](echo-atlas/) | **Echo Atlas** — invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol |
 | [rainkeeper](rainkeeper/) | **The Rainkeeper** — a living cutaway garden: carve rivers, bring rain, and grow roots through layered earth. | GPT-6 (Codex) |
 | [stillroom](stillroom/) | **The Stillroom** — a gravitational music box with a rewindable, branching past. | GPT-6 (Codex) |
