@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One Equation, Three Worlds</title>
+<style>
+  :root { --bg:#0e0d0c; --fg:#e4dccf; --dim:#9a9186; --line:#2a2724; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:17px/1.6 "EB Garamond", Garamond, "Iowan Old Style", Georgia, serif; }
+  main { max-width:1180px; margin:0 auto; padding:56px 16px 80px; }
+  h1 { font-weight:400; letter-spacing:.28em; text-transform:uppercase; font-size:clamp(20px,3.2vw,34px);
+       text-align:center; margin:0 0 6px; }
+  .sub { text-align:center; color:var(--dim); font-style:italic; margin:0 0 40px; }
+  video, img { width:100%; display:block; border-radius:2px; }
+  .trip { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:48px 0 10px; }
+  .trip figure { margin:0; }
+  figcaption { color:var(--dim); font-style:italic; text-align:center; margin-top:8px; font-size:15px; }
+  .eq { text-align:center; font-style:italic; color:var(--fg); margin:44px 0 8px; font-size:19px; }
+  p { max-width:720px; margin:14px auto; color:#cfc6b8; }
+  hr { border:0; border-top:1px solid var(--line); margin:48px auto; max-width:720px; }
+  a { color:#d9b48a; }
+  @media (max-width:700px) { .trip { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>One Equation, Three Worlds</h1>
+  <p class="sub">Matter · Trace · Energy</p>
+  <video src="out/one_equation_three_worlds.mp4" poster="out/triptych_web.jpg" controls playsinline preload="metadata"></video>
+
+  <div class="trip">
+    <figure><img src="out/matter_copper.jpg" alt="Copper filament sculpture of the Lorenz trajectory over a basalt plinth"><figcaption>I · Matter — copper</figcaption></figure>
+    <figure><img src="out/trace_ink.jpg" alt="The Lorenz trajectory brushed in ink on handmade paper"><figcaption>II · Trace — ink</figcaption></figure>
+    <figure><img src="out/energy_light.jpg" alt="A travelling light tracing the Lorenz trajectory in a dark room"><figcaption>III · Energy — light</figcaption></figure>
+  </div>
+
+  <div class="eq">dx/dt = σ(y − x) &nbsp;&nbsp; dy/dt = x(ρ − z) − y &nbsp;&nbsp; dz/dt = xy − βz</div>
+  <p style="text-align:center;color:var(--dim)">σ = 10, ρ = 28, β = 8/3 · from (1, 1, 1) · DOP853, rtol = atol = 10⁻¹² · segment t = 8 → 27</p>
+  <hr>
+  <p>One numerically integrated Lorenz trajectory, and nothing else, becomes three works. As <em>matter</em> it
+  is all of its time at once: 27 metres of copper filament, frozen. As a <em>trace</em> it accumulates in the
+  order it happened, brush stroke by brush stroke. As <em>energy</em> it is only ever the present, a moving light
+  whose past fades behind it.</p>
+  <p>The segment ends at t = 27 because that is roughly where independent high-precision solvers begin to
+  disagree: the horizon of prediction. The film does not loop; the light simply goes out there.</p>
+  <p>Full notes, dataset and source: <a href="README.md">README</a>.</p>
+</main>
+</body>
+</html>

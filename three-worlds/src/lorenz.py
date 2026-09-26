@@ -48,6 +48,10 @@ if __name__ == "__main__":
     alt = solve_ivp(rhs, (0, T_END), X0, method="LSODA", rtol=1e-10, atol=1e-12, dense_output=True)
     dev = np.linalg.norm(alt.sol(t).T - P, axis=1)
     diverge_t = float(t[np.argmax(dev > 1.0)]) if (dev > 1.0).any() else None
+    # how long is the 1e-12 solution trustworthy?  compare with a tighter DOP853 run
+    tight = solve_ivp(rhs, (0, T_END), X0, method="DOP853", rtol=1e-13, atol=1e-13, dense_output=True)
+    dtight = np.linalg.norm(tight.sol(t).T - P, axis=1)
+    accuracy = {f"{thr:g}": float(t[np.argmax(dtight > thr)]) for thr in (1e-6, 1e-3, 1e-1, 1.0)}
     np.savez_compressed(ROOT / "data/lorenz_full.npz", t=t, xyz=P)
     print("steps", sol.t.size, "nfev", sol.nfev, "divergence(>1) vs LSODA at t =", diverge_t)
     if a.select:
@@ -66,6 +70,7 @@ if __name__ == "__main__":
                     sampling="dense-output interpolant sampled at uniform dt", dt=DT,
                     transient_discarded=[0.0, t0], segment=[t0, t1], samples=int(ts.size),
                     lsoda_crosscheck_divergence_time=diverge_t,
+                    dop853_1e13_first_time_deviation_exceeds=accuracy,
                     bounds=dict(min=Ps.min(0).tolist(), max=Ps.max(0).tolist()))
         (ROOT / "data/lorenz_canonical.json").write_text(json.dumps(meta, indent=2))
         print(json.dumps(meta, indent=2))

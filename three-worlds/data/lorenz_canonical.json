@@ -27,6 +27,12 @@
   ],
   "samples": 19001,
   "lsoda_crosscheck_divergence_time": 27.395,
+  "dop853_1e13_first_time_deviation_exceeds": {
+    "1e-06": 20.619,
+    "0.001": 27.446,
+    "0.1": 33.421,
+    "1": 35.737
+  },
   "bounds": {
     "min": [
       -17.24177302086103,
