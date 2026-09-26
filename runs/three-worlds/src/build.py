@@ -14,9 +14,9 @@ OUT = ROOT / "output"
 PY = sys.executable
 
 
-def step(label, args, done=None):
-    if done is not None and done.exists():
-        print(f"[skip] {label}: {done.relative_to(ROOT)} exists", flush=True)
+def step(label, args, done=()):
+    if done and all(p.is_file() and p.stat().st_size > 0 for p in done):
+        print(f"[skip] {label}: all outputs exist and are nonempty", flush=True)
         return
     print(f"[run ] {label}", flush=True)
     subprocess.run([PY, *args], cwd=ROOT, check=True)
@@ -26,11 +26,14 @@ def main():
     OUT.mkdir(exist_ok=True)
     step("canonical trajectory", ["src/lorenz.py", "--select", "8", "27"])
     step("Matter act frames (Cycles)", ["src/render_copper_frames.py"])
-    step("copper still + .blend", ["src/stills.py", "copper", "--samples", "128"], OUT / "matter_copper.png")
-    step("ink still", ["src/stills.py", "ink"], OUT / "trace_ink.png")
-    step("light still", ["src/stills.py", "light"], OUT / "energy_light.png")
-    step("film frames + encodes", ["src/film.py", "--encode"], OUT / "one_equation_three_worlds_web.mp4")
-    step("triptych", ["src/stills.py", "triptych"], OUT / "triptych.jpg")
+    step("copper still + .blend", ["src/stills.py", "copper", "--samples", "128"],
+         (OUT / "matter_copper.png", OUT / "copper_sculpture.blend"))
+    step("ink still", ["src/stills.py", "ink"], (OUT / "trace_ink.png",))
+    step("light still", ["src/stills.py", "light"], (OUT / "energy_light.png",))
+    step("film frames + encodes", ["src/film.py", "--encode"],
+         (OUT / "one_equation_three_worlds.mp4", OUT / "one_equation_three_worlds_web.mp4"))
+    step("triptych", ["src/stills.py", "triptych"],
+         (OUT / "triptych.jpg", OUT / "triptych_web.jpg"))
     assets = [a["file"] for a in tomllib.loads((ROOT / "run.toml").read_text())["assets"]]
     lines = []
     for name in assets:
