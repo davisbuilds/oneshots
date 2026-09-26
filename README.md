@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**Two Kinds of Fire**](runs/two-kinds-of-fire/) | A nocturne painted entirely by Python code: a kayak stirs bioluminescence while a rocket rises over Cape Canaveral. | Claude Opus 5.5 | 1 | [brief](runs/two-kinds-of-fire/brief.md) · [log](runs/two-kinds-of-fire/process/PROGRESS.md) · [snapshots](runs/two-kinds-of-fire/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-two-kinds-of-fire) |
 | [**Echo Atlas**](runs/echo-atlas/) | Invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol | — | — |
 | [**The Stillroom**](runs/stillroom/) | A gravitational music box with a rewindable, branching past. | GPT-6 Astra | — | — |
 | [**The Rainkeeper**](runs/rainkeeper/) | A living cutaway garden: carve rivers, bring rain, and grow roots through layered earth. | GPT-6 Astra | — | — |
