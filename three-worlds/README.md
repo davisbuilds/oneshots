@@ -80,7 +80,7 @@ sets the copper wire's gauge (±18 %), the brush pressure, and — through time 
   nearly 2-D sheets), granulation in the tooth. A vermilion seal whose carving is the trajectory itself.
 
 ### III · Energy
-* A head moves along the trajectory in strict temporal order. The trail is the travelled path; each point
+* A head moves along the trajectory in strict temporal order (see time remapping below). The trail is the travelled path; each point
   fades with the **film time** elapsed since the head passed it (bright 0.05 s flash → 0.55 s amber →
   3.2 s blue-green memory), like a phosphor.
 * Energy-conserving Gaussian splats at ≤ 0.5 px spacing; depth of field from the same lens/f-stop; inverse-square
@@ -97,8 +97,8 @@ sets the copper wire's gauge (±18 %), the brush pressure, and — through time 
 | 2.2–8.9 s | **Matter** — orbit from edge-on to K |
 | 8.9–10.6 s | matched dissolve at K: paper spreads outward from the filament like a wash; the copper leaves a pale guide line |
 | 10.6–17.4 s | **Trace** — the brush paints the trajectory in temporal order over the guide; the seal is pressed |
-| 17.0–18.7 s | matched hand-over at K: the room light goes down, the ink strokes answer in faint blue-green, the head ignites at t = 8 |
-| 18.6–25.4 s | **Energy** — the head travels t = 8 → 27 while the camera drifts 38° around to reveal depth |
+| 17.0–18.7 s | matched hand-over at K: the room light goes down, the ink strokes answer in faint blue-green and become the light's afterglow; the head ignites at t = 18.5 |
+| 18.6–25.4 s | **Energy** — the head travels t = 18.5 → 27 while the camera drifts 38° around to reveal depth |
 | 25.4–26.3 s | the head reaches t = 27 and goes out: the prediction horizon, not a loop |
 | 25.9–30 s | the three worlds together; fade out |
 
@@ -106,9 +106,13 @@ sets the copper wire's gauge (±18 %), the brush pressure, and — through time 
 *Trace:* strokes are painted in order; stroke *i* takes time ∝ (length)^0.8 with an eased hand
 (`0.65x + 0.35·(1−cos πx)/2`), with 0.07 s brush lifts between strokes; 19 time units in 5.3 s
 (`src/ink.py: paint_schedule`).
-*Energy:* trajectory time τ(s) = 8 + 19·G(u), u = (s − 18.6)/6.8, where G is the normalised integral of the speed
-profile `0.30 + sin(πu)^0.7 + 0.25u` — a slow ignition in the spiral eye, brisk through the chaos, easing toward
-t = 27 (`src/light.py: traj_time`). Mean rate 2.8 time units per second.
+*Energy:* the act joins the light mid-performance. Travelling all 19 units in under 7 s would mean ~5 loops per
+second (the head would strobe at 24 fps), so the head is **seen** travelling t = 18.5 → 27 in strict order:
+τ(s) = 18.5 + 8.5·G(u), u = (s − 18.6)/6.8, G the normalised integral of the speed profile
+`0.55 + 0.6·sin(πu)^0.7` (gentle ignition, steady through the chaos, easing toward t = 27) — 0.74 to 1.48 time
+units per second, ≈ 2 loops per second at most. The earlier path t = 8 → 18.5 is present only as afterglow,
+treated as traversed in the ~2 s before the act (compressed 5×) so that it glows blue-green exactly where the
+ink strokes glowed a moment before (`src/light.py: traj_time, film_time_of`).
 
 The trajectory is not periodic and the film never pretends it is: the only joins between worlds are editorial
 dissolves at an identical camera, and the light ends where the computation's trustworthiness ends.

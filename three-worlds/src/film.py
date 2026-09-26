@@ -106,7 +106,7 @@ class Film:
         head = 1 - ramp(sec, T.TRAVEL[1], T.TRAVEL[1] + 0.6)
         head *= ramp(sec, 18.0, 18.7)
         lx = 0.6 * ramp(sec, T.TRAVEL[1] - 0.1, T.TRAVEL[1] + 0.9)
-        return self.LR.frame(sec, cam, head_fade=head, long_exposure=lx)
+        return self.LR.frame(sec, cam, head_fade=head, long_exposure=lx, trail_gain=ramp(sec, 17.9, 18.7))
 
     # -- finale ---------------------------------------------------------------
     def panels(self):

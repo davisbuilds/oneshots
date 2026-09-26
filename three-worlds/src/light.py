@@ -25,9 +25,16 @@ DEEP = np.array([0.05, 0.28, 0.36])
 
 
 # ----------------------------------------------------------------------------- time map
+# The act joins the light mid-performance: the head is seen travelling t = TAU0 -> 27
+# in strict temporal order; the earlier path t = 8 -> TAU0 is present only as afterglow
+# (treated as having been traversed during the ~2 s before the act, compressed).
+TAU0 = 18.5
+T_END = 27.0
+
+
 def _speed_profile(u):
-    # slow ignition in the spiral eye, brisk through the chaos, easing to rest at t=27
-    return 0.30 + np.sin(np.pi * np.clip(u, 0, 1)) ** 0.7 + 0.25 * u
+    # gentle ignition, steady through the chaos, easing to rest at t = 27
+    return 0.55 + 0.6 * np.sin(np.pi * np.clip(u, 0, 1)) ** 0.7
 
 
 _U = np.linspace(0, 1, 4001)
@@ -36,17 +43,21 @@ _G /= _G[-1]
 
 
 def traj_time(sec):
-    """Film seconds -> trajectory time (monotonic).  Before TRAVEL the head waits
-    at t=8; afterwards it rests at t=27."""
+    """Film seconds -> trajectory time (monotonic).  Before TRAVEL the head waits at
+    TAU0; afterwards it rests at t = 27."""
     u = np.clip((np.asarray(sec, float) - T.TRAVEL[0]) / (T.TRAVEL[1] - T.TRAVEL[0]), 0, 1)
-    return 8.0 + 19.0 * np.interp(u, _U, _G)
+    return TAU0 + (T_END - TAU0) * np.interp(u, _U, _G)
 
 
 def film_time_of(ttraj):
-    """Inverse map: when (film seconds) did the head pass trajectory time t."""
-    g = (np.asarray(ttraj) - 8.0) / 19.0
+    """Inverse map: when (film seconds) the head passed trajectory time t.  Points before
+    TAU0 are the afterglow: passed 1.2 s ... ~3.3 s before the act's travel begins."""
+    ttraj = np.asarray(ttraj, float)
+    g = (ttraj - TAU0) / (T_END - TAU0)
     u = np.interp(g, _G, _U)
-    return T.TRAVEL[0] + u * (T.TRAVEL[1] - T.TRAVEL[0])
+    during = T.TRAVEL[0] + u * (T.TRAVEL[1] - T.TRAVEL[0])
+    before = T.TRAVEL[0] - 1.2 - (TAU0 - ttraj) * 0.2
+    return np.where(ttraj >= TAU0, during, before)
 
 
 # ----------------------------------------------------------------------------- splatting
