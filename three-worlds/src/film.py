@@ -110,32 +110,34 @@ class Film:
 
     # -- finale ---------------------------------------------------------------
     def panels(self):
+        """The finished 4:5 stills (same camera K, portrait); the light panel is the
+        long exposure left after the head has gone out, coloured by trajectory time."""
         if self._light_final is None:
-            self._ink_final = INK.draw_seal(self.ip.image(), W * 0.5 + 0.30 * H, H * 0.84, 60,
-                                            np.random.default_rng(21))
-            self._light_final = self.LR.frame(T.TRAVEL[1] + 1.0, self.K, head_fade=0.0, long_exposure=0.0, gradient=0.9)
-            self._copper_final = self.copper(self.f1)
+            import stills
+            self._copper_final = load_rgb(C.OUT / "matter_copper.png")
+            self._ink_final = load_rgb(C.OUT / "trace_ink.png")
+            cam = stills.still_camera(1200, 1500)
+            self._light_final = self.LR.frame(T.TRAVEL[1] + 1.0, cam, head_fade=0.0, long_exposure=0.0,
+                                              gradient=0.9, dof=0.45, core=0.6, exposure=1.3)
         return self._copper_final, self._ink_final, self._light_final
 
     def triptych(self, sec, bg):
-        cw = 760                                   # crop width from each 16:9 world
-        ph = 720; pw = int(round(cw * ph / H))
-        gap = 34
+        ph = 700; pw = 560
+        gap = 30
         x0 = (W - (3 * pw + 2 * gap)) // 2
-        y0 = 96
+        y0 = 84
         out = bg.copy()
         for i, img in enumerate(self.panels()):
             a = ramp(sec, 26.0 + 0.3 * i, 26.7 + 0.3 * i)
             if a <= 0:
                 continue
-            crop = img[:, (W - cw) // 2:(W + cw) // 2]
-            tile = np.asarray(Image.fromarray((crop * 255).astype(np.uint8)).resize((pw, ph), Image.LANCZOS),
+            tile = np.asarray(Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8)).resize((pw, ph), Image.LANCZOS),
                               np.float32) / 255
             x = x0 + i * (pw + gap)
             out[y0:y0 + ph, x:x + pw] = out[y0:y0 + ph, x:x + pw] * (1 - a) + tile * a
         a = window(sec, 27.0, 30.0, 0.7)
         if a > 0:
-            y = y0 + ph + 30
+            y = y0 + ph + 34
             out = over(out, text_layer([
                 ("ONE EQUATION, THREE WORLDS", 34, False, y, 7, None),
                 ("Matter  ·  Trace  ·  Energy", 25, True, y + 52, 1.5, None),

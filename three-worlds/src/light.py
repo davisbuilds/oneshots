@@ -190,7 +190,7 @@ class LightRenderer:
         return rgb
 
     def frame(self, sec, cam, exposure=1.0, long_exposure=0.0, head_fade=1.0, trail_gain=1.0,
-              room=True, gradient=0.0):
+              room=True, gradient=0.0, dof=1.0, core=0.75):
         W, H = cam.W, cam.H
         u = H / 1080.0
         img = np.zeros((H, W, 3), np.float32)
@@ -222,7 +222,7 @@ class LightRenderer:
             rgb = rgb + long_exposure * (0.35 * TEAL + 0.12 * AMBER)[None, :]
         # depth of field + distance falloff
         coc = np.abs(deps - cam.focus) / deps * cam.lens / (cam.fstop or 8.0) / cam.sensor * cam.scale_px() * 0.022 * 1.6
-        sig = 0.75 * u + coc * 0.9
+        sig = core * u + coc * 0.9 * dof
         fall = (cam.focus / deps) ** 2
         w = (dsp / (0.5 * u))[:, None] * fall[:, None] * rgb * (0.5 * u)
         keep = (w.max(1) > 1e-5) & (uvs[:, 0] > -20) & (uvs[:, 0] < W + 20) & (uvs[:, 1] > -20) & (uvs[:, 1] < H + 20)

@@ -37,11 +37,11 @@ def ink_still(out):
     Image.fromarray((np.clip(rgb, 0, 1) * 255 + 0.5).astype(np.uint8)).save(out)
 
 
-def light_still(out, sec=22.6, lx=0.12, exposure=1.6):
+def light_still(out, sec=24.0, lx=0.12, exposure=2.1):
     import light as L
     cam = still_camera()
     R = L.LightRenderer()
-    im = R.frame(sec, cam, head_fade=1.0, long_exposure=lx, exposure=exposure)
+    im = R.frame(sec, cam, head_fade=1.0, long_exposure=lx, exposure=exposure, dof=0.45, core=0.5)
     Image.fromarray((im * 255 + 0.5).astype(np.uint8)).save(out)
 
 
@@ -81,16 +81,16 @@ def triptych(paths, out, scale=1.0):
     spaced("Matter  ·  Trace  ·  Energy", f2, y + int(0.055 * h), int(0.002 * h), (190, 180, 166))
     spaced("dx/dt = σ(y − x),  dy/dt = x(ρ − z) − y,  dz/dt = xy − βz   ·   σ = 10, ρ = 28, β = 8/3   ·   "
            "from (1, 1, 1), t = 8 → 27", f2, y + int(0.095 * h), int(0.001 * h), (150, 142, 132))
-    canvas.save(out)
+    canvas.save(out, quality=93) if str(out).endswith('.jpg') else canvas.save(out)
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("what")
     ap.add_argument("--samples", type=int, default=128)
-    ap.add_argument("--sec", type=float, default=22.6)
+    ap.add_argument("--sec", type=float, default=24.0)
     ap.add_argument("--lx", type=float, default=0.12)
-    ap.add_argument("--exposure", type=float, default=1.6)
+    ap.add_argument("--exposure", type=float, default=2.1)
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
     O = C.OUT
@@ -102,6 +102,6 @@ if __name__ == "__main__":
         copper_still(a.out or O / "matter_copper.png", a.samples)
     elif a.what == "triptych":
         triptych([O / "matter_copper.png", O / "trace_ink.png", O / "energy_light.png"],
-                 O / "triptych.png")
+                 O / "triptych.jpg")
         triptych([O / "matter_copper.png", O / "trace_ink.png", O / "energy_light.png"],
                  O / "triptych_web.jpg", scale=0.45)
