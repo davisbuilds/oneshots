@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('@playwright/test');
@@ -10,9 +12,9 @@ page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message));
 
 await page.goto(new URL('./index.html', import.meta.url).href);
 await page.waitForTimeout(2500);
-await page.screenshot({ path: 'shot1.png' });
+await page.screenshot({ path: fileURLToPath(new URL('./shot1.png', import.meta.url)) });
 await page.waitForTimeout(2500);
-await page.screenshot({ path: 'shot2.png' });
+await page.screenshot({ path: fileURLToPath(new URL('./shot2.png', import.meta.url)) });
 
 const errOverlay = await page.$eval('#err', el => el.style.display === 'block' ? el.textContent : '');
 const stats = await page.$eval('#sFps', el => el.textContent);
@@ -20,3 +22,5 @@ console.log('console errors:', errors.length ? errors.join('\n') : 'none');
 console.log('shader error overlay:', errOverlay || 'none');
 console.log('fps readout:', stats);
 await browser.close();
+assert.equal(errOverlay, '', 'shader compilation must succeed');
+assert.deepEqual(errors, [], 'browser must report no console or page errors');

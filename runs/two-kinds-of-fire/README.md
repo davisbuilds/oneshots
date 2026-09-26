@@ -62,6 +62,10 @@ Floating-point details can differ between machines, so the release PNG may
 not match the session's render byte-for-byte. It is checked against its own
 replay.
 
+`requirements.txt` pins the original session's package versions listed below.
+Assets built with a different dependency environment can also differ slightly;
+release checksums identify a particular build, not every possible reproduction.
+
 ## How it is made
 
 No image model, no downloaded or embedded imagery, no photo filter. NumPy does

@@ -25,3 +25,6 @@ jobs:
 
       - name: Validate manifests, size caps and index
         run: python3 scripts/validate_runs.py
+
+      - name: Check resumable build recovery
+        run: python3 runs/three-worlds/src/test_build.py
