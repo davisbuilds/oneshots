@@ -1,0 +1,61 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "three-worlds"
+title = "One Equation, Three Worlds"
+summary = "One Lorenz trajectory, integrated once, rendered as a copper sculpture, an ink painting and a travelling light, joined by a 30 s film."
+date = 2026-09-26
+kind = "long-horizon"
+medium = ["sculpture", "ink", "light", "film", "python", "blender", "procedural", "video"]
+hero = "preview/hero.webp"
+entry = "src/build.py"
+curator_note = ""
+
+[agent]
+model = "unrecorded"
+model_id = "unrecorded"
+harness = "Claude Code (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 2
+wall_clock_minutes = 189
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+command = "python3 src/build.py"
+verify = "python3 src/verify.py"
+timeout_minutes = 300
+
+[[assets]]
+file = "one_equation_three_worlds.mp4"
+description = "The film: 30 s, 1920 x 1080, 24 fps, H.264 CRF 17 (58 MB)"
+
+[[assets]]
+file = "one_equation_three_worlds_web.mp4"
+description = "Lighter copy of the film for the web, H.264 CRF 21 (9 MB)"
+
+[[assets]]
+file = "matter_copper.png"
+description = "I · Matter — copper sculpture still, Blender Cycles 128 spp, 2400 x 3000 PNG"
+
+[[assets]]
+file = "trace_ink.png"
+description = "II · Trace — ink painting still, 2400 x 3000 PNG"
+
+[[assets]]
+file = "energy_light.png"
+description = "III · Energy — light installation still, 2400 x 3000 PNG"
+
+[[assets]]
+file = "triptych.jpg"
+description = "The three stills composed as a titled triptych, 7800 x 3816 JPEG"
+
+[[assets]]
+file = "copper_sculpture.blend"
+description = "Editable Blender 5.0 scene of the copper sculpture and gallery"
+
+[[assets]]
+file = "lorenz_canonical.csv"
+description = "The canonical trajectory as CSV (t, x, y, z, derivatives, speed); same data as data/lorenz_canonical.npz"

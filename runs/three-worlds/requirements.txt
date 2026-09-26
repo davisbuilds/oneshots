@@ -1,0 +1,8 @@
+# Versions used for the run (Python 3.11; the bpy wheel is Blender 5.0.1 as a module).
+# System packages, not pip: ffmpeg (6.1 used), fonts-ebgaramond (EB Garamond, SIL OFL).
+numpy==2.4.6
+scipy==1.17.1
+numba==0.67.0
+pillow==12.3.0
+matplotlib==3.11.2
+bpy==5.0.1
