@@ -1,0 +1,18 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "stillroom"
+title = "The Stillroom"
+summary = "A gravitational music box with a rewindable, branching past."
+date = 2026-09-10          # date first published here; the run itself is unrecorded
+kind = "single-file"
+medium = ["web", "simulation", "audio"]
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "GPT-6 Astra"
+harness = "Codex"
+
+[run]
+brief = "unrecorded"
+human_turns = "unrecorded"

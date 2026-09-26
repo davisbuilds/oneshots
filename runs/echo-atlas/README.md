@@ -10,7 +10,7 @@ One HTML file. No dependencies, network requests, external assets, or build
 step.
 
 ```bash
-open echo-atlas/index.html
+open runs/echo-atlas/index.html
 ```
 
 Run that from the repository root, or open `index.html` directly in a browser.

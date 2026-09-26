@@ -9,7 +9,7 @@ score, deadline, or winning state. There are a few things buried in the earth.
 One HTML file. No dependencies, external assets, network requests, or build step.
 
 ```bash
-open rainkeeper/index.html
+open runs/rainkeeper/index.html
 ```
 
 Run from the repository root, or open the file directly in a browser.

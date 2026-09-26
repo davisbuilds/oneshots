@@ -8,7 +8,7 @@ the dust. Rewind, change your mind, and let a different future unfold.
 One HTML file. No dependencies, network requests, assets, or build step.
 
 ```bash
-open stillroom/index.html
+open runs/stillroom/index.html
 ```
 
 Run that from the repository root, or open `index.html` directly in a browser.

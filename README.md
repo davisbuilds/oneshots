@@ -1,43 +1,71 @@
 # oneshots
 
-A public collection of **agent oneshot capability demos** — self-contained
-artifacts each built by an AI agent in a single session, with (almost always)
-zero dependencies and zero build step. Every project is one HTML file you can
-`open` directly in a browser. The lone exception is `ai-constellation`, which
-loads D3 and its fonts from a CDN at runtime; the rest depend on nothing.
+A public collection of **agent oneshots**: one brief handed to an AI agent,
+no hand-holding, and whatever comes back. Some are single HTML files built
+in minutes. Others are long-horizon runs where the agent works for hours:
+studying, rendering, inspecting its own output, and redesigning before it
+delivers.
 
-Each project's README states the **model** used to create it.
+Every run keeps its lineage alongside the result: the brief, verbatim; the
+agent's own progress log; snapshots of the work as it developed; and the code
+that reproduces it. Each run also records how many times a human stepped in.
 
-## Projects
+## Runs
 
-| Project | What it is | Model |
-| :------ | :--------- | :---- |
-| [echo-atlas](echo-atlas/) | **Echo Atlas** — invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol |
-| [rainkeeper](rainkeeper/) | **The Rainkeeper** — a living cutaway garden: carve rivers, bring rain, and grow roots through layered earth. | GPT-6 (Codex) |
-| [stillroom](stillroom/) | **The Stillroom** — a gravitational music box with a rewindable, branching past. | GPT-6 (Codex) |
-| [seventeen](seventeen/) | **GASKET∞** — a realtime ray-marched flythrough of an infinite Apollonian gasket, built in under 17 minutes. | Fable 5 (xhigh) |
-| [neon-swarm](neon-swarm/) | A Geometry-Wars-style arcade survival game with procedural audio. | Fable 5 (xhigh) |
-| [lumen](lumen/) | **Lumen** — a physically based, progressive Monte Carlo path tracer. | Fable 5 (xhigh) |
-| [ai-constellation](ai-constellation/) | **The AI Constellation** — an interactive, force-directed map of eight decades of AI history. | Claude Sonnet 5 (high) |
+<!-- runs:start -->
+| Run | What it is | Model | Human turns | Lineage |
+| :-- | :--------- | :---- | :---------- | :------ |
+| [**Echo Atlas**](runs/echo-atlas/) | Invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol | — | — |
+| [**The Stillroom**](runs/stillroom/) | A gravitational music box with a rewindable, branching past. | GPT-6 Astra | — | — |
+| [**The Rainkeeper**](runs/rainkeeper/) | A living cutaway garden: carve rivers, bring rain, and grow roots through layered earth. | GPT-6 Astra | — | — |
+| [**The AI Constellation**](runs/ai-constellation/) | An interactive, force-directed map of eight decades of AI history. | Claude Sonnet 5 (high) | — | — |
+| [**GASKET∞**](runs/seventeen/) | A realtime ray-marched flythrough of an infinite Apollonian gasket, built in under 17 minutes. | Fable 5 (xhigh) | — | — |
+| [**NEON SWARM**](runs/neon-swarm/) | A Geometry-Wars-style arcade survival game with procedural audio. | Fable 5 (xhigh) | — | — |
+| [**Lumen**](runs/lumen/) | A physically based, progressive Monte Carlo path tracer. | Fable 5 (xhigh) | — | — |
+<!-- runs:end -->
 
-## What "oneshot" means here
+The table is generated from each run's `run.toml` by
+`python3 scripts/build_index.py`. "Human turns" counts the messages a person
+sent during the run, including the brief; "—" means it wasn't recorded (the
+earliest runs predate this standard).
 
-Each artifact is a single-session capability test: one self-contained file,
-no dependencies, no build step. The goal is to see how far a model can push a
-complete, runnable, verifiable artifact in one focused pass. Most include a
-headless `verify.mjs` smoke test that screenshots the result and checks for
-console/shader errors.
+## Layout
 
-## Running any of them
-
-```bash
-open <project>/index.html
+```
+runs/<slug>/
+  README.md        what it is, how to run it, the agent's honest account
+  run.toml         manifest: model, harness, date, human turns, build, assets
+  brief.md         the prompt(s), verbatim
+  process/         progress log, numbered snapshots, studies
+  preview/         small committed images (hero, details, stages)
+  src/ or index.html
 ```
 
-That's it — no install, no server.
+Full-size outputs (large images, video, logs of draw operations) are not
+committed. They are built from the committed source by the
+[Run assets](.github/workflows/run-assets.yml) workflow and published as a
+GitHub release named `run-<slug>`. Fetch them with
+`python3 scripts/fetch_assets.py <slug>`.
 
-The optional `verify.mjs` scripts use `@playwright/test` from this repository's
-`node_modules`. To run them, install the test tooling locally with
+The contract for a run, including what an agent should save as it works, is in
+[RUNS.md](RUNS.md). Start a new one from [`templates/run/`](templates/run/).
+
+## Running them
+
+- **Single-file runs:** `open runs/<slug>/index.html`. There is no install and
+  no server. `ai-constellation` loads D3 and its fonts from a CDN; the rest
+  depend on nothing.
+- **Long-horizon runs:** see the run's README. It has a one-command
+  reproduction and the dependencies it was run with.
+
+Several single-file runs include a headless `verify.mjs` smoke test that uses
+`@playwright/test` from this repository's `node_modules`. Install it with
 `npm install --no-save --no-package-lock @playwright/test` and
-`npx playwright install chromium`, then run `node <project>/verify.mjs`.
-The HTML artifacts themselves have no dependencies.
+`npx playwright install chromium`, then run `node runs/<slug>/verify.mjs`.
+
+## Checks
+
+CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails)
+and `scripts/validate_runs.py`. The validator checks manifests, size caps on
+committed files, that release assets stay out of git, and that the index above
+is current.
