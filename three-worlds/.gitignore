@@ -1,0 +1,6 @@
+frames/
+data/lorenz_full.npz
+data/_still_camera.json
+studies/orbit_preview/
+__pycache__/
+*.pyc
