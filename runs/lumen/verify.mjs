@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { chromium } = require('@playwright/test');
@@ -16,7 +18,7 @@ if (errOverlay) { console.log('SHADER FAIL:\n' + errOverlay); process.exit(1); }
 // scene 1: cornell — let it converge (software GL is slow)
 await page.waitForTimeout(14000);
 console.log('cornell spp:', await page.$eval('#stSpp', el => el.textContent));
-await page.screenshot({ path: 'v-cornell.png' });
+await page.screenshot({ path: fileURLToPath(new URL('./v-cornell.png', import.meta.url)) });
 
 // click glass sphere -> material panel + focus pick
 await page.mouse.click(382, 258);
@@ -27,17 +29,18 @@ console.log('material panel:', await page.$eval('#material', el => el.style.disp
 await page.click('.sc[data-s="1"]');
 await page.waitForTimeout(28000);
 console.log('dispersion spp:', await page.$eval('#stSpp', el => el.textContent));
-await page.screenshot({ path: 'v-dispersion.png' });
+await page.screenshot({ path: fileURLToPath(new URL('./v-dispersion.png', import.meta.url)) });
 
 // scene 3: studio
 await page.click('.sc[data-s="2"]');
 await page.waitForTimeout(12000);
-await page.screenshot({ path: 'v-studio.png' });
+await page.screenshot({ path: fileURLToPath(new URL('./v-studio.png', import.meta.url)) });
 
 // scene 4: noir
 await page.click('.sc[data-s="3"]');
 await page.waitForTimeout(12000);
-await page.screenshot({ path: 'v-noir.png' });
+await page.screenshot({ path: fileURLToPath(new URL('./v-noir.png', import.meta.url)) });
 
 console.log('console errors:', errors.length ? errors.join('\n') : 'none');
 await browser.close();
+assert.deepEqual(errors, [], 'browser must report no console or page errors');

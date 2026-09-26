@@ -1,6 +1,25 @@
+# Local OS files and development environments
 .DS_Store
 node_modules/
-output/playwright/
-runs/*/output/
-work/
+.venv/
+venv/
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local configuration (examples may be committed)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Generated media, browser evidence, and preserved scratch/recovery work
+/output/
+/runs/*/output/
+/work/
+/playwright-report/
+/test-results/

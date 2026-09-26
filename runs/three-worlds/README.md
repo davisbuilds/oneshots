@@ -11,7 +11,7 @@ trustworthy.
 
 | | |
 | :--- | :--- |
-| **Model** | unrecorded (Claude Code, cloud session) |
+| **Model** | Claude Opus 5.5 (Claude Code, cloud session) |
 | **Brief** | [`brief.md`](brief.md) — one prompt for the artwork; a second message later changed only the repository layout |
 | **Wall clock** | about 3 h 10 min (13:01–16:10 UTC), including all iteration |
 | **Full-size outputs** | [release `run-three-worlds`](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds): the film (master and web copy), three 2400 × 3000 stills, the triptych, the Blender scene, the trajectory CSV |

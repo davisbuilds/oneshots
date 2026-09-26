@@ -12,7 +12,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: run-assets-${{ inputs.run }}
@@ -20,6 +20,8 @@ concurrency:
 
 jobs:
   build:
+    permissions:
+      contents: write # This manually dispatched job publishes the run's release.
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:

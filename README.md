@@ -15,7 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
-| [**One Equation, Three Worlds**](runs/three-worlds/) | One Lorenz trajectory, integrated once, rendered as a copper sculpture, an ink painting and a travelling light, joined by a 30 s film. | unrecorded | 2 | [brief](runs/three-worlds/brief.md) · [log](runs/three-worlds/process/PROGRESS.md) · [snapshots](runs/three-worlds/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds) |
+| [**One Equation, Three Worlds**](runs/three-worlds/) | One Lorenz trajectory, integrated once, rendered as a copper sculpture, an ink painting and a travelling light, joined by a 30 s film. | Claude Opus 5.5 | 2 | [brief](runs/three-worlds/brief.md) · [log](runs/three-worlds/process/PROGRESS.md) · [snapshots](runs/three-worlds/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds) |
 | [**Two Kinds of Fire**](runs/two-kinds-of-fire/) | A nocturne painted entirely by Python code: a kayak stirs bioluminescence while a rocket rises over Cape Canaveral. | Claude Opus 5.5 | 1 | [brief](runs/two-kinds-of-fire/brief.md) · [log](runs/two-kinds-of-fire/process/PROGRESS.md) · [snapshots](runs/two-kinds-of-fire/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-two-kinds-of-fire) |
 | [**Echo Atlas**](runs/echo-atlas/) | Invisible rooms discovered and redrawn through reflected sound. | GPT-5.6 Sol | — | — |
 | [**The Stillroom**](runs/stillroom/) | A gravitational music box with a rewindable, branching past. | GPT-6 Astra | — | — |
@@ -44,9 +44,10 @@ runs/<slug>/
 ```
 
 Full-size outputs (large images, video, logs of draw operations) are not
-committed. They are built from the committed source by the
-[Run assets](.github/workflows/run-assets.yml) workflow and published as a
-GitHub release named `run-<slug>`. Fetch them with
+committed. They are published as a GitHub release named `run-<slug>`, usually
+built from source by the [Run assets](.github/workflows/run-assets.yml) workflow.
+Runs whose builds exceed the workflow's limits publish their original outputs
+manually, with provenance and checksums; see the run's README. Fetch assets with
 `python3 scripts/fetch_assets.py <slug>`.
 
 The contract for a run, including what an agent should save as it works, is in
@@ -61,13 +62,31 @@ The contract for a run, including what an agent should save as it works, is in
   reproduction and the dependencies it was run with.
 
 Several single-file runs include a headless `verify.mjs` smoke test that uses
-`@playwright/test` from this repository's `node_modules`. Install it with
-`npm install --no-save --no-package-lock @playwright/test` and
-`npx playwright install chromium`, then run `node runs/<slug>/verify.mjs`.
+`@playwright/test` from this repository's `node_modules`. With Node 22+ and npm,
+run `npm ci` and `npx playwright install chromium`, then
+`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all four existing
+verifiers. The locked tooling is optional; the HTML runs still open without it.
+Screenshots from the verifiers stay in their run directories and are ignored.
+
+Collection scripts need only Python 3.11+; they have no third-party dependencies.
+The Python renderers keep separate requirements and environments, documented in
+their READMEs. There is no root Python package or shared renderer lockfile.
 
 ## Checks
 
-CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails)
-and `scripts/validate_runs.py`. The validator checks manifests, size caps on
+CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
+`scripts/validate_runs.py`, and the fast Three Worlds build-recovery tests.
+The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above
-is current.
+is current. Workflow changes also run a pinned, offline zizmor security audit.
+Actions and the optional browser dependency receive weekly Dependabot updates.
+
+```bash
+python3 scripts/build_index.py        # after changing run metadata
+npm run check                        # manifests and publication hygiene
+npm test                             # fast build-recovery regression tests
+```
+
+Publication hygiene reads staged/tracked Git blobs; stage intended edits before
+the final pre-commit check. Agent guidance is in [AGENTS.md](AGENTS.md), also
+available through `CLAUDE.md`.

@@ -111,5 +111,9 @@ Paste this at the end of a long-horizon brief so the run arrives in shape:
 
 1. `python3 scripts/build_index.py`
 2. `python3 scripts/validate_runs.py` and `python3 scripts/check_publication_hygiene.py`
-3. After merge, if the run declares assets, run the **Run assets** workflow for
-   its slug.
+3. For declared assets, use **Run assets** after merge if the build fits its
+   runner and limits. Otherwise follow the run's documented manual-upload path:
+   publish all declared files plus `SHA256SUMS` to `run-<slug>`.
+4. Download published assets with `python3 scripts/fetch_assets.py <slug>` and
+   verify their checksums before removing temporary asset storage. Preserve a
+   verified recovery copy of any archive branch's additional files/history.

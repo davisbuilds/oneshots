@@ -1,0 +1,17 @@
+{
+  "name": "oneshots-verification",
+  "private": true,
+  "description": "Optional browser verification tooling for independent agent runs",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "npm@11.6.2",
+  "scripts": {
+    "check": "python3 scripts/validate_runs.py && python3 scripts/check_publication_hygiene.py",
+    "test": "python3 runs/three-worlds/src/test_build.py",
+    "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}
