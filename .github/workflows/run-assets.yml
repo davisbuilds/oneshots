@@ -1,0 +1,96 @@
+name: Run assets
+
+# Rebuilds a run's full-size outputs from the committed source and publishes
+# them, with SHA256SUMS, to the release `run-<slug>`. Manual trigger only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run:
+        description: "Run slug (directory name under runs/)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: run-assets-${{ inputs.run }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      RUN: ${{ inputs.run }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Read manifest
+        id: manifest
+        run: |
+          python3 - <<'PY'
+          import os, re, sys, tomllib
+          slug = os.environ["RUN"]
+          if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug) or not os.path.isfile(f"runs/{slug}/run.toml"):
+              sys.exit(f"unknown run: {slug!r}")
+          m = tomllib.load(open(f"runs/{slug}/run.toml", "rb"))
+          b = m.get("build", {})
+          files = [a["file"] for a in m.get("assets", [])]
+          if not files or not b.get("command"):
+              sys.exit("this run declares no build command or assets")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"requirements={b.get('requirements', '')}\n")
+              out.write(f"timeout={int(b.get('timeout_minutes', 60))}\n")
+              out.write(f"title={m['title']}\n")
+          with open("build.sh", "w") as f:
+              f.write(b["command"] + "\n")
+          with open("verify.sh", "w") as f:
+              f.write(b.get("verify", "true") + "\n")
+          with open("assets.txt", "w") as f:
+              f.write("\n".join(files) + "\n")
+          with open("notes.md", "w") as f:
+              f.write(f"{m['summary']}\n\nBuilt by the Run assets workflow from commit {os.environ['GITHUB_SHA']}. "
+                      f"See [runs/{slug}](https://github.com/{os.environ['GITHUB_REPOSITORY']}/tree/main/runs/{slug}).\n")
+          PY
+
+      - name: Install requirements
+        env:
+          REQ: ${{ steps.manifest.outputs.requirements }}
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          if [ -n "$REQ" ]; then
+            "$RUNNER_TEMP/venv/bin/pip" install -r "runs/$RUN/$REQ"
+          fi
+
+      - name: Build
+        timeout-minutes: ${{ fromJSON(steps.manifest.outputs.timeout) }}
+        working-directory: runs/${{ inputs.run }}
+        run: bash "$GITHUB_WORKSPACE/build.sh"
+
+      - name: Verify
+        working-directory: runs/${{ inputs.run }}
+        run: bash "$GITHUB_WORKSPACE/verify.sh"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: ${{ steps.manifest.outputs.title }}
+        run: |
+          cd "runs/$RUN/output"
+          mapfile -t FILES < "$GITHUB_WORKSPACE/assets.txt"
+          sha256sum "${FILES[@]}" > SHA256SUMS
+          cat SHA256SUMS
+          TAG="run-$RUN"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${FILES[@]}" SHA256SUMS --clobber
+            gh release edit "$TAG" --notes-file "$GITHUB_WORKSPACE/notes.md"
+          else
+            gh release create "$TAG" "${FILES[@]}" SHA256SUMS --target "$GITHUB_SHA" \
+              --title "$TITLE" --notes-file "$GITHUB_WORKSPACE/notes.md"
+          fi

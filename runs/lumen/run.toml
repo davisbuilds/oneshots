@@ -1,0 +1,22 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "lumen"
+title = "Lumen"
+summary = "A physically based, progressive Monte Carlo path tracer."
+date = 2026-06-15          # date first published here; the run itself is unrecorded
+kind = "single-file"
+medium = ["web", "webgl", "rendering"]
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Fable 5"
+harness = "unrecorded"
+reasoning = "xhigh"
+
+[run]
+brief = "unrecorded"
+human_turns = "unrecorded"
+
+[build]
+verify = "node verify.mjs"

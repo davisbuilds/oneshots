@@ -1,0 +1,41 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "two-kinds-of-fire"
+title = "Two Kinds of Fire"
+summary = "A nocturne painted entirely by Python code: a kayak stirs bioluminescence while a rocket rises over Cape Canaveral."
+date = 2026-09-25
+kind = "long-horizon"
+medium = ["painting", "python", "procedural", "video"]
+hero = "preview/hero.webp"
+entry = "src/paint.py"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 1
+wall_clock_minutes = 85
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+command = "python3 src/paint.py"
+verify = "python3 src/replay.py output/stroke_log.jsonl.gz --out output/replay.png --check output/two_kinds_of_fire.png"
+timeout_minutes = 50
+
+[[assets]]
+file = "two_kinds_of_fire.png"
+description = "Final painting, 3000 x 2000 PNG"
+
+[[assets]]
+file = "two_kinds_of_fire_making_of.mp4"
+description = "27 s making-of film captured from the live canvas, 1920 x 1280 H.264"
+
+[[assets]]
+file = "stroke_log.jsonl.gz"
+description = "Every draw operation in order (4,511 strokes); replay with src/replay.py"

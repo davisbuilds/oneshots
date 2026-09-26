@@ -1,0 +1,32 @@
+# Run manifest — field reference in RUNS.md. Copy this directory to runs/<slug>/.
+schema = 1
+slug = "your-slug"
+title = "Title"
+summary = "One sentence for the index."
+date = 2026-01-01
+kind = "long-horizon"
+medium = ["tag"]
+hero = "preview/hero.webp"
+entry = "src/main.py"
+curator_note = ""
+
+[agent]
+model = "Model display name"
+model_id = "unrecorded"
+harness = "unrecorded"
+
+[run]
+brief = "brief.md"
+human_turns = 1
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+# Delete [build] and [[assets]] for a single-file run.
+[build]
+requirements = "requirements.txt"
+command = "python3 src/main.py"
+timeout_minutes = 30
+
+[[assets]]
+file = "final.png"
+description = "What this file is"

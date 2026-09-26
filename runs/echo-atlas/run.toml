@@ -1,0 +1,21 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "echo-atlas"
+title = "Echo Atlas"
+summary = "Invisible rooms discovered and redrawn through reflected sound."
+date = 2026-09-14          # date first published here; the run itself is unrecorded
+kind = "single-file"
+medium = ["web", "audio", "interactive"]
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "GPT-5.6 Sol"
+harness = "unrecorded"
+
+[run]
+brief = "unrecorded"
+human_turns = "unrecorded"
+
+[build]
+verify = "node verify.mjs"

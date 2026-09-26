@@ -1,0 +1,23 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "seventeen"
+title = "GASKET∞"
+summary = "A realtime ray-marched flythrough of an infinite Apollonian gasket, built in under 17 minutes."
+date = 2026-06-15          # date first published here; the run itself is unrecorded
+kind = "single-file"
+medium = ["web", "webgl", "audio"]
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Fable 5"
+harness = "unrecorded"
+reasoning = "xhigh"
+
+[run]
+brief = "unrecorded"
+human_turns = "unrecorded"
+wall_clock_minutes = 17
+
+[build]
+verify = "node verify.mjs"
