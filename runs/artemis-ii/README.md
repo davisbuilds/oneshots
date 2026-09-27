@@ -298,8 +298,8 @@ the real event.
 - **The progress log's times are reconstructed.** They come from the session
   transcript and commit times; during the run they were rough session-relative
   guesses.
-- **The model identifier is not recorded in the manifest.** `run.toml` keeps
-  `"unrecorded"` rather than a guess.
+- **The original run did not record the exact model identifier.** The owner
+  subsequently confirmed Claude Opus 5.5; `run.toml` records that attribution.
 
 ## Sources
 
