@@ -1,0 +1,6 @@
+# Python 3.11 (the bpy wheel requires it). Versions are the ones the run used.
+# Also needed, not from pip: ffmpeg (6.1 was used) on PATH.
+bpy==5.0.1
+numpy==1.26.4
+scipy==1.17.1
+pillow==12.3.0
