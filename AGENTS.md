@@ -24,6 +24,7 @@ python3 scripts/build_index.py
 python3 scripts/validate_runs.py
 python3 scripts/check_publication_hygiene.py
 python3 runs/three-worlds/src/test_build.py
+python3 runs/artemis-ii/src/test_build_all.py
 ```
 
 Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser

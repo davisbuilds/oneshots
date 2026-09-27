@@ -76,7 +76,7 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 ## Checks
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
-`scripts/validate_runs.py`, and the fast Three Worlds build-recovery tests.
+`scripts/validate_runs.py`, and the fast renderer build-recovery tests.
 The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above
 is current. Workflow changes also run a pinned, offline zizmor security audit.

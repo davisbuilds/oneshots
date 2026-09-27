@@ -67,7 +67,9 @@ Each step is skipped when all of its outputs already exist and are non-empty.
 An interrupted build resumes where it stopped, including mid-sequence
 (zero-byte frame placeholders are cleared first). The two Cycles renders
 dominate the runtime: about 13 hours on 4 CPU cores. `--threads N` limits
-Cycles threads, and `--skip-animatic` skips the review artifact.
+Cycles threads, and `--skip-animatic` skips the review artifact and omits it
+from the partial build's `SHA256SUMS`. A complete release and `verify.py` still
+require all nine assets, including the animatic.
 
 Individual steps run on their own too, for example:
 `python src/render.py -- --blend output/artemis_ii.blend --scene SC_Pad --out output/frames_pad --shots S17`.

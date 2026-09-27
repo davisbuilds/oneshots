@@ -124,8 +124,11 @@ def main():
     step("stills", [o(n) for n in STILLS],
          lambda: run([PY, src("stills.py"), "--", "--blend", BLEND, "--out", OUT, "--tracks", o("label_tracks.json")]))
 
-    manifest = tomllib.load(open(os.path.join(RUN, "run.toml"), "rb"))
+    with open(os.path.join(RUN, "run.toml"), "rb") as manifest_file:
+        manifest = tomllib.load(manifest_file)
     files = [x["file"] for x in manifest.get("assets", [])]
+    if a.skip_animatic:
+        files = [f for f in files if f != ANIMATIC]
     missing = [f for f in files if not ready([o(f)])]
     if missing:
         sys.exit(f"declared assets missing from output/: {missing}")

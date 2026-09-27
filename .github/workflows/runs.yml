@@ -27,4 +27,6 @@ jobs:
         run: python3 scripts/validate_runs.py
 
       - name: Check resumable build recovery
-        run: python3 runs/three-worlds/src/test_build.py
+        run: |
+          python3 runs/three-worlds/src/test_build.py
+          python3 runs/artemis-ii/src/test_build_all.py
