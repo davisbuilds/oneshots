@@ -54,6 +54,18 @@ manually, with provenance and checksums; see the run's README. Fetch assets with
 The contract for a run, including what an agent should save as it works, is in
 [RUNS.md](RUNS.md). Start a new one from [`templates/run/`](templates/run/).
 
+## Contributing
+
+Focused fixes to a run, its reproduction steps, accessibility, or collection
+tooling are welcome. Discuss a new long-horizon run, new shared dependency, or
+change to the run/release contract before substantial work. A run's brief and
+process record are historical evidence; correct an error transparently rather
+than rewriting the agent's account. Follow [RUNS.md](RUNS.md) for the required
+manifest, assets, and checks, and describe what the contribution changes and
+what was verified. Agent-assisted submissions are welcome; the submitter should
+understand the result and its limitations. A prompting diary or human rewrite
+is not required.
+
 ## Running them
 
 - **Single-file runs:** `open runs/<slug>/index.html`. There is no install and
