@@ -8,7 +8,7 @@
   "packageManager": "npm@11.6.2",
   "scripts": {
     "check": "python3 scripts/validate_runs.py && python3 scripts/check_publication_hygiene.py",
-    "test": "python3 runs/three-worlds/src/test_build.py",
+    "test": "python3 runs/three-worlds/src/test_build.py && python3 runs/artemis-ii/src/test_build_all.py",
     "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs"
   },
   "devDependencies": {

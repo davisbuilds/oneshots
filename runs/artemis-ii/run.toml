@@ -1,0 +1,65 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "artemis-ii"
+title = "ARTEMIS II — Built for the Journey"
+summary = "An 89-second Blender film: the Artemis II SLS Block 1 and Orion resolve from their components into the full stack, then launch from Pad 39B."
+date = 2026-09-26
+kind = "long-horizon"
+medium = ["film", "blender", "python", "procedural", "video", "sound"]
+hero = "preview/hero.webp"
+entry = "src/build_all.py"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 3
+wall_clock_minutes = 992
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+command = "python3 src/build_all.py"
+verify = "python3 src/verify.py"
+timeout_minutes = 1200
+
+[[assets]]
+file = "artemis_ii_built_for_the_journey_1080p.mp4"
+description = "The film: 89.0 s, 1920 x 1080, 24 fps, H.264 CRF 18 + AAC stereo (64 MB)"
+
+[[assets]]
+file = "artemis_ii_built_for_the_journey_web.mp4"
+description = "Lighter copy of the film, H.264 two-pass 2.35 Mb/s (28 MB)"
+
+[[assets]]
+file = "01_engine_detail.png"
+description = "Still: RS-25 powerhead and tube-wall nozzle, Cycles 40 spp, 3840 x 2160 PNG"
+
+[[assets]]
+file = "02_exploded_assembly.png"
+description = "Still: labeled exploded view of the full vehicle, 3840 x 2160 PNG"
+
+[[assets]]
+file = "03_complete_vehicle.png"
+description = "Still: the complete stack in the studio, 3840 x 2160 PNG"
+
+[[assets]]
+file = "04_launch.png"
+description = "Still: rising past the tower at T+6.5 s, 3840 x 2160 PNG"
+
+[[assets]]
+file = "artemis_ii.blend"
+description = "Editable Blender 5.0 project: both scenes, named assembly collections, cameras, materials, animation"
+
+[[assets]]
+file = "artemis_ii_soundtrack.wav"
+description = "The original procedural soundtrack, 48 kHz stereo WAV"
+
+[[assets]]
+file = "artemis_ii_animatic_540p.mp4"
+description = "Workbench animatic made for review before final rendering (earlier choreography), 960 x 540"
