@@ -12,7 +12,7 @@ is original and procedural.
 
 | | |
 | :--- | :--- |
-| **Model** | Claude, exact model unrecorded (Claude Code, cloud session) |
+| **Model** | Claude Opus 5.5 (Claude Code, cloud session) |
 | **Brief** | [`brief.md`](brief.md). One prompt; the second message was a permission approval mid-run, and the third changed only the repository layout |
 | **Wall clock** | about 16 h 30 min (19:17 UTC 2026-09-26 to 11:49 the next day), including about 13 h of rendering and the re-renders after review |
 | **Full-size outputs** | [release `run-artemis-ii`](https://github.com/davisbuilds/oneshots/releases/tag/run-artemis-ii): the film (master and web copy), four 3840 × 2160 stills, the `.blend`, the soundtrack, the review animatic |

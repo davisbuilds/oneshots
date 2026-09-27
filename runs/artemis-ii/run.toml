@@ -11,8 +11,8 @@ entry = "src/build_all.py"
 curator_note = ""
 
 [agent]
-model = "unrecorded"
-model_id = "unrecorded"
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
 harness = "Claude Code (cloud session)"
 
 [run]
