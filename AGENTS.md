@@ -73,7 +73,8 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
   red/green testing, with a red step that fails for the behavior being fixed.
   Smaller changes need the relevant checks, not a mandatory spec/plan.
 - Update the owning docs when a procedure or boundary changes. Clarify material
-  ambiguity; keep commits coherent and preserve unrelated work.
+  ambiguity; reconcile an affected run's lineage or manifest with the result;
+  keep commits coherent and preserve unrelated work.
 - Intended history policy: PRs into `main`, normally merged with a merge commit;
   rebase is appropriate for focused commits. Request Codex review for PRs, resolve
   review threads, and require green applicable checks before an authorized merge.
