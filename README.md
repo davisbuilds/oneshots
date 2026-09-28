@@ -103,3 +103,7 @@ npm test                             # fast build-recovery regression tests
 Publication hygiene reads staged/tracked Git blobs; stage intended edits before
 the final pre-commit check. Agent guidance is in [AGENTS.md](AGENTS.md), also
 available through `CLAUDE.md`.
+
+## License
+
+[MIT](LICENSE). Third-party material retains its own notices and license terms.
