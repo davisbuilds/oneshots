@@ -42,6 +42,20 @@ class Ephemeris(unittest.TestCase):
                 self.assertLessEqual(rms, nominal)
                 self.assertLessEqual(worst, 2 * nominal)
 
+    def test_moon_against_horizons(self):
+        el, eb = [], []
+        for r in rows("horizons_moon.csv"):
+            lon, lat = eph.moon_lon_lat(float(r["jd_tdb"]))
+            el.append(eph.wrap180(lon - float(r["lon_deg"])) * 3600)
+            eb.append((lat - float(r["lat_deg"])) * 3600)
+        rms = lambda e: math.sqrt(sum(x * x for x in e) / len(e))
+        self.assertGreater(len(el), 1500)
+        # 39 principal terms: arcseconds in longitude, about an arcminute in latitude
+        # (latitude is referred to the ecliptic of date, not rotated to J2000).
+        self.assertLess(rms(el), 15)
+        self.assertLess(max(map(abs, el)), 60)
+        self.assertLess(rms(eb), 60)
+
     def test_periods(self):
         # Sidereal periods implied by the mean-longitude rates, against the
         # familiar values (days) to the precision they are usually quoted.

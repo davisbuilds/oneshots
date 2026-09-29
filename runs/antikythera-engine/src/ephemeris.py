@@ -110,3 +110,80 @@ def sidereal_period_days(body: str) -> float:
 
 def wrap180(deg: float) -> float:
     return (deg + 180.0) % 360.0 - 180.0
+
+
+# ------------------------------------------------------------------ the Moon
+# Geocentric longitude and latitude from the principal terms of the ELP-2000/82
+# series as tabulated by J. Meeus, Astronomical Algorithms (2nd ed., 1998),
+# chapter 47, tables 47.A and 47.B, truncated to terms of 0.001 degree and
+# above. Referred to the mean equinox of date, then rotated to the J2000
+# ecliptic by subtracting general precession in longitude (small-angle; good
+# to a few arcseconds over the centuries tested). Checked against Horizons in
+# test_ephemeris.py. Units of the coefficients: 1e-6 degree.
+
+MOON_LON = (  # D, M, M', F, sin coefficient
+    (0, 0, 1, 0, 6288774), (2, 0, -1, 0, 1274027), (2, 0, 0, 0, 658314),
+    (0, 0, 2, 0, 213618), (0, 1, 0, 0, -185116), (0, 0, 0, 2, -114332),
+    (2, 0, -2, 0, 58793), (2, -1, -1, 0, 57066), (2, 0, 1, 0, 53322),
+    (2, -1, 0, 0, 45758), (0, 1, -1, 0, -40923), (1, 0, 0, 0, -34720),
+    (0, 1, 1, 0, -30383), (2, 0, 0, -2, 15327), (0, 0, 1, 2, -12528),
+    (0, 0, 1, -2, 10980), (4, 0, -1, 0, 10675), (0, 0, 3, 0, 10034),
+    (4, 0, -2, 0, 8548), (2, 1, -1, 0, -7888), (2, 1, 0, 0, -6766),
+    (1, 0, -1, 0, -5163), (1, 1, 0, 0, 4987), (2, -1, 1, 0, 4036),
+    (2, 0, 2, 0, 3994), (4, 0, 0, 0, 3861), (2, 0, -3, 0, 3665),
+    (0, 1, -2, 0, -2689), (2, 0, -1, 2, -2602), (2, -1, -2, 0, 2390),
+    (1, 0, 1, 0, -2348), (2, -2, 0, 0, 2236), (0, 1, 2, 0, -2120),
+    (0, 2, 0, 0, -2069), (2, -2, -1, 0, 2048), (2, 0, 1, -2, -1773),
+    (2, 0, 0, 2, -1595), (4, -1, -1, 0, 1215), (0, 0, 2, 2, -1110),
+)
+
+MOON_LAT = (  # D, M, M', F, sin coefficient
+    (0, 0, 0, 1, 5128122), (0, 0, 1, 1, 280602), (0, 0, 1, -1, 277693),
+    (2, 0, 0, -1, 173237), (2, 0, -1, 1, 55413), (2, 0, -1, -1, 46271),
+    (2, 0, 0, 1, 32573), (0, 0, 2, 1, 17198), (2, 0, 1, -1, 9266),
+    (0, 0, 2, -1, 8822), (2, -1, 0, -1, 8216), (2, 0, -2, -1, 4324),
+    (2, 0, 1, 1, 4200), (2, 1, 0, -1, -3359), (2, -1, -1, 1, 2463),
+    (2, -1, 0, 1, 2211), (2, -1, -1, -1, 2065), (0, 1, -1, -1, -1870),
+    (4, 0, -1, -1, 1828), (0, 1, 0, 1, -1794), (0, 0, 0, 3, -1749),
+    (0, 1, -1, 1, -1565), (1, 0, 0, 1, -1491), (0, 1, 1, 1, -1475),
+    (0, 1, 1, -1, -1410), (0, 1, 0, -1, -1344), (1, 0, 0, -1, -1335),
+    (0, 0, 3, 1, 1107),
+)
+
+PRECESSION_DEG_PER_CY = 5028.796195 / 3600.0   # IAU 2006 general precession in longitude
+
+
+def moon_mean_longitude_j2000(jd: float) -> float:
+    """Mean longitude of the Moon (degrees, unwrapped), fixed J2000 frame, no T^2 terms.
+
+    This is what a uniformly geared Moon shows: Meeus's constant and linear rate,
+    less precession. The T^2 and higher terms of the true mean longitude (the
+    tidal slowing of the Moon) are exactly what gears cannot represent.
+    """
+    T = centuries(jd)
+    return 218.3164477 + (481267.88123421 - PRECESSION_DEG_PER_CY) * T
+
+
+def moon_lon_lat(jd: float) -> tuple[float, float]:
+    """True geocentric ecliptic longitude and latitude of the Moon, J2000 frame, degrees."""
+    T = centuries(jd)
+    Lp = 218.3164477 + 481267.88123421 * T - 0.0015786 * T**2 + T**3 / 538841 - T**4 / 65194000
+    D = 297.8501921 + 445267.1114034 * T - 0.0018819 * T**2 + T**3 / 545868 - T**4 / 113065000
+    M = 357.5291092 + 35999.0502909 * T - 0.0001536 * T**2 + T**3 / 24490000
+    Mp = 134.9633964 + 477198.8675055 * T + 0.0087414 * T**2 + T**3 / 69699 - T**4 / 14712000
+    F = 93.2720950 + 483202.0175233 * T - 0.0036539 * T**2 - T**3 / 3526000 + T**4 / 863310000
+    A1 = 119.75 + 131.849 * T
+    A2 = 53.09 + 479264.290 * T
+    A3 = 313.45 + 481266.484 * T
+    E = 1.0 - 0.002516 * T - 0.0000074 * T**2
+    r = math.radians
+    sl = sb = 0.0
+    for d, m, mp, f, c in MOON_LON:
+        sl += c * E ** abs(m) * math.sin(r(d * D + m * M + mp * Mp + f * F))
+    for d, m, mp, f, c in MOON_LAT:
+        sb += c * E ** abs(m) * math.sin(r(d * D + m * M + mp * Mp + f * F))
+    sl += 3958 * math.sin(r(A1)) + 1962 * math.sin(r(Lp - F)) + 318 * math.sin(r(A2))
+    sb += (-2235 * math.sin(r(Lp)) + 382 * math.sin(r(A3)) + 175 * math.sin(r(A1 - F))
+           + 175 * math.sin(r(A1 + F)) + 127 * math.sin(r(Lp - Mp)) - 115 * math.sin(r(Lp + Mp)))
+    lon = Lp + sl / 1e6 - PRECESSION_DEG_PER_CY * T
+    return lon % 360.0, sb / 1e6

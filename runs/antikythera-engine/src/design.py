@@ -243,6 +243,11 @@ def search_train(body: str, n: int, col_r: float, tube_r: float):
 FACE = 3.0              # wheel thickness (mm), 3 mm sheet
 LEVEL_PITCH = 4.2       # vertical spacing of mesh levels
 BASE_TOP = 6.0          # top face of the base plate
+CRANK_ROOM = 34.0       # below the first level: the crank's bevel pair
+# The crank: a horizontal shaft running out over the plinth edge, driving L
+# through a pair of 1:1 mitre bevels, so one turn of the handle is one turn of
+# L: one sidereal year.
+CRANK = {"bevel_teeth": 20, "m": 1.0, "handle_x": 440.0}
 ARM_GAP = 11.0          # vertical spacing of the arms above the top plate
 
 # Arm lengths: the orrery's radii, compressed (mm). Angles are what the
@@ -306,7 +311,7 @@ def build() -> dict:
             "teeth": teeth,
         })
     n_levels = level
-    z_of = lambda lv: BASE_TOP + 2.0 + lv * LEVEL_PITCH
+    z_of = lambda lv: BASE_TOP + CRANK_ROOM + lv * LEVEL_PITCH
     top_plate = z_of(n_levels - 1) + FACE + 3.0
     # Arms: outermost tube (Neptune) lowest.
     arm_z = {}
@@ -346,6 +351,8 @@ def build() -> dict:
         "trains": trains, "tubes": tubes,
         "arms": {b: {"z": arm_z[b], "r": ORBIT_R[b]} for b in arm_z},
         "moon": {"gear_z": moon_gear_z, "arm_r": MOON_R, **MOON_TRANSFER},
+        "crank": {**CRANK, "bevel_z": BASE_TOP + 4.0,
+                  "shaft_z": BASE_TOP + 4.0 + CRANK["m"] * CRANK["bevel_teeth"] / 2},
         "planet_plane_z": planet_plane,
         "j2000_mean_longitude": J2000_MEAN_LONGITUDE,
         "rate_deg_per_century": RATE,
