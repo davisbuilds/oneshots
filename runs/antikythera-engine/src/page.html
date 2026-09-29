@@ -543,10 +543,10 @@ vec3 env(vec3 d, float rough){
   float up = d.y;
   // room: dark floor, warm-grey walls, a brighter ceiling
   vec3 c = mix(vec3(0.030,0.025,0.020), vec3(0.16,0.14,0.12), smoothstep(-0.25,0.35,up));
-  c = mix(c, vec3(0.30,0.28,0.26), smoothstep(0.35,0.95,up));
+  c = mix(c, vec3(0.36,0.33,0.30), smoothstep(0.35,0.95,up));
   float norm = 1./(1.+rough*rough*4.);
   // key: large soft box overhead, a little left and in front
-  c += vec3(4.4,4.0,3.5) * norm * box(d, normalize(vec3(-0.35,0.88,0.32)), normalize(vec3(0.93,0.37,0.)), normalize(vec3(-0.12,0.30,-0.95)), vec2(0.75,0.45), s);
+  c += vec3(3.4,3.1,2.7) * norm * box(d, normalize(vec3(-0.35,0.88,0.32)), normalize(vec3(0.93,0.37,0.)), normalize(vec3(-0.12,0.30,-0.95)), vec2(0.75,0.45), s);
   // tall strips either side
   c += vec3(2.6,2.7,2.9) * norm * box(d, normalize(vec3(0.97,0.15,-0.15)), normalize(vec3(0.15,0.,0.99)), vec3(0.,1.,0.), vec2(0.16,1.1), s);
   c += vec3(2.2,2.0,1.8) * norm * box(d, normalize(vec3(-0.95,0.2,-0.2)), normalize(vec3(-0.2,0.,0.98)), vec3(0.,1.,0.), vec2(0.14,1.0), s);
@@ -591,8 +591,8 @@ void main(){
     float w = fbm(q*vec2(1.,3.)+fbm(q*2.)*1.2);
     float fig = 0.5+0.5*sin((vP.x*0.012 + w*6.)*3.14159);
     float fine = fbm(vP.xz*vec2(0.02,0.6));
-    base = mix(vec3(0.030,0.016,0.008), vec3(0.085,0.045,0.022), fig*0.55 + w*0.3 + fine*0.15);
-    rough = 0.34 + fine*0.08;
+    base = mix(vec3(0.032,0.014,0.006), vec3(0.095,0.045,0.018), fig*0.55 + w*0.3 + fine*0.15);
+    rough = 0.42 + fine*0.08;
   } else if (uFinish > 3.5 && uFinish < 4.5) {  // planet surfaces
     vec3 d = normalize(rel);
     float ca = cos(uSpin), sa = sin(uSpin); d.xz = mat2(ca,-sa,sa,ca)*d.xz;
@@ -625,7 +625,6 @@ void main(){
     float g = h1(floor(s*9.) + floor(t*0.02)*3.1);
     if (abs(N.y) > 0.9) { N = normalize(N + side*(g-0.5)*0.05); rough = clamp(rough + (g-0.5)*0.06, 0.05, 1.); }
   }
-  base *= uDim;
   vec3 F0 = mix(vec3(0.04), base, metal);
   vec3 diff = base * (1.-metal);
   float a = max(rough*rough, 0.002);
@@ -651,8 +650,14 @@ void main(){
   col += env(R, rough) * Fr * occ;
   col += diff * env(N, 1.0) * 0.55 * occ;
   col += emit;
+  if (uDim < 0.99) { float l = dot(col, vec3(0.3,0.59,0.11)); col = mix(vec3(l), col, 0.35) * uDim; }
   col *= uExposure;
-  col = aces(col);
+  // Tone map luminance, keep hue: bright brass stays golden, easing to white only at the top.
+  float L = dot(col, vec3(0.2126,0.7152,0.0722));
+  float Lm = aces(vec3(L)).x;
+  col = col * (Lm / max(L, 1e-5));
+  col = mix(col, vec3(Lm), smoothstep(0.75, 1.0, Lm) * 0.55);
+  col = clamp(col, 0., 1.);
   frag = vec4(pow(col, vec3(1./2.2)), 1.);
 }`;
 
@@ -964,6 +969,8 @@ const LVP = (() => {
 
 // ------------------------------------------------------------ glow meshes (ghosts, error arcs)
 const ghostSphere = upload(new Geo().sphere(1, 24));
+// The sky's verdict: a thin ring of light lying level around the true position.
+const ghostRing = upload(new Geo().lathe(Array.from({ length: 13 }, (_, k) => { const a = k / 12 * TAU; return [1 + 0.07 * Math.cos(a), 0.07 * Math.sin(a)]; }), 64));
 const arcBuf = { vao: gl.createVertexArray(), vb: gl.createBuffer(), nb: gl.createBuffer(), n: 0 };
 gl.bindVertexArray(arcBuf.vao);
 gl.bindBuffer(gl.ARRAY_BUFFER, arcBuf.vb); gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * 20000, gl.DYNAMIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
@@ -975,9 +982,9 @@ const CAM = { yaw: -0.55, pitch: 0.40, dist: 1450, target: [20, 130, 0], goal: n
 const VIEWS = {
   over:  { yaw: -0.55, pitch: 0.40, dist: 1450, target: [20, 130, 0] },
   move:  { yaw: -1.05, pitch: 0.10, dist: 470, target: [75, 110, 0] },
-  crank: { yaw: -1.35, pitch: 0.28, dist: 420, target: [300, 30, 0] },
+  crank: { yaw: 0.55, pitch: 0.22, dist: 330, target: [395, 30, 0] },
   top:   { yaw: -Math.PI / 2, pitch: 1.45, dist: 1250, target: [0, 150, 0] },
-  earth: { yaw: -0.4, pitch: 0.35, dist: 260, target: [0, 0, 0], follow: 'emb' },
+  earth: { yaw: -0.4, pitch: 0.42, dist: 300, target: [0, 0, 0], follow: 'emb' },
 };
 function camEye() {
   const c = Math.cos(CAM.pitch);
@@ -1184,7 +1191,7 @@ function drawParts(prog, VP, eye, shadowPass) {
         && !(T.focus === 'moon' && p.body === 'emb' && p.kind === 'arm');
       gl.uniform3fv(prog.u.uBase, m.base); gl.uniform1f(prog.u.uMetal, m.metal); gl.uniform1f(prog.u.uRough, m.rough);
       gl.uniform1f(prog.u.uFinish, m.finish); gl.uniform3fv(prog.u.uEmit, m.emit || [0, 0, 0]);
-      gl.uniform3fv(prog.u.uCenter, c); gl.uniform1f(prog.u.uDim, dimmed ? 0.22 : 1.0);
+      gl.uniform3fv(prog.u.uCenter, c); gl.uniform1f(prog.u.uDim, dimmed ? 0.16 : 1.0);
       let axis = [0, 0, 0];
       if (m.finish === 4) axis = [m.planet || 0, m.spot || 0, 0];
       else if (m.finish === 5) axis = [p.ringR[0], p.ringR[1], 0];
@@ -1204,7 +1211,7 @@ function frame(now) {
   if (T.jd < JD_MIN) { T.jd = JD_MIN; T.playing = false; speedLabel(); }
   S.jd = T.jd; S.turns = crankTurns(T.jd);
   if (CAM.follow) {
-    const A = armAngle('emb'); const p = W(eArm.r * Math.cos(A), eArm.r * Math.sin(A), (eArm.z + pp) / 2);
+    const A = armAngle('emb'); const p = W(0.8 * eArm.r * Math.cos(A), 0.8 * eArm.r * Math.sin(A), eArm.z + 0.55 * (pp - eArm.z));
     const g = CAM.goal || CAM; g.target = p; if (!CAM.goal) CAM.target = p;
   }
   if (CAM.goal) {
@@ -1236,7 +1243,7 @@ function render() {
   gl.disable(gl.DEPTH_TEST); gl.useProgram(PB.p); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.enable(gl.DEPTH_TEST);
   gl.useProgram(PR.p);
   gl.uniformMatrix4fv(PR.u.uVP, false, VP); gl.uniformMatrix4fv(PR.u.uLVP, false, LVP);
-  gl.uniform3fv(PR.u.uCam, eye); gl.uniform3fv(PR.u.uKeyDir, KEY); gl.uniform1f(PR.u.uExposure, 1.0);
+  gl.uniform3fv(PR.u.uCam, eye); gl.uniform3fv(PR.u.uKeyDir, KEY); gl.uniform1f(PR.u.uExposure, 1.3);
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(PR.u.uShadow, 0);
   gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, engraveTex); gl.uniform1i(PR.u.uEngrave, 1);
   drawParts(PR, VP, eye, false);
@@ -1251,10 +1258,12 @@ function render() {
   }
   const ghosts = ghostPositions();
   if (T.sky) {
+    gl.bindVertexArray(ghostRing.vao);
     for (const gp of ghosts) {
       const dim = T.focus && T.focus !== gp.body ? 0.25 : 1;
-      gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(gp.x, gp.y, pp, 0, gp.r * 1.04)); gl.uniform3fv(PG.u.uCol, [0.12 * dim, 0.34 * dim, 0.46 * dim]);
-      gl.drawElements(gl.TRIANGLES, ghostSphere.count, gl.UNSIGNED_INT, 0);
+      gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(gp.x, gp.y, pp, 0, gp.r * 1.75)); gl.uniform3fv(PG.u.uCol, [0.35 * dim, 0.85 * dim, 1.1 * dim]);
+      gl.uniform1f(PG.u.uFres, 0);
+      gl.drawElements(gl.TRIANGLES, ghostRing.count, gl.UNSIGNED_INT, 0);
     }
     drawArcs(ghosts);
   }
@@ -1340,7 +1349,9 @@ window.__engine = {
 };
 
 speedLabel();
+if (params.has('clean')) { for (const id of ['title', 'ledger', 'time', 'help']) $(id).style.display = 'none'; T.labels = false; }
 if (params.get('view') && VIEWS[params.get('view')]) setView(VIEWS[params.get('view')], true);
+if (params.get('cam')) { const [yaw, pitch, dist, tx, ty, tz] = params.get('cam').split(',').map(Number); setView({ yaw, pitch, dist, target: [tx, ty, tz] }, true); }
 if (T.focus) focus(T.focus);
 requestAnimationFrame(frame);
 </script>

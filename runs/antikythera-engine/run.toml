@@ -1,0 +1,30 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "antikythera-engine"
+title = "The Antikythera Engine"
+summary = "A brass orrery whose gear trains were found by search; every wheel turns at its true ratio, checked against JPL ephemerides from 3000 BC to AD 3000."
+date = 2026-09-29
+kind = "long-horizon"
+medium = ["web", "webgl", "mechanism", "astronomy", "python", "interactive"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code (cloud session)"
+reasoning = "high"
+
+[run]
+brief = "brief.md"
+human_turns = 2
+wall_clock_minutes = "unrecorded"
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+command = "python3 src/design.py && python3 src/embed.py"
+verify = "python3 src/test_ephemeris.py && python3 src/test_design.py && python3 src/embed.py --check"
+timeout_minutes = 5

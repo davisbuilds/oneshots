@@ -1,0 +1,4 @@
+# Python 3.11 (3.11.15 used). Only src/design.py needs a third-party package;
+# the ephemeris, tests, fixture and embed step use the standard library.
+numpy==2.4.6
+# Optional, for verify.mjs: Node 22+ and the repository's locked @playwright/test.
