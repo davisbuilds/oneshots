@@ -196,3 +196,9 @@ manages about half a frame per second while screenshots run alongside it.
 Previews for the README were captured from the page itself with `?clean` and
 `?cam=`. The README and this log were written against those numbers and
 images.
+
+A first look at phone width (390 × 844) showed the ledger running under the
+time panel and the machine cropped by a 30° vertical field of view. Portrait
+screens now keep the horizontal field of a landscape view, the controls
+compact, and the date takes its own row (`preview` is unaffected; the film
+render in progress had loaded the page before this change and is landscape).

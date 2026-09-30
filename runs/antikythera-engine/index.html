@@ -87,9 +87,13 @@ td .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; ma
 @media (max-width: 760px) {
   #title { max-width: calc(100% - 32px); padding: 10px 12px; }
   #title p { display: none; }
-  #ledger { top: auto; bottom: 150px; right: 16px; left: 16px; width: auto; max-height: 34%; }
-  #time { left: 16px; right: 16px; transform: none; flex-wrap: wrap; justify-content: center; gap: 8px; }
-  #date { min-width: 0; width: 100%; }
+  #ledger { top: auto; bottom: 178px; right: 16px; left: 16px; width: auto; max-height: 24%; padding: 8px 10px; }
+  #ledger .sub, #note { display: none; }
+  #time { left: 16px; right: 16px; transform: none; flex-wrap: wrap; justify-content: center; gap: 6px 10px; padding: 8px 10px; }
+  #knob { width: 46px; height: 46px; }
+  #date { min-width: 0; flex: 1 1 100%; order: -1; }
+  #date .d { font-size: 18px; }
+  #caption { bottom: 190px; font-size: 15px; }
   #help { display: none; }
 }
 </style>
@@ -1311,7 +1315,9 @@ function render() {
   resize();
   const w = canvas.width, h = canvas.height;
   const eye = camEye();
-  const VP = M4.mul(M4.persp(30 * RAD, w / h, 20, 6000), M4.look(eye, CAM.target, [0, 1, 0]));
+    // Portrait screens keep the horizontal field of a 30-degree landscape view.
+  const fovy = w >= h ? 30 * RAD : Math.min(75 * RAD, 2 * Math.atan(Math.tan(15 * RAD) / (w / h) * 0.8));
+  const VP = M4.mul(M4.persp(fovy, w / h, 20, 6000), M4.look(eye, CAM.target, [0, 1, 0]));
   // shadow pass
   gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SHADOW, SHADOW);
   gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);

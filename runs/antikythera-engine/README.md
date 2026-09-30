@@ -217,8 +217,8 @@ need collars to keep them on their levels.
   files now 404). The Horizons comparison is the check on that transcription.
 - **Rendering was only ever seen through software GL** (SwiftShader) in
   headless Chromium, at about one to three frames per second. It has not been
-  looked at on a real GPU or a phone in this session. The layout has a narrow
-  breakpoint that I have not tested on a device.
+  looked at on a real GPU or a phone in this session. The narrow layout was checked
+  at 390 × 844 in headless Chromium, not on a device.
 - **The film** (`film.mjs`) is a local render and not a release asset. It is
   not declared in `run.toml` because it cannot be rebuilt on a CI runner
   without a browser.
