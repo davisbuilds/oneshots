@@ -19,7 +19,7 @@ reasoning = "high"
 [run]
 brief = "brief.md"
 human_turns = 2
-wall_clock_minutes = "unrecorded"
+wall_clock_minutes = 130         # active time; the container was down 20:05-01:05 UTC
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 

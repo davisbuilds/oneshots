@@ -15,7 +15,7 @@ machine against a collision checker.
 | **Open it** | [`index.html`](index.html): one file, no install, no server, WebGL 2 |
 | **Model** | Claude Opus 5.5 (Claude Code, cloud session) |
 | **Brief** | [`brief.md`](brief.md): a conversation, 2 human turns |
-| **Wall clock** | about 1 h of active work on the machine and page (18:55 to about 20:05 UTC), then the film render, previews and docs after a container restart |
+| **Wall clock** | about 2 h 10 min of active work: 18:55 to 20:05 UTC, and 01:05 to 02:00 after the container was reclaimed (most of the second stretch was the film render) |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 
 <p>
@@ -219,6 +219,8 @@ need collars to keep them on their levels.
   headless Chromium, at about one to three frames per second. It has not been
   looked at on a real GPU or a phone in this session. The narrow layout was checked
   at 390 × 844 in headless Chromium, not on a device.
-- **The film** (`film.mjs`) is a local render and not a release asset. It is
-  not declared in `run.toml` because it cannot be rebuilt on a CI runner
-  without a browser.
+- **The film** (`film.mjs`) rendered in this session to a 78 s, 1280 × 720,
+  24 fps H.264 file (49 MB, 1,873 frames, about 50 minutes of software GL).
+  It is not declared as a release asset: the Run assets workflow cannot rebuild
+  it without a browser, and this session could not upload a release by hand.
+  Anyone with Node and Playwright can render it again with the command above.

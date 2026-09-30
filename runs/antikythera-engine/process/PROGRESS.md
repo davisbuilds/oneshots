@@ -202,3 +202,8 @@ time panel and the machine cropped by a 30° vertical field of view. Portrait
 screens now keep the horizontal field of a landscape view, the controls
 compact, and the date takes its own row (`preview` is unaffected; the film
 render in progress had loaded the page before this change and is landscape).
+
+The film finished at 01:54: 1,873 frames, 78 s at 24 fps, 1280 × 720, H.264
+CRF 18, 49 MB. Sampled frames at 3, 20, 45, 60 and 74 s show every stop and
+caption as intended. It stays in the ignored `output/`: no release asset is
+declared for it (see the README).
