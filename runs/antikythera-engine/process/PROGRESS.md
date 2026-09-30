@@ -207,3 +207,22 @@ The film finished at 01:54: 1,873 frames, 78 s at 24 fps, 1280 × 720, H.264
 CRF 18, 49 MB. Sampled frames at 3, 20, 45, 60 and 74 s show every stop and
 caption as intended. It stays in the ignored `output/`: no release asset is
 declared for it (see the README).
+
+## 9. Publishable assets (03:05 to about 03:20, 30 September)
+
+The human asked for a pull request, and to publish the outputs with the
+`Run assets` workflow after merge, as for the other runs. That workflow only
+pip-installs `requirements.txt` and runs `build.command`; the Node film script
+could not run there. So:
+
+- `src/render_assets.py` renders everything from the page in headless
+  Chromium via the Python Playwright package, with FFmpeg from the
+  `imageio-ffmpeg` wheel. It makes the film and a web copy, three stills
+  (3200 × 2000 and 2400 × 1600) and the cut sheets as SVG. `film.mjs` is
+  gone.
+- `src/check_assets.py` checks sizes, lengths, blankness and the wheel count
+  on the sheets. It failed as it should on a 2-second trial film.
+- `build.command` re-runs the tooth search before rendering. `build.verify`
+  starts with `git diff --exit-code -- data/design.json index.html`, so a
+  green workflow run also shows that the search reproduces the committed
+  machine byte for byte, as it did here.

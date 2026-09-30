@@ -16,6 +16,7 @@ machine against a collision checker.
 | **Model** | Claude Opus 5.5 (Claude Code, cloud session) |
 | **Brief** | [`brief.md`](brief.md): a conversation, 2 human turns |
 | **Wall clock** | about 2 h 10 min of active work: 18:55 to 20:05 UTC, and 01:05 to 02:00 after the container was reclaimed (most of the second stretch was the film render) |
+| **Full-size outputs** | [release `run-antikythera-engine`](https://github.com/davisbuilds/oneshots/releases/tag/run-antikythera-engine): the 78 s tour film (and a web copy), 3200 × 2000 and 2400 × 1600 stills, the cut sheets as SVG |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 
 <p>
@@ -147,7 +148,7 @@ part does grow, and the design rule keeps it under 4° over sixty centuries.
 
 ## Reproduce
 
-From this directory (Python 3.11+; NumPy only for the search):
+From this directory (Python 3.11+):
 
 ```bash
 pip install -r requirements.txt
@@ -158,19 +159,34 @@ python3 src/test_design.py
 python3 src/embed.py --check
 ```
 
-The browser check and the film need Node 22+ and the repository's locked
-Playwright (`npm ci` at the root). From the repository root:
+The release assets are rendered from the page itself in headless Chromium:
+
+```bash
+python3 -m playwright install --with-deps chromium
+python3 src/render_assets.py   # -> output/: film, web film, stills, cut sheets
+python3 src/check_assets.py
+```
+
+`render_assets.py` drives the page in a capture mode that advances the tour by
+exactly one frame per call, so the film does not depend on render speed. With
+software GL it manages about one frame a second, so the 1,873-frame film takes
+30 to 50 minutes; `--film-seconds 3` makes a quick trial. FFmpeg comes from the
+`imageio-ffmpeg` wheel. The `Run assets` workflow runs the same commands
+(`build.command` in `run.toml`). Its verify step first requires the re-run
+search to reproduce the committed `data/design.json` and `index.html` byte for
+byte, then runs the tests and `check_assets.py`. Download the published files
+with `python3 scripts/fetch_assets.py antikythera-engine` from the repository
+root.
+
+The browser check needs Node 22+ and the repository's locked Playwright
+(`npm ci` at the root). From the repository root:
 
 ```bash
 node runs/antikythera-engine/verify.mjs
-node runs/antikythera-engine/film.mjs    # renders the tour to output/, MP4 if ffmpeg has libx264
 ```
 
 `src/fetch_reference.py` re-downloads the Horizons data; it is not needed for
-anything above. `film.mjs` drives the page in a capture mode that advances the
-tour by exactly one frame per step, so the film does not depend on render
-speed. In this session it rendered with software GL at about one frame per
-second.
+anything above.
 
 ## How the page is made
 
@@ -219,8 +235,8 @@ need collars to keep them on their levels.
   headless Chromium, at about one to three frames per second. It has not been
   looked at on a real GPU or a phone in this session. The narrow layout was checked
   at 390 × 844 in headless Chromium, not on a device.
-- **The film** (`film.mjs`) rendered in this session to a 78 s, 1280 × 720,
-  24 fps H.264 file (49 MB, 1,873 frames, about 50 minutes of software GL).
-  It is not declared as a release asset: the Run assets workflow cannot rebuild
-  it without a browser, and this session could not upload a release by hand.
-  Anyone with Node and Playwright can render it again with the command above.
+- **The film** was first rendered in this session with a Node script (since
+  replaced by `src/render_assets.py`, which does the same in Python so the
+  `Run assets` workflow can build it): 78 s, 1280 × 720, 24 fps H.264, 49 MB,
+  1,873 frames. The release copy is rebuilt by the workflow on its own runner,
+  so its bytes, and its checksums, will differ from any local render.

@@ -25,6 +25,34 @@ snapshots = "process/snapshots"
 
 [build]
 requirements = "requirements.txt"
-command = "python3 src/design.py && python3 src/embed.py"
-verify = "python3 src/test_ephemeris.py && python3 src/test_design.py && python3 src/embed.py --check"
-timeout_minutes = 5
+# Re-runs the search (it must reproduce the committed design exactly; see
+# verify), rebuilds the page, then renders the assets from the page in headless
+# Chromium with software GL. The film is about 1,900 frames at roughly one frame
+# a second.
+command = "python3 -m playwright install --with-deps chromium && python3 src/design.py && python3 src/embed.py && python3 src/render_assets.py"
+verify = "git diff --exit-code -- data/design.json index.html && python3 src/test_ephemeris.py && python3 src/test_design.py && python3 src/check_assets.py"
+timeout_minutes = 100
+
+[[assets]]
+file = "antikythera_engine_tour.mp4"
+description = "The guided tour: 78 s, 1280 x 720, 24 fps, H.264 CRF 18"
+
+[[assets]]
+file = "antikythera_engine_tour_web.mp4"
+description = "Lighter copy of the tour, 960 x 540, H.264 CRF 25"
+
+[[assets]]
+file = "antikythera_engine_hero.png"
+description = "The machine on 30 September 2026, 3200 x 2000 PNG"
+
+[[assets]]
+file = "antikythera_engine_movement.png"
+description = "The movement: 35 levels of wheels on four axes, 2400 x 1600 PNG"
+
+[[assets]]
+file = "antikythera_engine_earth_moon.png"
+description = "The Earth arm, the Moon's idler train and a 254/19 Moon, 2400 x 1600 PNG"
+
+[[assets]]
+file = "antikythera_engine_wheels.svg"
+description = "Every wheel at 1:1 on 600 x 400 mm sheets: cut paths in black, engraving in red"
