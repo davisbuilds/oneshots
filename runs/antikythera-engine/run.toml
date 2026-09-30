@@ -2,7 +2,7 @@
 schema = 1
 slug = "antikythera-engine"
 title = "The Antikythera Engine"
-summary = "A brass orrery whose gear trains were found by search; every wheel turns at its true ratio, checked against JPL ephemerides from 3000 BC to AD 3000."
+summary = "A brass orrery whose gear trains were found by search; every wheel turns at its true ratio, and the planets are checked against JPL ephemerides from 3000 BC to AD 3000 (the Moon, AD 1800 to 2200)."
 date = 2026-09-29
 kind = "long-horizon"
 medium = ["web", "webgl", "mechanism", "astronomy", "python", "interactive"]

@@ -27,6 +27,11 @@ try {
   const url = pathToFileURL(join(here, 'index.html')).href + '?jd=2461313.5&paused';
   await page.goto(url);
   await page.waitForFunction(() => window.__engine && window.__engine.frames() > 2, null, { timeout: 60000 });
+  // Wait until n more frames have been drawn (software GL can be slow under load).
+  const frames = async n => {
+    const f0 = await page.evaluate(() => window.__engine.frames());
+    await page.waitForFunction(k => window.__engine.frames() >= k, f0 + n, { timeout: 60000 });
+  };
 
   // 1. ephemeris port and brass angles against exact Python
   const got = await page.evaluate(fx => fx.map(f => ({
@@ -58,7 +63,8 @@ try {
 
   // 4. it drew something, and the ledger follows the date
   await page.evaluate(() => window.__engine.setJD(2461313.5));
-  await page.waitForTimeout(400);
+  // The labels refresh every few frames; wait for them rather than for a fixed time.
+  await page.waitForFunction(() => document.getElementById('dateMain').textContent === '30 September 2026', null, { timeout: 60000 });
   const date = await page.textContent('#dateMain');
   assert.equal(date, '30 September 2026');
   const px = await page.evaluate(() => {
@@ -81,10 +87,10 @@ try {
 
   // 6. a close look at the movement and the Earth
   await page.evaluate(() => window.__engine.setView('move'));
-  await page.waitForTimeout(600);
+  await frames(3);
   await page.screenshot({ path: join(here, 'verify-movement.png') });
   await page.evaluate(() => { window.__engine.setView('earth'); window.__engine.focus('moon'); });
-  await page.waitForTimeout(600);
+  await frames(3);
   await page.screenshot({ path: join(here, 'verify-moon.png') });
 
   assert.deepEqual(errors, []);

@@ -65,7 +65,7 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
 - Run the collection checks above for metadata/tooling changes. Publication
   hygiene scans the Git index: stage the intended files before the final check.
 - Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
-  four runs; do not claim they cover the whole collection. Screenshots are local
+  five runs; do not claim they cover the whole collection. Screenshots are local
   evidence, not portable visual baselines.
 - For rendering changes, use the run's build/verify commands. A manifest check
   does not prove a render works; state when a costly full build was not rerun.
