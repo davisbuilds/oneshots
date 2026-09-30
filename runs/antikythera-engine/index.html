@@ -75,6 +75,10 @@ td .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; ma
 .label.ghost { color: #9fd3e6; font-size: 10px; opacity: 0.8; transform: translate(-50%, 60%); }
 
 #help { position: fixed; bottom: 16px; left: 16px; font-size: 11.5px; color: var(--faint); max-width: 260px; }
+#caption { position: fixed; left: 50%; bottom: 118px; transform: translateX(-50%); width: min(760px, calc(100% - 32px));
+  text-align: center; font-size: 19px; line-height: 1.45; color: var(--ink); text-shadow: 0 1px 4px #000, 0 0 14px #000;
+  opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+#caption.on { opacity: 1; }
 #err { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 40px; color: var(--dim); }
 
 @media (max-width: 1100px) {
@@ -105,6 +109,7 @@ td .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; ma
     <button id="vTop">Plan</button>
     <button id="vEarth">Earth &amp; Moon</button>
     <button id="bSvg" title="Download every wheel as a 1:1 laser-cutting sheet">Cut sheets (SVG)</button>
+    <button id="bTour" title="A one-minute guided tour (T)">Take the tour</button>
   </div>
 </div>
 
@@ -142,6 +147,7 @@ td .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; ma
   </div>
 </div>
 
+<div id="caption"></div>
 <div id="help">Drag to orbit · scroll to zoom · right-drag or shift-drag to pan · drag the crank dial to turn the machine by hand</div>
 <div id="err"></div>
 <div id="labels"></div>
@@ -986,6 +992,12 @@ const VIEWS = {
   top:   { yaw: -Math.PI / 2, pitch: 1.45, dist: 1250, target: [0, 150, 0] },
   earth: { yaw: -0.4, pitch: 0.42, dist: 300, target: [0, 0, 0], follow: 'emb' },
 };
+// A camera aimed at one train's band of levels in the movement.
+function trainView(body) {
+  const lvls = TRAIN[body].meshes.map(m => lv[m.level]);
+  const zmid = (Math.min(...lvls) + Math.max(...lvls)) / 2 + FACE;
+  return { yaw: -1.12, pitch: 0.38, dist: 330, target: [xN + 10, zmid, 0] };
+}
 function camEye() {
   const c = Math.cos(CAM.pitch);
   return [CAM.target[0] + CAM.dist * c * Math.sin(CAM.yaw), CAM.target[1] + CAM.dist * Math.sin(CAM.pitch), CAM.target[2] + CAM.dist * c * Math.cos(CAM.yaw)];
@@ -1023,17 +1035,20 @@ function focus(b) {
   const ypd = t.years_per_degree;
   const period = P_SID / (t.ratio[0] / t.ratio[1]);
   const truePeriod = P_SID / t.target;
-  inspect.innerHTML = `<div class="big">${BODY[b].name}: ${t.meshes.length} meshes, ${t.teeth} teeth</div>
+  inspect.innerHTML = `<div class="big">${BODY[b].name}: ${t.meshes.length} meshes, ${t.teeth} teeth
+      <button id="bShow" style="float:right;font-size:12px;padding:3px 8px">Show me the train</button></div>
     <div class="train">${chain}</div>
     <div>Ratio <b>${t.ratio[0].toLocaleString('en-US')} / ${t.ratio[1].toLocaleString('en-US')}</b> turns per year
     (needed ${t.target.toFixed(9)}).</div>
     <div>Brass period <b>${period.toFixed(5)} d</b>; true ${truePeriod.toFixed(5)} d.</div>
     <div>${ypd ? `Drifts <b>1° every ${fmtYears(ypd)}</b> (${t.drift_deg_per_century >= 0 ? 'runs ahead' : 'falls behind'}).` : `<b>Exact</b>: the crank is the Earth's year.`}</div>
     ${b === 'moon' ? `<div style="margin-top:6px">The Antikythera mechanism geared the Moon at 254/19 per year, a convergent of the same continued fraction; that ratio drifts ${Math.abs(D.history.antikythera_254_19_drift_deg_per_century).toFixed(1)}° per century.</div>` : ''}
+    ${b === 'moon' ? `<div style="margin-top:6px" id="greek"></div>` : ''}
     ${b === 'moon' ? `<div style="margin-top:6px">Its tube's motion reaches the Earth through the wheels on the Earth's arm: ${MO.end}, three idlers of ${MO.idler}, ${MO.end}. Equal end wheels, an even number of meshes: exactly 1 : 1.</div>` : ''}
     <canvas id="spark" width="800" height="180"></canvas>
     <div style="font-size:11.5px;color:var(--faint)">Brass − sky, 3000 BC to AD 3000 (grey), and the gear part alone (gold).</div>`;
   drawSpark(b);
+  $('bShow').onclick = () => setView(b === 'moon' ? VIEWS.earth : trainView(b));
 }
 function drawSpark(b) {
   const cv = document.getElementById('spark'); if (!cv) return;
@@ -1204,9 +1219,10 @@ function drawParts(prog, VP, eye, shadowPass) {
   }
 }
 let lastT = performance.now(), frames = 0;
-function frame(now) {
-  const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+function step(dt, draw = true) {
+  if (TOUR.on) tourStep(dt);
   if (T.playing) T.jd = T.jd + T.dir * SPEEDS[speedIdx] * dt;
+  if (TOUR.on && TOUR.speed !== null) T.jd += TOUR.speed * dt;
   if (T.jd > JD_MAX) { T.jd = JD_MAX; T.playing = false; speedLabel(); }
   if (T.jd < JD_MIN) { T.jd = JD_MIN; T.playing = false; speedLabel(); }
   S.jd = T.jd; S.turns = crankTurns(T.jd);
@@ -1215,16 +1231,82 @@ function frame(now) {
     const g = CAM.goal || CAM; g.target = p; if (!CAM.goal) CAM.target = p;
   }
   if (CAM.goal) {
-    const g = CAM.goal, k = 1 - Math.exp(-dt * 4);
+    const g = CAM.goal, k = 1 - Math.exp(-dt * (TOUR.on ? 1.6 : 4));
     let dy = g.yaw - CAM.yaw; dy = (dy + 3 * Math.PI) % TAU - Math.PI;
     CAM.yaw += dy * k; CAM.pitch += (g.pitch - CAM.pitch) * k; CAM.dist += (g.dist - CAM.dist) * k;
     for (let i = 0; i < 3; i++) CAM.target[i] += (g.target[i] - CAM.target[i]) * k;
-    if (Math.abs(dy) + Math.abs(g.pitch - CAM.pitch) + Math.abs(g.dist - CAM.dist) / 1000 < 1e-4) CAM.goal = null;
+    if (!TOUR.on && Math.abs(dy) + Math.abs(g.pitch - CAM.pitch) + Math.abs(g.dist - CAM.dist) / 1000 < 1e-4) CAM.goal = null;
   }
-  render();
-  frames++;
+  if (draw) { render(); frames++; }
+}
+const CAPTURE = new URLSearchParams(location.search).has('capture');
+function frame(now) {
+  const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+  step(dt);
   requestAnimationFrame(frame);
 }
+
+// ------------------------------------------------------------ the tour
+// A scripted minute: each stop sets a view, a focus, a pace, and a caption.
+const TOUR = { on: false, t: 0, k: -1, speed: null, orbit: 0 };
+const TOUR_STOPS = [
+  { at: 0, view: 'over', focus: null, speed: 30, orbit: 0.035,
+    text: 'Seventy brass wheels, every tooth count found by search. One turn of the crank is one sidereal year.' },
+  { at: 9, view: 'crank', speed: 45, orbit: 0,
+    text: 'The crank turns the driving arbor through a pair of mitre bevels: once round, once a year.' },
+  { at: 17, view: 'move', speed: 20, orbit: 0.045,
+    text: 'Nine trains leave the driving arbor. Each hops between two fixed arbors on loose pipes and ends on a tube at the centre. Four axes carry everything.' },
+  { at: 28, view: 'train:mercury', focus: 'mercury', speed: 20, orbit: 0.03,
+    text: "Mercury's train: 33:15, 29:19, 34:14, 49:47, 21:43. That is 797,181 / 191,995 turns a year, and it loses one degree in 1,919 years." },
+  { at: 39, view: 'earth', focus: 'moon', speed: 4, orbit: 0.06,
+    text: "The Moon's motion rides out along the Earth's arm through three idlers, exactly 1 : 1. Its continued fraction passes through 254/19, the Antikythera mechanism's own ratio. The bronze ring is a 254/19 Moon, set in 100 BC." },
+  { at: 52, view: 'over', focus: null, back: 12, orbit: 0.02,
+    text: "Now run back fifty centuries. The rings of light are where JPL's ephemeris puts each body." },
+  { at: 65, view: 'top', speed: 0, orbit: 0,
+    text: '3000 BC. No gear has drifted four degrees. What still separates brass from sky is Kepler\'s second law: planets hurry near the Sun, and no uniform gear can.' },
+  { at: 78, end: true },
+];
+function tourStart() {
+  Object.assign(TOUR, { on: true, t: 0, k: -1, speed: null, orbit: 0 });
+  T.playing = false; T.dir = 1; speedLabel();
+  if (!params.has('jd')) T.jd = nowJD();
+  document.body.classList.add('touring'); $('bTour').classList.add('on'); $('bTour').textContent = 'Stop the tour';
+}
+function tourStop() {
+  TOUR.on = false; TOUR.speed = null; CAM.goal = null; CAM.follow = null;
+  $('caption').classList.remove('on'); document.body.classList.remove('touring');
+  $('bTour').classList.remove('on'); $('bTour').textContent = 'Take the tour';
+}
+function tourStep(dt) {
+  TOUR.t += dt;
+  let k = TOUR.k;
+  while (k + 1 < TOUR_STOPS.length && TOUR.t >= TOUR_STOPS[k + 1].at) k++;
+  if (k !== TOUR.k) {
+    TOUR.k = k; const st = TOUR_STOPS[k];
+    if (st.end) { tourStop(); focus(null); return; }
+    if (st.view) setView(st.view.startsWith('train:') ? trainView(st.view.slice(6)) : VIEWS[st.view]);
+    if ('focus' in st) focus(st.focus);
+    TOUR.orbit = st.orbit || 0;
+    TOUR.speed = st.back ? (JD_MIN - T.jd) / st.back : st.speed;
+    const c = $('caption'); c.classList.remove('on');
+    setTimeout(() => { c.textContent = st.text; c.classList.add('on'); }, CAPTURE ? 0 : 350);
+    if (CAPTURE) { c.textContent = st.text; c.classList.add('on'); }
+  }
+  if (TOUR.orbit) { CAM.yaw += TOUR.orbit * dt; if (CAM.goal) CAM.goal.yaw += TOUR.orbit * dt; }
+}
+$('bTour').onclick = () => TOUR.on ? tourStop() : tourStart();
+addEventListener('keydown', e => { if (e.target.tagName !== 'INPUT' && (e.key === 't' || e.key === 'T')) $('bTour').click(); });
+
+// ------------------------------------------------------------ a 254/19 Moon
+// What the Antikythera mechanism's lunar ratio would show if it were set right
+// on 1 January 100 BC and geared at 254/19 sidereal months per sidereal year.
+const GREEK_JD = jdFromDate(-99, 1, 1);
+function greekMoonAngle(jd) {
+  const base = L0.moon + TRAIN.moon.ratioF * crankTurns(GREEK_JD) * 360;
+  return base + (254 / 19) * (jd - GREEK_JD) / P_SID * 360;       // degrees, unwrapped
+}
+function greekMoonOffset(jd) { return greekMoonAngle(jd) - (L0.moon + TRAIN.moon.ratioF * crankTurns(jd) * 360); }
+
 function render() {
   resize();
   const w = canvas.width, h = canvas.height;
@@ -1263,6 +1345,12 @@ function render() {
       const dim = T.focus && T.focus !== gp.body ? 0.25 : 1;
       gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(gp.x, gp.y, pp, 0, gp.r * 1.75)); gl.uniform3fv(PG.u.uCol, [0.35 * dim, 0.85 * dim, 1.1 * dim]);
       gl.uniform1f(PG.u.uFres, 0);
+      gl.drawElements(gl.TRIANGLES, ghostRing.count, gl.UNSIGNED_INT, 0);
+    }
+    if (T.focus === 'moon') {
+      const A = armAngle('emb'), g = greekMoonAngle(T.jd) * RAD;
+      const x = eArm.r * Math.cos(A) + MO.arm_r * Math.cos(g), y = eArm.r * Math.sin(A) + MO.arm_r * Math.sin(g);
+      gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(x, y, pp, 0, BODY.moon.r * 1.9)); gl.uniform3fv(PG.u.uCol, [1.0, 0.45, 0.12]);
       gl.drawElements(gl.TRIANGLES, ghostRing.count, gl.UNSIGNED_INT, 0);
     }
     drawArcs(ghosts);
@@ -1335,10 +1423,14 @@ function updateLabels(VP, w, h, ghosts) {
     r.children[4].textContent = b === 'emb' ? 'exact' : (Math.abs(gd) < 0.005 ? fmtSigned(gd).replace('.00', '.00') : fmtSigned(gd));
   }
   if (T.focus && uiTick % 60 === 0) drawSpark(T.focus);
+  const gk = document.getElementById('greek');
+  if (gk) { const off = greekMoonOffset(T.jd);
+    gk.innerHTML = `<span style="color:#ff9a4a">Bronze ring:</span> a 254/19 Moon set right on 1 January 100 BC is ${Math.abs(off) < 0.05 ? 'still right' : `<b>${Math.abs(off).toFixed(1)}° ${off < 0 ? 'behind' : 'ahead'}</b>`} here${Math.abs(off) >= 360 ? ` (${Math.floor(Math.abs(off) / 360)} whole turn${Math.abs(off) >= 720 ? 's' : ''} and more)` : ''}.`; }
 }
 
 // ------------------------------------------------------------ public hooks (used by verify.mjs)
 window.__engine = {
+  step, tourStart, tourStop, tour: () => ({ ...TOUR }), greekMoonOffset,
   design: D, trains: TRAINS,
   brassLongitude, trueLongitude, planetLongitude, moonLongitude, gearDrift, crankTurns, jdFromDate, dateFromJd, fmtDate,
   setJD(jd) { T.jd = jd; T.playing = false; speedLabel(); },
@@ -1353,7 +1445,8 @@ if (params.has('clean')) { for (const id of ['title', 'ledger', 'time', 'help'])
 if (params.get('view') && VIEWS[params.get('view')]) setView(VIEWS[params.get('view')], true);
 if (params.get('cam')) { const [yaw, pitch, dist, tx, ty, tz] = params.get('cam').split(',').map(Number); setView({ yaw, pitch, dist, target: [tx, ty, tz] }, true); }
 if (T.focus) focus(T.focus);
-requestAnimationFrame(frame);
+if (params.has('tour')) tourStart();
+if (CAPTURE) { T.playing = false; step(0); } else requestAnimationFrame(frame);
 </script>
 </body>
 </html>
