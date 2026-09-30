@@ -168,3 +168,31 @@ reflects, and my studio was too dark. The zodiac lettering was mirrored.
   scales the final colour, and the tone map works on luminance and keeps hue,
   so a highlight on brass stays gold instead of bleaching to white (07).
 EOF
+
+## 7. The tour, the Greek Moon, a film (19:53 to about 20:05)
+
+- Worst gaps over the whole range, computed for the README: Mercury 26°,
+  Mars 14°, Saturn 13°, and never more than 3.8° of any of it from the gears.
+  The ledger's promise ("most of it is Kepler, and it never grows") holds.
+- A captioned one-minute tour: overview, crank, movement, Mercury's train, the
+  Earth arm, a run back to 3000 BC, a plan view. The first cut focused Mercury
+  from the generic movement camera, and Mercury's train sits in the bottom
+  levels, barely in frame (09). Added a per-train camera aimed at a train's
+  own band of levels (10), and a "Show me the train" button that uses it.
+- A bronze ring for a Moon geared at 254/19 and set right in 100 BC, drawn
+  when the Moon is in focus, with a live readout of how far it has wandered.
+- A capture mode (no animation loop; each call advances exactly one frame)
+  and `film.mjs` to render the tour frame by frame. Skipping ahead drew every
+  intermediate frame and queued enough software-GL work to time Playwright
+  out; skipping now updates state without drawing.
+
+## 8. A restart, then finishing (01:05 on 30 September)
+
+The container was reclaimed while the first film render was running (208 of
+about 1,900 frames). The committed work survived; the uncommitted tour
+changes were still in the working tree, passed `verify.mjs` again, and were
+committed before anything else. The film render was restarted; software GL
+manages about half a frame per second while screenshots run alongside it.
+Previews for the README were captured from the page itself with `?clean` and
+`?cam=`. The README and this log were written against those numbers and
+images.
