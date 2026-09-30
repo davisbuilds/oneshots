@@ -1,0 +1,863 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1015">
+<meta name="description" content="Sixty seconds. One impossible theft. Every rewind leaves another you behind. A standalone temporal heist.">
+<title>Borrowed Seconds — The Meridian Heist</title>
+<style>
+:root{color-scheme:dark;--ink:#0b1015;--panel:#10171d;--line:#283038;--muted:#9aabae;--white:#ece8dd;--gold:#dfbc78;--mint:#77d9c1;--red:#f08478;font-family:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 40% 0,#1c2428 0,#0b1015 65%);color:var(--white);min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer;color:inherit;border:1px solid var(--line);background:#172026;border-radius:5px;padding:10px 14px;transition:background .18s,border-color .18s}
+button:hover{border-color:#8c7958;background:#253037}
+button:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+button:disabled{opacity:.35;cursor:default}
+button.primary{background:var(--gold);border-color:var(--gold);color:#191c1c;font-weight:700}
+button.primary:hover{background:#f0d098}
+button.quiet{background:transparent}
+button.small{font-size:11px;padding:7px 9px}
+button kbd{margin-left:10px;opacity:.55}
+button,canvas{-webkit-tap-highlight-color:transparent}
+kbd{font:10px monospace;border:1px solid #60605a;border-radius:3px;padding:1px 4px}
+a{color:var(--gold)}
+[hidden]{display:none!important}
+.shell{max-width:1500px;margin:auto;padding:0 40px 24px}
+.masthead{height:113px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:15px}
+.brand{display:flex;align-items:center;gap:18px}
+.brand-mark{width:42px;height:48px;color:var(--gold)}
+.eyebrow{font:10px monospace;letter-spacing:3px;color:var(--gold);text-transform:uppercase}
+.brand h1{font:38px Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-1.6px;margin:6px 0 0}
+.brand h1 em{color:var(--gold);font-weight:400}
+.header-actions{display:flex;gap:8px}
+.header-actions button{font:11px monospace;padding:10px 12px}
+.statusbar{display:flex;align-items:center;gap:28px;height:85px}
+.time-readout{display:flex;align-items:baseline;gap:7px;min-width:163px}
+.clock{font:36px monospace;letter-spacing:-2px;font-variant-numeric:tabular-nums;color:var(--gold)}
+.clock small{font-size:15px;letter-spacing:0;color:var(--muted);margin-left:5px}
+.statusbar .label{font:9px monospace;letter-spacing:2px;color:var(--muted);margin-bottom:7px}
+.loop-number{font:20px monospace}
+.mode-badge{font:9px monospace;letter-spacing:1.7px;border:1px solid #49584c;background:#21382e;color:#acd0b0;border-radius:3px;padding:6px 8px;margin-left:9px}
+.status-divider{height:31px;width:1px;background:var(--line)}
+.suspicion{width:132px}
+.meter{height:3px;background:#293138;overflow:hidden}
+.meter>span{display:block;height:100%;width:0;background:var(--red);transition:width .12s}
+.mission-title{margin-left:auto;text-align:right}
+.mission-title .name{font:17px Georgia,serif;color:#c8c8bd}
+.board{display:grid;grid-template-columns:minmax(0,1fr) 227px;gap:18px}
+.stage{position:relative;height:590px;min-width:0;border:1px solid #343c3f;border-radius:8px;background:radial-gradient(ellipse at 50% 47%,#263237 0,#131e25 45%,#0c131a 88%);overflow:hidden;box-shadow:0 18px 80px #0004}
+canvas{display:block;width:100%;height:100%;touch-action:none;outline:none}
+.map-caption{position:absolute;left:22px;top:20px;pointer-events:none}
+.map-caption strong{font:10px monospace;letter-spacing:2px;color:#adb6b3}
+.map-caption p{font:9px monospace;letter-spacing:1px;color:#6e868c;margin:6px 0}
+.map-controls{position:absolute;right:17px;top:17px;display:flex;gap:6px}
+.map-controls button{background:#101a21dd}
+.map-footer{position:absolute;left:20px;bottom:15px;right:20px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;font:9px monospace;letter-spacing:1.2px;color:#849399}
+.map-footer .live-dot{color:var(--mint)}
+.sidebar{display:flex;flex-direction:column;gap:17px;padding:3px 0}
+.section-title{font:10px monospace;letter-spacing:2px;margin:0 0 14px;color:var(--muted);display:flex;justify-content:space-between}
+.section-title span{color:var(--gold)}
+.crew-list{display:flex;flex-direction:column;gap:7px;min-height:182px}
+.crew-row{display:flex;align-items:center;gap:10px;border:1px solid #29343a;border-radius:5px;background:#141d23;padding:10px}
+.crew-orb{width:25px;height:25px;display:grid;place-items:center;font:10px monospace;border:1px solid currentColor;border-radius:50%;flex:none}
+.crew-row .crew-name{font-size:11px;letter-spacing:.4px}
+.crew-row .crew-detail{font:9px monospace;color:var(--muted);margin-top:5px;line-height:1.4}
+.crew-row .cut{margin-left:auto;padding:3px 6px;border:none;background:none;color:#a2acad;font-size:15px}
+.empty-crew{font:12px Georgia,serif;font-style:italic;color:#788d93;line-height:1.7;padding:11px 1px}
+.objectives{border-top:1px solid var(--line);padding-top:18px}
+.objective{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px}
+.objective .symbol{border:1px solid #465158;border-radius:3px;width:18px;height:18px;display:grid;place-items:center;font:9px monospace;color:#8a9699}
+.objective.done .symbol{color:var(--mint);border-color:#427267;background:#18352d}
+.objective .objective-status{margin-left:auto;font:8px monospace;letter-spacing:.5px;color:#708187}
+.objective.done .objective-status{color:var(--mint)}
+.hint{margin-top:auto;background:#1a2226;border-left:2px solid var(--gold);padding:15px 13px}
+.hint .hint-title{font:15px Georgia,serif;color:var(--gold);margin:0 0 8px}
+.hint p{font-size:11px;line-height:1.7;color:#b3bcb9;margin:0}
+.timeline{height:32px;margin:12px 0 10px;display:flex;align-items:center;gap:13px;font:9px monospace;color:#829295}
+.timeline .track{height:16px;position:relative;flex:1;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),#344148 calc(10% - 1px),#344148 10%);border-bottom:1px solid #44525a}
+.timeline .elapsed{height:2px;position:absolute;bottom:-1px;width:0;background:var(--gold)}
+.timeline .playhead{width:1px;height:23px;position:absolute;bottom:-5px;left:0;background:var(--gold);box-shadow:0 0 7px #dfbc7855}
+.timeline .anchor{position:absolute;bottom:4px;width:5px;height:5px;transform:rotate(45deg)}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid var(--line);padding-top:16px}
+.control-buttons{display:flex;gap:7px}
+.control-buttons button{font-size:11px}
+.key-legend{font:10px monospace;color:#9caaa9;display:flex;gap:14px}
+.credit{display:flex;justify-content:space-between;gap:10px;margin-top:22px;font:9px monospace;letter-spacing:1px;color:#718189}
+.touch-controls{display:none;gap:12px;align-items:center}
+.dpad{display:grid;grid-template-columns:34px 34px 34px;grid-template-rows:30px 30px;gap:3px}
+.dpad button{padding:0;touch-action:none;background:#1d2a31}
+.dpad button:first-child{grid-column:2}
+.dpad button:nth-child(2){grid-column:1}
+.dpad button:nth-child(3){grid-column:2}
+.dpad button:nth-child(4){grid-column:3}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#0b1015db 0,#0b1015ba 50%,#0b101599 100%);z-index:3;padding:25px}
+.intro-card{max-width:520px;text-align:center}
+.intro-card .seal{color:var(--gold);font:10px monospace;letter-spacing:4px}
+.intro-card h2{font:58px Georgia,serif;font-weight:400;letter-spacing:-2px;line-height:1.1;margin:24px 0 20px}
+.intro-card h2 em{color:var(--gold);font-weight:400}
+.intro-card .intro-copy{font-size:13px;line-height:1.9;color:#b9c3c0;max-width:380px;margin:0 auto 26px}
+.intro-card .intro-buttons{display:flex;gap:10px;justify-content:center}
+.intro-card .intro-buttons button{font-size:12px;padding:14px 21px}
+.intro-card .intro-note{margin:23px 0 0;font:9px monospace;letter-spacing:1px;color:#8f9a98}
+.intro-card .result-stats{display:flex;justify-content:center;gap:32px;margin:0 0 25px}
+.result-stats strong{display:block;font:25px monospace;color:var(--gold);margin-bottom:7px}
+.result-stats span{font:9px monospace;letter-spacing:1px;color:var(--muted)}
+.pause-banner{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);padding:25px 35px;border:1px solid #60553f;background:#111a22ed;border-radius:7px;text-align:center;z-index:4}
+.pause-banner p{font:21px Georgia,serif;margin:0 0 14px}
+.pause-banner button{font-size:11px}
+.toast{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);max-width:90%;background:#0f1a21eF;border:1px solid #536057;box-shadow:0 8px 22px #0004;padding:10px 17px;border-radius:4px;color:#e7e4d9;font:11px monospace;text-align:center;z-index:5;pointer-events:none}
+.replay-controls{display:flex;align-items:center;gap:9px;margin-top:8px}
+.replay-controls input{width:100%;accent-color:var(--gold)}
+dialog{background:#141e25;border:1px solid #596158;border-radius:10px;padding:30px 34px;color:var(--white);width:min(520px,calc(100% - 28px));box-shadow:0 25px 100px #0008}
+dialog::backdrop{background:#050b10bf;backdrop-filter:blur(5px)}
+dialog h2{font:31px Georgia,serif;font-weight:400;margin:5px 0 17px}
+dialog p,dialog li{font-size:12px;color:#b9c4c2;line-height:1.8}
+dialog ol{padding-left:19px}
+dialog li{padding-left:5px;margin:8px 0}
+dialog .help-keys{display:grid;grid-template-columns:115px 1fr;gap:12px;font-size:11px;margin:24px 0}
+dialog .help-keys span{color:#b0bdbb}
+dialog .help-footer{display:flex;justify-content:flex-end}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.mobile-prompt{display:none;position:absolute;left:13px;right:13px;bottom:48px;background:#101b23ed;border:1px solid #5c644e;border-radius:4px;padding:10px 12px;font:11px monospace;color:var(--gold);pointer-events:none;text-align:center}
+@media(min-width:1600px){.stage{height:660px}}
+@media(max-width:1150px){.shell{padding:0 22px 20px}.board{grid-template-columns:minmax(0,1fr) 195px;gap:14px}.stage{height:540px}.key-legend{gap:9px;font-size:9px}.key-legend span:last-child{display:none}.statusbar{gap:18px}.brand h1{font-size:34px}.mission-title .name{font-size:15px}}
+@media(max-width:760px){.shell{padding:0 13px 18px}.masthead{height:91px}.brand{gap:9px}.brand-mark{width:26px;height:36px}.brand h1{font-size:27px;letter-spacing:-1px}.eyebrow{font-size:8px;letter-spacing:1.6px}.header-actions{gap:4px}.header-actions button{padding:9px 8px;font-size:10px}.header-actions #reset{display:none}.statusbar{height:75px;gap:15px}.time-readout{min-width:100px}.clock{font-size:30px}.clock small{font-size:10px}.loop-number{font-size:16px}.mode-badge{font-size:8px;padding:5px;margin-left:5px}.suspicion{width:75px}.statusbar .label{font-size:8px;letter-spacing:1px}.mission-title{display:none}.board{display:block}.stage{height:440px}.map-caption{left:13px;top:14px}.map-caption strong{font-size:8px;letter-spacing:1px}.map-caption p{font-size:8px}.map-controls{right:11px;top:11px}.map-footer{left:12px;right:12px;font-size:8px;letter-spacing:.5px}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:19px}.section-title{margin-bottom:10px;font-size:9px}.crew-list{min-height:0;gap:5px}.crew-row{padding:8px;gap:7px}.crew-orb{width:21px;height:21px;font-size:9px}.crew-name{font-size:10px!important}.crew-detail{font-size:8px!important}.empty-crew{font-size:11px;padding:4px 0}.objectives{border-top:0;padding-top:0}.objective{margin:10px 0;font-size:10px;gap:7px}.objective-status{font-size:7px!important}.hint{grid-column:1/-1;margin-top:0;padding:12px}.hint .hint-title{font-size:14px}.hint p{font-size:11px}.timeline{margin-top:15px}.controls{flex-wrap:wrap;gap:13px}.key-legend{display:none}.touch-controls{display:flex}.control-buttons{flex-wrap:wrap;gap:5px}.control-buttons button{padding:10px;font-size:10px}.control-buttons kbd{display:none}.credit{font-size:8px;letter-spacing:.3px;line-height:1.6}.intro-card h2{font-size:43px}.intro-card .intro-copy{font-size:12px}.intro-card .intro-buttons button{padding:12px 15px;font-size:11px}.intro-card .seal{font-size:9px;letter-spacing:2.5px}.intro-card .intro-note{font-size:8px;line-height:1.8}.intro-card .result-stats{gap:20px}.overlay{padding:20px}.toast{font-size:10px;bottom:39px;width:max-content;max-width:90%}.replay-controls{width:100%}}
+@media(pointer:coarse) and (min-width:761px){.touch-controls{display:flex}.key-legend{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}dialog::backdrop{backdrop-filter:none}}
+@media(max-width:760px){.shell{padding-bottom:119px}.header-actions button{white-space:nowrap;font-size:9px}.controls{position:fixed;bottom:0;left:0;right:0;background:#111b23f5;padding:9px 13px calc(9px + env(safe-area-inset-bottom));z-index:7;box-shadow:0 -10px 30px #0005;flex-wrap:nowrap;gap:8px}.control-buttons{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:1;max-width:235px}.control-buttons #record{grid-column:1/-1}.control-buttons button{padding:9px 7px}.touch-controls{gap:0}.touch-controls>span{display:none}.dpad{grid-template-columns:30px 30px 30px;grid-template-rows:29px 29px}.credit{margin-bottom:10px}body:has(#intro:not([hidden])) .controls,body:has(#result:not([hidden])) .controls{display:none}.replay-controls{flex-wrap:wrap}.mobile-prompt{display:block}body:has(#intro:not([hidden])) .mobile-prompt,body:has(#result:not([hidden])) .mobile-prompt{display:none}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="masthead">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 44 52" fill="none" aria-hidden="true"><path d="M22 2 42 13v26L22 50 2 39V13Z" stroke="currentColor" opacity=".5"/><path d="M13 14h18M13 38h18M15 15c0 8 14 14 14 22M29 15c0 8-14 14-14 22" stroke="currentColor" stroke-width="1.5"/><path d="m22 26-4 8h8Z" fill="currentColor"/></svg>
+    <div><div class="eyebrow">A heist in sixty seconds</div><h1>Borrowed <em>Seconds</em></h1></div>
+  </div>
+  <nav class="header-actions" aria-label="Game tools">
+    <button id="sound" aria-pressed="false" aria-label="Enable sound">Sound off</button>
+    <button id="help" aria-label="How to play">How to play</button>
+    <button id="reset" aria-label="Reset the entire heist">Reset</button>
+  </nav>
+</header>
+<section class="statusbar" aria-label="Heist status">
+  <div class="time-readout"><span id="clock" class="clock">60.0<small>sec</small></span></div>
+  <div class="status-divider"></div>
+  <div><div class="label">ATTEMPT</div><span class="loop-number" id="loop">01</span><span class="mode-badge" id="mode">STANDBY</span></div>
+  <div class="status-divider"></div>
+  <div class="suspicion"><div class="label" id="alert-label">SUSPICION</div><div class="meter"><span id="alarm"></span></div></div>
+  <div class="mission-title"><div class="label">THE MERIDIAN MUSEUM · 02:14 AM</div><div class="name">Tonight, steal a little time.</div></div>
+</section>
+<div class="board">
+  <section class="stage" aria-label="Museum">
+    <canvas id="museum" tabindex="0" role="application" aria-label="Museum floor. Click to walk, or use WASD or arrow keys. R records an echo. E interacts or whistles. Space pauses."></canvas>
+    <div class="map-caption"><strong>THE MERIDIAN COLLECTION</strong><p>FLOOR 01 / AFTER HOURS</p></div>
+    <div class="map-controls"><button id="map" class="small" aria-pressed="false">Follow</button><button id="pause" class="small" aria-label="Pause the heist">Ⅱ</button></div>
+    <div class="map-footer"><span><span class="live-dot">●</span> <span id="floor-mode">TEMPORAL LINK ESTABLISHED</span></span><span id="floor-hint">CLICK TO WALK</span></div>
+    <div id="intro" class="overlay">
+      <div class="intro-card">
+        <div class="seal">THE MERIDIAN HEIST</div>
+        <h2>One minute.<br><em>More than one you.</em></h2>
+        <p class="intro-copy">The hourglass is behind two locks.<br>You can’t be in two places at once.<br>Fortunately, your past has other plans.</p>
+        <div class="intro-buttons"><button class="primary" id="begin">Begin the heist</button><button id="demo">Watch a plan</button></div>
+        <p class="intro-note">WALK · LEAVE AN ECHO · REWIND · REPEAT</p>
+      </div>
+    </div>
+    <div id="result" class="overlay" hidden><div class="intro-card"><div class="seal" id="result-label"></div><h2 id="result-title"></h2><p class="intro-copy" id="result-copy"></p><div class="result-stats" id="result-stats"></div><div class="intro-buttons" id="result-buttons"></div></div></div>
+    <div id="paused" class="pause-banner" hidden><p>Time can wait.</p><button class="primary" id="resume">Resume the heist</button></div>
+    <div id="mobile-prompt" class="mobile-prompt">Gold west station → Leave an echo</div>
+    <div class="toast" id="toast" role="status" hidden></div>
+  </section>
+  <aside class="sidebar">
+    <section><h2 class="section-title">YOUR CREW <span id="crew-count">01 / 06</span></h2><div class="crew-list" id="crew"></div></section>
+    <section class="objectives"><h2 class="section-title">THE PLAN</h2><div class="objective" id="west-objective"><span class="symbol">I</span><span>Hold west station</span><span class="objective-status">WAITING</span></div><div class="objective" id="east-objective"><span class="symbol">II</span><span>Hold east station</span><span class="objective-status">WAITING</span></div><div class="objective" id="artifact-objective"><span class="symbol">III</span><span>Take the hourglass</span><span class="objective-status">SEALED</span></div><div class="objective" id="exit-objective"><span class="symbol">↗</span><span>Return to the entry</span><span class="objective-status">—</span></div><div class="objective" id="loot-objective" title="Optional: steal the First Moon and Entanglement too."><span class="symbol">◇</span><span>Extra credit</span><span class="objective-status" id="loot-count">0 / 2 RELICS</span></div></section>
+    <section class="hint"><h2 class="hint-title" id="hint-title">Leave yourself behind.</h2><p id="hint-copy">Walk onto the gold west station. Press R to record an echo and start again. Your echo holds its final position.</p></section>
+  </aside>
+</div>
+<div class="timeline" aria-label="Elapsed time"><span>00</span><div class="track" id="time-track"><div class="elapsed" id="elapsed"></div><div class="playhead" id="playhead"></div></div><span>60 SEC</span></div>
+<footer class="controls">
+  <div class="control-buttons"><button id="record" class="primary" disabled>Leave an echo <kbd>R</kbd></button><button id="interact" disabled>Whistle <kbd>E</kbd></button><button id="undo" class="quiet" disabled>Undo echo <kbd>⌫</kbd></button></div>
+  <div class="key-legend"><span><kbd>WASD</kbd> move</span><span><kbd>⇧</kbd> run</span><span><kbd>SPACE</kbd> pause</span></div>
+  <div class="touch-controls" aria-label="Touch movement"><div class="dpad"><button data-direction="up" aria-label="Move up">↑</button><button data-direction="left" aria-label="Move left">←</button><button data-direction="down" aria-label="Move down">↓</button><button data-direction="right" aria-label="Move right">→</button></div><span style="font:9px monospace;color:var(--muted)">OR TAP<br>TO WALK</span></div>
+</footer>
+<div id="replay-controls" class="replay-controls" hidden><button id="replay-toggle" class="small">Pause replay</button><input id="scrub" type="range" min="0" max="1" value="0" step="1" aria-label="Replay position"><button id="again" class="small">Your turn</button><button id="keep" class="small">Keep a frame</button></div>
+<div class="credit"><span>AN INDEPENDENT ONESHOT · BUILT BY GPT-6.1 SOL (XHIGH) / CODEX</span><span>NO INSTALL. NO ACCOMPLICES REQUIRED.</span></div>
+<p id="announcer" class="sr-only" aria-live="polite"></p>
+</main>
+<dialog id="guide" aria-labelledby="guide-title"><div class="eyebrow">A field guide to a perfect crime</div><h2 id="guide-title">Recruit your past.</h2><p>Every attempt begins at the same moment. You have 60 seconds, up to five echoes, and one very valuable hourglass.</p><ol><li><strong>Hold the west station.</strong> Walk onto its gold circle and leave an echo. The museum resets; your echo repeats the trip and then stays there.</li><li><strong>Hold the east station.</strong> Leave a second echo on the blue circle. When both stations are occupied, the vault’s laser barrier opens.</li><li><strong>Make the final run.</strong> Walk into the vault, take the hourglass, and bring it to the green entry circle before time runs out.</li></ol><p>Guards see echoes and investigate whistles. Use your past as a distraction. Only the live you can be caught. Marble walls and displays block their vision. Running is faster, but nearby guards can hear it.</p><p><strong>Feeling ambitious?</strong> The First Moon in the west wing and Entanglement in the east wing can also be stolen. Press E nearby. Bring all three treasures home for grand larceny; extra echoes can buy you cover.</p><div class="help-keys"><strong>Click / tap</strong><span>Walk to a destination</span><strong>WASD / arrows</strong><span>Move in screen directions</span><strong>R</strong><span>Record your route and rewind</span><strong>E</strong><span>Take a nearby relic; otherwise whistle</span><strong>Shift</strong><span>Run (audible to nearby guards)</span><strong>Space / P</strong><span>Pause / resume</span><strong>Backspace</strong><span>Remove the newest echo and rewind</span></div><p>An echo remembers your route and whistles, and holds its last pose until the minute ends. It is a temporal projection: it cannot be caught or carry treasure. If you’re caught, you can keep the route or retry without recording it. Each rewind resets all guards, locks, and the artifacts.</p><div class="help-footer"><button id="close-help" class="primary">Understood</button></div></dialog>
+<script>
+'use strict';
+(() => {
+const $ = id => document.getElementById(id);
+const canvas = $('museum'), ctx = canvas.getContext('2d');
+const FPS = 60, LIMIT = 3600, DT = 1 / FPS, SPEED = 155, RUN_SPEED = 220, RADIUS = 9;
+const SPAWN = {x:116,y:543}, WEST = {x:164,y:160}, EAST = {x:856,y:160}, ARTIFACT = {x:524,y:139};
+const PALETTE = ['#77d9c1','#b4a0ee','#eea285','#8ac3e8','#ddc881'];
+const BONUS = [
+ {x:252,y:301,id:'moon',name:'The First Moon',type:'lift-moon'},
+ {x:843,y:304,id:'knot',name:'Entanglement',type:'lift-knot'}
+];
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const manual = new URLSearchParams(location.search).has('test');
+const walls = [
+ {x:326,y:65,w:14,h:330,z:44}, {x:716,y:65,w:14,h:330,z:44},
+ {x:384,y:66,w:14,h:192,z:52}, {x:650,y:66,w:14,h:192,z:52},
+ {x:384,y:252,w:105,h:13,z:41}, {x:559,y:252,w:105,h:13,z:41}
+];
+const exhibits = [
+ {x:233,y:282,w:38,h:38,z:24,type:'orbit',name:'THE FIRST MOON'},
+ {x:136,y:357,w:32,h:32,z:23,type:'crystal',name:'A SMALL INFINITY'},
+ {x:824,y:285,w:38,h:38,z:24,type:'knot',name:'ENTANGLEMENT'},
+ {x:902,y:374,w:32,h:32,z:23,type:'sphere',name:'THE PALE SUN'},
+ {x:435,y:442,w:40,h:40,z:29,type:'orbit',name:'PERPETUAL MOTION'},
+ {x:615,y:442,w:40,h:40,z:29,type:'crystal',name:'THE LONG NOW'},
+ {x:512,y:129,w:24,h:24,z:27,type:'hourglass',name:'BORROWED TIME'}
+];
+const gate = {x:489,y:252,w:70,h:13};
+const routes = [
+ [{x:230,y:398},{x:112,y:398},{x:112,y:239},{x:273,y:239},{x:273,y:398}],
+ [{x:434,y:323},{x:632,y:323},{x:670,y:527},{x:373,y:527},{x:434,y:323}],
+ [{x:798,y:392},{x:888,y:423},{x:905,y:250},{x:798,y:250},{x:798,y:392}]
+];
+const state = {
+ mode:'title',tick:0,attempt:1,echoes:[],player:pose(SPAWN.x,SPAWN.y),
+ track:[],events:[],pending:[],guards:[],west:false,east:false,open:false,
+ carry:false,loot:[],alarm:0,paused:false,path:[],target:null,keys:new Set(),
+ victory:null,replay:null,demo:false,lastWhistle:-999,lastNotice:-999
+};
+let width=1,height=1,dpr=1,view={s:1,ox:0,oy:0},overview=true,uiStamp=0,toastUntil=0,lastFrame=0,accumulator=0,ambientTick=-1;
+let audio=null, soundOn=false, hoveredEcho=-1, decorativeTime=0;
+function pose(x,y,angle=-Math.PI/2){return {x,y,angle,moving:false,running:false};}
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+function angleDiff(a,b){return Math.atan2(Math.sin(a-b),Math.cos(a-b));}
+function sample(track,tick){return track[Math.min(tick,track.length-1)];}
+function resetGuards(){return routes.map((points,i)=>({x:points[0].x,y:points[0].y,angle:Math.atan2(points[1].y-points[0].y,points[1].x-points[0].x),points,index:1,investigate:null,until:0,interest:null,id:i}));}
+function announce(message){$('announcer').textContent=message;}
+function toast(message,duration=3){$('toast').textContent=message;$('toast').hidden=false;toastUntil=performance.now()+duration*1000;announce(message);}
+function resetLoop(mode='playing'){
+ state.mode=mode;state.tick=0;state.player=pose(SPAWN.x,SPAWN.y);state.track=[{...state.player}];state.events=[];state.pending=[];state.guards=resetGuards();state.carry=false;state.loot=[];state.alarm=0;state.west=false;state.east=false;state.open=false;state.path=[];state.target=null;state.paused=false;state.lastWhistle=-999;state.lastNotice=-999;state.keys.clear();accumulator=0;
+ ambientTick=-1;
+ $('result').hidden=true;$('intro').hidden=true;$('paused').hidden=true;$('replay-controls').hidden=mode!=='demo'&&mode!=='replay';$('scrub').value=0;
+ $('pause').textContent='Ⅱ';$('pause').setAttribute('aria-label','Pause the heist');$('replay-toggle').textContent='Pause replay';
+ updateUI(true);
+}
+function start(){
+ state.echoes=[];state.attempt=1;state.victory=null;state.replay=null;state.demo=false;overview=width>=700;resetLoop();canvas.focus({preventScroll:true});toast('First job: leave an echo on the gold west station.');
+}
+function solids(open=state.open){return open?[...walls,...exhibits]:[...walls,...exhibits,gate];}
+function blocked(x,y,open=state.open,r=RADIUS){
+ if(x-r<58||x+r>945||y-r<68||y+r>591)return true;
+ return solids(open).some(b=>x+r>b.x&&x-r<b.x+b.w&&y+r>b.y&&y-r<b.y+b.h);
+}
+function lineClear(a,b,open=state.open,r=RADIUS){
+ const length=distance(a,b),n=Math.max(1,Math.ceil(length/7));
+ for(let i=0;i<=n;i++)if(blocked(a.x+(b.x-a.x)*i/n,a.y+(b.y-a.y)*i/n,open,r))return false;
+ return true;
+}
+function moveActor(actor,dx,dy,open=state.open){
+ const original={x:actor.x,y:actor.y};
+ if(!blocked(actor.x+dx,actor.y,open))actor.x+=dx;
+ if(!blocked(actor.x,actor.y+dy,open))actor.y+=dy;
+ actor.moving=distance(actor,original)>.02;
+ if(actor.moving)actor.angle=Math.atan2(dy,dx);
+ return actor.moving;
+}
+function findPath(from,to,open=state.open){
+ if(blocked(to.x,to.y,open))return null;
+ if(lineClear(from,to,open))return [{...to}];
+ const CELL=20,COLS=50,ROWS=32;
+ const ix=Math.floor(from.x/CELL),iy=Math.floor(from.y/CELL),tx=Math.floor(to.x/CELL),ty=Math.floor(to.y/CELL);
+ const start=iy*COLS+ix,end=ty*COLS+tx,queue=[start],came=new Map([[start,-1]]),cost=new Map([[start,0]]);
+ const center=k=>({x:(k%COLS)*CELL+CELL/2,y:Math.floor(k/COLS)*CELL+CELL/2});
+ const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+ let found=false;
+ while(queue.length){
+   queue.sort((a,b)=>(cost.get(a)+distance(center(a),to)/CELL)-(cost.get(b)+distance(center(b),to)/CELL));
+   const k=queue.shift();if(k===end){found=true;break;}
+   const x=k%COLS,y=Math.floor(k/COLS),p=center(k);
+   for(const [dx,dy]of dirs){
+     const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=COLS||ny>=ROWS)continue;
+     const next=ny*COLS+nx,q=center(next);
+     if(blocked(q.x,q.y,open)||!lineClear(p,q,open))continue;
+     const c=cost.get(k)+Math.hypot(dx,dy);
+     if(!cost.has(next)||c<cost.get(next)){cost.set(next,c);came.set(next,k);if(!queue.includes(next))queue.push(next);}
+   }
+ }
+ if(!found)return null;
+ const path=[{...to}];let k=end;
+ while(k!==start){path.push(center(k));k=came.get(k);}path.reverse();
+ const smooth=[];let at=from,index=0;
+ while(index<path.length){let next=index;while(next+1<path.length&&lineClear(at,path[next+1],open))next++;smooth.push(path[next]);at=path[next];index=next+1;}
+ return smooth;
+}
+function navigate(x,y,quiet=false){
+ if(state.mode!=='playing'||state.paused)return false;
+ if(distance({x,y},ARTIFACT)<42){x=524;y=188;}
+ for(const bonus of BONUS)if(distance({x,y},bonus)<32){x=bonus.x;y=bonus.y+43;}
+ const path=findPath(state.player,{x,y});
+ if(!path){if(!quiet)toast(!state.open&&x>384&&x<664&&y<265?'Vault sealed. Both stations must be occupied.':'Pick a clear spot on the museum floor.');return false;}
+ state.path=path;state.target={x,y};state.keys.clear();return true;
+}
+function followPath(actor,path,speed=SPEED,open=state.open){
+ if(!path.length){actor.moving=false;return;}
+ let budget=speed*DT;
+ while(path.length&&budget>0){
+   const d=distance(actor,path[0]);if(d<.1){path.shift();continue;}
+   const travel=Math.min(d,budget),dx=(path[0].x-actor.x)/d*travel,dy=(path[0].y-actor.y)/d*travel;
+   if(!moveActor(actor,dx,dy,open)){path.length=0;break;}
+   budget-=travel;if(travel===d)path.shift();
+ }
+}
+function frameFor(echo,tick=state.tick){
+ const frame=sample(echo.track,tick);
+ return tick>=echo.track.length-1?{...frame,moving:false,running:false}:frame;
+}
+function stationStates(tick){
+ const actors=[state.player,...state.echoes.map(e=>frameFor(e,tick))];
+ state.west=actors.some(a=>distance(a,WEST)<27);state.east=actors.some(a=>distance(a,EAST)<27);
+ const wasOpen=state.open;state.open=state.west&&state.east;
+ if(state.open&&!wasOpen&&state.mode==='playing'){toast('Both locks released. The hourglass is yours to take.');cue('gate');}
+ if(!state.open&&wasOpen&&state.carry&&state.mode==='playing')toast('A station was released. The vault has sealed again.');
+}
+function see(guard,actor){
+ const d=distance(guard,actor);return d<170&&(d<24||Math.abs(angleDiff(Math.atan2(actor.y-guard.y,actor.x-guard.x),guard.angle))<.47)&&lineClear(guard,actor,state.open,0);
+}
+function hear(x,y,tick,range=275,source='whistle'){
+ for(const guard of state.guards)if(distance(guard,{x,y})<range){
+   guard.investigate={x,y};guard.until=tick+300;guard.interest=source;
+ }
+}
+function takeOrWhistle(){
+ if(state.mode!=='playing'||state.paused)return;
+ state.pending.push('interact');
+}
+function availableAction(){
+ if(!state.carry&&distance(state.player,ARTIFACT)<61&&state.open)return 'take';
+ const bonus=BONUS.find(b=>!state.loot.includes(b.id)&&distance(state.player,b)<62);
+ return bonus?bonus.type:'whistle';
+}
+function dispatch(type,tick,record=true){
+ if(type==='interact')type=availableAction();
+ if(type==='take'){
+   if(!state.carry&&state.open&&distance(state.player,ARTIFACT)<61){state.carry=true;if(record)state.events.push({tick,type:'take'});cue('take');if(state.mode==='playing')toast('You have the hourglass. Get back to the green entry.');}
+ }else if(type.startsWith('lift-')){
+   const bonus=BONUS.find(b=>b.type===type);
+   if(bonus&&!state.loot.includes(bonus.id)&&distance(state.player,bonus)<62){
+     state.loot.push(bonus.id);if(record)state.events.push({tick,type});cue('take');
+     if(state.mode==='playing')toast(bonus.name+' lifted. '+state.loot.length+' of 2 bonus relics.');
+   }
+ }else if(type==='whistle'&&tick-state.lastWhistle>65){
+   state.lastWhistle=tick;hear(state.player.x,state.player.y,tick);
+   if(record)state.events.push({tick,type:'whistle'});cue('whistle');
+   if(state.mode==='playing')toast('Whistle. The nearest guards are investigating.',1.5);
+ }
+}
+function updateGuard(guard,tick){
+ const echoTargets=state.echoes.map(e=>frameFor(e,tick)).filter(a=>see(guard,a));
+ if(echoTargets.length&&(!guard.investigate||guard.interest==='echo')){
+   const target=echoTargets.sort((a,b)=>distance(guard,a)-distance(guard,b))[0];
+   guard.investigate={x:target.x,y:target.y};guard.until=tick+120;guard.interest='echo';
+ }
+ if(guard.investigate&&tick>guard.until){guard.investigate=null;guard.interest=null;}
+ const target=guard.investigate||guard.points[guard.index],d=distance(guard,target);
+ if(d>4){
+   guard.angle=Math.atan2(target.y-guard.y,target.x-guard.x);
+   if(lineClear(guard,target,state.open)){
+     moveActor(guard,Math.cos(guard.angle)*49*DT,Math.sin(guard.angle)*49*DT);
+   }else{
+     // Replan only at a fixed cadence. Pathfinding respects displays and the vault.
+     if(!guard.path||tick%30===guard.id*5)guard.path=findPath(guard,target)||[];
+     followPath(guard,guard.path,49);
+   }
+ }else if(!guard.investigate){guard.index=(guard.index+1)%guard.points.length;}
+}
+function simulate(){
+ if(state.paused||!['playing','demo','replay'].includes(state.mode))return;
+ const next=state.tick+1;
+ stationStates(next);
+ if(state.mode==='playing'){
+   let dx=0,dy=0;
+   if(state.keys.has('arrowleft')||state.keys.has('a'))dx--;
+   if(state.keys.has('arrowright')||state.keys.has('d'))dx++;
+   if(state.keys.has('arrowup')||state.keys.has('w'))dy--;
+   if(state.keys.has('arrowdown')||state.keys.has('s'))dy++;
+   state.player.running=state.keys.has('shift');
+   if(dx||dy){
+     state.path=[];state.target=null;
+     // Invert the museum projection so arrows correspond to screen directions.
+     const wx=(.76*dx+.36*dy)/.787,wy=(-.075*dx+dy)/.787,n=Math.hypot(wx,wy),speed=state.player.running?RUN_SPEED:SPEED;
+     moveActor(state.player,wx/n*speed*DT,wy/n*speed*DT);
+   }else{followPath(state.player,state.path);state.player.running=false;}
+ }else{
+   state.player={...sample(state.replay.track,next)};
+ }
+ stationStates(next);
+ for(const echo of state.echoes)for(const event of echo.events)if(event.tick===next&&event.type==='whistle'){
+   const p=frameFor(echo,next);hear(p.x,p.y,next,275,'echo whistle');
+ }
+ if(state.mode==='playing'){for(const action of state.pending)dispatch(action,next);state.pending=[];}
+ else for(const event of state.replay.events)if(event.tick===next)dispatch(event.type,next,false);
+ if(state.player.running&&state.player.moving&&next%30===0)hear(state.player.x,state.player.y,next,125,'footsteps');
+ state.guards.forEach(g=>updateGuard(g,next));
+ const seen=state.guards.some(g=>see(g,state.player));
+ state.alarm=Math.max(0,Math.min(1,state.alarm+(seen?(state.carry?1.7:1.25):-.64)*DT));
+ state.tick=next;
+ if(state.mode==='playing')state.track.push({...state.player});
+ if(seen&&state.mode==='playing'&&next-state.lastNotice>160){state.lastNotice=next;cue('noticed');}
+ if(state.carry&&distance(state.player,SPAWN)<30){finish(true);return;}
+ if(state.alarm>=1){finish(false,'caught');return;}
+ if(next>=LIMIT){finish(false,'time');return;}
+ if((state.mode==='demo'||state.mode==='replay')&&next>=state.replay.track.length-1)finish(false,'incomplete');
+ if(soundOn&&next%30===0&&next!==ambientTick){ambientTick=next;score(next);}
+}
+function saveEcho(){
+ if(!['playing','failed'].includes(state.mode))return;
+ if(state.echoes.length>=5){toast('The link supports five echoes. Undo one to make room.');return;}
+ if(state.track.length<16){toast('Walk a little first. Your echo needs a route.');return;}
+ const last=state.track[state.track.length-1],role=distance(last,WEST)<27?'West station':distance(last,EAST)<27?'East station':'Distraction';
+ state.echoes.push({track:state.track.map(p=>({...p})),events:state.events.map(e=>({...e})),color:PALETTE[state.echoes.length],role});
+ state.attempt++;state.demo=false;cue('rewind');resetLoop();
+ toast(role==='Distraction'?'Echo recorded. Your past will repeat that route.':role+' assigned. Your echo will hold its last position.');
+ canvas.focus({preventScroll:true});
+}
+function undoEcho(){
+ if(state.echoes.length===0||!['playing','failed'].includes(state.mode))return;
+ state.echoes.pop();state.attempt++;cue('rewind');resetLoop();toast('Last echo removed. A fresh minute begins.');
+}
+function resultButton(label,fn,primary=false){
+ const button=document.createElement('button');button.textContent=label;if(primary)button.className='primary';button.onclick=fn;$('result-buttons').append(button);
+}
+function finish(success,reason){
+ const priorMode=state.mode;state.keys.clear();state.path=[];state.paused=false;
+ $('toast').hidden=true;toastUntil=0;
+ if(success){
+   const trace=priorMode==='playing'?{track:state.track.map(p=>({...p})),events:state.events.map(e=>({...e}))}:state.replay;
+   state.victory={track:trace.track,events:trace.events,echoes:state.echoes.map(e=>({...e})),tick:state.tick,demo:state.demo};
+   state.mode='won';cue('win');
+   $('result-label').textContent=state.demo?'A REHEARSAL WELL EXECUTED':'THE MERIDIAN HEIST · COMPLETE';
+   $('result-title').innerHTML=state.loot.length===2?'Grand larceny.<br><em>Three perfect absences.</em>':'A perfect crime.<br><em>You were everywhere.</em>';
+   $('result-copy').textContent=state.demo?'Two echoes held the locks. Two kept security busy. You brought the hourglass home. Now make a plan of your own.':state.loot.length===2?'The hourglass, the Moon, and the Knot. The whole collection vanished, and every witness saw someone different.':'The hourglass is yours. For a bigger challenge, return for the two optional relics in the side galleries.';
+   $('result-stats').innerHTML='<div><strong>'+((state.tick/FPS).toFixed(1))+'s</strong><span>THE FINAL RUN</span></div><div><strong>'+state.echoes.length+'</strong><span>PAST SELVES</span></div><div><strong>'+String(state.loot.length+1).padStart(2,'0')+'</strong><span>OF 3 TREASURES</span></div>';
+   $('result-stats').hidden=false;$('result-buttons').replaceChildren();resultButton('Watch the replay',()=>startReplay(),true);resultButton('Your turn',start);
+   announce('Heist complete. The hourglass is back at the entry.');
+ }else{
+   state.mode='failed';cue('caught');
+   $('result-label').textContent=reason==='time'?'THE MINUTE IS OVER':'SECURITY HAS QUESTIONS';
+   $('result-title').innerHTML=reason==='time'?'Time’s up.<br><em>Borrow some more.</em>':'The present<br><em>caught up.</em>';
+   $('result-copy').textContent=reason==='time'?'Keep this route as an echo, or try the minute again. Your other echoes are still on the crew.':'Stay out of the guards’ amber cones. Whistle from cover, or let an echo draw their attention.';
+   $('result-stats').hidden=true;$('result-buttons').replaceChildren();
+   if(priorMode==='playing'){resultButton('Retry this minute',()=>{resetLoop();canvas.focus({preventScroll:true});},true);if(state.echoes.length<5&&state.track.length>=16)resultButton('Keep route & rewind',saveEcho);}
+   else{resultButton('Your turn',start,true);}
+   announce(reason==='time'?'Time expired. Retry or keep your route.':'Caught by security. Retry or keep your route.');
+ }
+ $('result').hidden=false;$('paused').hidden=true;$('replay-controls').hidden=true;updateUI(true);
+}
+function buildRecording(points,open=false,waits={}){
+ const actor=pose(SPAWN.x,SPAWN.y),track=[{...actor}];
+ for(let i=0;i<points.length;i++){
+   const path=findPath(actor,points[i],open);
+   if(!path)throw new Error('Demonstration has an unreachable destination.');
+   let safety=0;
+   while(path.length&&safety++<LIMIT){followPath(actor,path,SPEED,open);track.push({...actor});}
+   for(let j=0;j<(waits[i]||0);j++)track.push({...actor,moving:false});
+ }
+ return {track,events:[]};
+}
+function makeDemo(){
+ const a=buildRecording([WEST]),b=buildRecording([{x:803,y:480},EAST]);
+ a.color=PALETTE[0];a.role='West station';b.color=PALETTE[1];b.role='East station';
+ const c=buildRecording([{x:665,y:570}]),d=buildRecording([{x:784,y:535},{x:797,y:461}]);
+ c.color=PALETTE[2];c.role='Distraction';c.events=[{tick:c.track.length-1,type:'whistle'}];
+ d.color=PALETTE[3];d.role='Distraction';d.events=[{tick:d.track.length-1,type:'whistle'}];
+ const trip=buildRecording([{x:360,y:565},{x:524,y:294},{x:524,y:188},{x:524,y:294},{x:355,y:568},SPAWN],true,{1:420,2:24});
+ let take=trip.track.findIndex(p=>p.y<190&&p.x>500);
+ trip.events=[{tick:take+8,type:'take'}];
+ return {echoes:[a,b,c,d],trip};
+}
+function startDemo(){
+ const plan=makeDemo();state.echoes=plan.echoes;state.attempt=5;state.replay=plan.trip;state.demo=true;state.victory=null;overview=true;resetLoop('demo');$('scrub').max=plan.trip.track.length-1;toast('Five versions of you. Two locks. One very strange alibi.',4);
+}
+function startReplay(){
+ if(!state.victory)return;
+ const saved=state.victory;state.echoes=saved.echoes;state.replay={track:saved.track,events:saved.events};state.demo=saved.demo;overview=true;resetLoop('replay');$('scrub').max=saved.tick;toast('The whole crew. One minute. The same sequence of events.',3);
+}
+function setPause(value=!state.paused){
+ if(!['playing','demo','replay'].includes(state.mode))return;
+ state.paused=value;state.keys.clear();accumulator=0;$('paused').hidden=!value;$('pause').textContent=value?'▶':'Ⅱ';$('pause').setAttribute('aria-label',value?'Resume the heist':'Pause the heist');$('replay-toggle').textContent=value?'Resume replay':'Pause replay';
+}
+function updateUI(force=false){
+ if(!force&&performance.now()-uiStamp<65)return;uiStamp=performance.now();
+ $('clock').innerHTML=(Math.max(0,LIMIT-state.tick)/FPS).toFixed(1)+'<small>sec</small>';
+ $('clock').style.color=state.tick>3000?'var(--red)':'var(--gold)';
+ $('loop').textContent=String(state.attempt).padStart(2,'0');
+ $('mode').textContent=({title:'STANDBY',playing:'LIVE',demo:'REHEARSAL',replay:'REPLAY',won:'EXTRACTED',failed:'INTERRUPTED'})[state.mode];
+ $('alarm').style.width=state.alarm*100+'%';$('alert-label').textContent=state.alarm>.1?'BEING WATCHED':'SUSPICION';
+ $('elapsed').style.width=state.tick/LIMIT*100+'%';$('playhead').style.left=state.tick/LIMIT*100+'%';
+ $('crew-count').textContent=String(state.echoes.length+1).padStart(2,'0')+' / 06';
+ const active=['playing','failed'].includes(state.mode);
+ $('record').disabled=!active||state.echoes.length>=5;$('interact').disabled=state.mode!=='playing';$('undo').disabled=!active||state.echoes.length===0;
+ const action=availableAction();
+ $('interact').innerHTML=(action==='take'?'Take hourglass':action.startsWith('lift-')?'Lift relic':'Whistle')+' <kbd>E</kbd>';
+ $('loot-count').textContent=state.loot.length+' / 2 RELICS';
+ $('loot-objective').classList.toggle('done',state.loot.length===2);
+ for(const [id,done,label]of [['west',state.west,'HELD'],['east',state.east,'HELD'],['artifact',state.carry,'TAKEN'],['exit',state.mode==='won','HOME']]){
+   const el=$(id+'-objective');el.classList.toggle('done',done);el.querySelector('.objective-status').textContent=done?label:id==='artifact'?(state.open?'OPEN':'SEALED'):id==='exit'?(state.carry?'GO':'—'):'WAITING';
+ }
+ let title='Leave yourself behind.',copy='Walk onto the gold west station. Press R to record an echo and start again. Your echo holds its final position.';
+ const hasWest=state.echoes.some(e=>e.role==='West station'),hasEast=state.echoes.some(e=>e.role==='East station');
+ if(state.carry){title='Make yourself scarce.';copy='Return to the green entry circle. Keep clear of the guards: the stolen hourglass makes you easier to spot.';}
+ else if(state.open){title='The past has your back.';copy='Both stations are held. Walk into the vault and press E near the hourglass. Then return to the green entry.';}
+ else if(hasWest&&hasEast){title='Let the crew catch up.';copy='Your echoes are on their way to both stations. Approach the vault; its red barrier opens when both arrive.';}
+ else if(state.west&&!hasWest){title='A good place to stay.';copy='You’re holding the west station. Press R now. Your echo will repeat the walk and stay right here.';}
+ else if(state.east&&!hasEast){title='Your second accomplice.';copy='You’re holding the east station. Press R to leave an echo here, then make the final run yourself.';}
+ else if(hasWest){title='You need another you.';copy='Reach the blue east station and press R. Your first echo will take care of the west. The south hall connects both wings.';}
+ else if(hasEast){title='One lock left.';copy='Leave an echo on the gold west station. With both stations assigned, you can go after the hourglass.';}
+ if(state.mode==='won'){title='A very strange alibi.';copy='Watch the replay to see your whole crew at work. Or start again and try for all three treasures.';}
+ $('hint-title').textContent=title;$('hint-copy').textContent=copy;
+ $('mobile-prompt').textContent=state.mode==='demo'||state.mode==='replay'?'Watch your past work.':state.carry?'Return to the green entry.':state.open?'Vault open → Take hourglass (E)':state.west&&!hasWest?'Leave an echo here (R).':state.east&&!hasEast?'Leave an echo here (R).':hasWest&&hasEast?'Let both echoes reach their stations.':hasWest?'Blue east station → Leave an echo':'Gold west station → Leave an echo';
+ $('floor-mode').textContent=state.mode==='won'?'ARTIFACT EXTRACTED':state.mode==='demo'?'GUIDED REHEARSAL':state.mode==='replay'?'THE PERFECT CRIME, REPLAYED':state.carry?'ARTIFACT IN TRANSIT':'TEMPORAL LINK ESTABLISHED';
+ $('floor-hint').textContent=state.open?'VAULT OPEN':state.west||state.east?'ONE LOCK RELEASED':'CLICK TO WALK';
+ $('map').textContent=overview?'Follow':'Map';$('map').setAttribute('aria-pressed',String(!overview));
+ if(force)renderCrew();
+ if(state.mode==='replay'||state.mode==='demo')$('scrub').value=state.tick;
+}
+function renderCrew(){
+ const crew=$('crew');crew.replaceChildren();
+ const live=document.createElement('div');live.className='crew-row';live.innerHTML='<div class="crew-orb" style="color:#dfbc78">●</div><div><div class="crew-name">You, right now</div><div class="crew-detail">The only one who can take it.</div></div>';crew.append(live);
+ state.echoes.forEach((echo,i)=>{
+   const row=document.createElement('div');row.className='crew-row';
+   row.innerHTML='<div class="crew-orb" style="color:'+echo.color+'">'+String(i+1).padStart(2,'0')+'</div><div><div class="crew-name">Echo '+String(i+1).padStart(2,'0')+'</div><div class="crew-detail">'+(echo.track.length/FPS).toFixed(1)+'s · '+echo.role+'</div></div>';
+   if(state.mode==='playing'||state.mode==='failed'){const cut=document.createElement('button');cut.className='cut';cut.textContent='×';cut.setAttribute('aria-label','Remove Echo '+(i+1));cut.onclick=()=>{state.echoes.splice(i,1);state.attempt++;resetLoop();toast('Echo removed. The remaining crew starts again.');};row.append(cut);}
+   row.onmouseenter=()=>hoveredEcho=i;row.onmouseleave=()=>hoveredEcho=-1;crew.append(row);
+ });
+ if(!state.echoes.length){const empty=document.createElement('div');empty.className='empty-crew';empty.innerHTML='An empty crew.<br>An excellent opportunity<br>to meet yourself.';crew.append(empty);}
+ $('time-track').querySelectorAll('.anchor').forEach(a=>a.remove());
+ state.echoes.forEach(e=>{const anchor=document.createElement('span');anchor.className='anchor';anchor.style.left=(e.track.length/LIMIT*100)+'%';anchor.style.background=e.color;anchor.title=e.role+' · '+(e.track.length/FPS).toFixed(1)+'s';$('time-track').append(anchor);});
+}
+function project(x,y,z=0){return {x:view.ox+(x-.36*y)*view.s,y:view.oy+(.075*x+.76*y-z)*view.s};}
+function unproject(x,y){
+ const sx=(x-view.ox)/view.s,sy=(y-view.oy)/view.s;
+ return {x:(.76*sx+.36*sy)/.787,y:(sy-.075*sx)/.787};
+}
+function resize(){
+ const rect=canvas.getBoundingClientRect();
+ // A hidden or detached stage can report a zero rectangle during a resize.
+ if(rect.width<1||rect.height<1)return;
+ width=rect.width;height=rect.height;dpr=Math.min(devicePixelRatio||1,2);
+ canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
+ updateView(true);
+}
+function updateView(immediate=false){
+ const fit=Math.max(.08,Math.min((width-(width<700?20:65))/(width<700?1120:1180),(height-122)/540));
+ const targetS=overview?fit:Math.max(fit,width<700?.88:fit*1.5);
+ const focus=overview?{x:501,y:337}:state.player;
+ const targetX=width/2-(focus.x-.36*focus.y)*targetS,targetY=height*.51-(.075*focus.x+.76*focus.y)*targetS;
+ const ease=immediate||reduced?1:.11;
+ view.s+=(targetS-view.s)*ease;view.ox+=(targetX-view.ox)*ease;view.oy+=(targetY-view.oy)*ease;
+}
+function polygon(points,fill,stroke=null,lineWidth=1){
+ ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();
+ if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lineWidth;ctx.stroke();}
+}
+function floorRect(x,y,w,h,fill,stroke=null,z=0){polygon([project(x,y,z),project(x+w,y,z),project(x+w,y+h,z),project(x,y+h,z)],fill,stroke);}
+function floorCircle(x,y,r,fill,stroke=null,z=0){
+ const points=[];for(let i=0;i<60;i++){const a=i*Math.PI/30;points.push(project(x+Math.cos(a)*r,y+Math.sin(a)*r,z));}
+ polygon(points,fill,stroke);
+}
+function worldLine(a,b,color,width=1,z=0){
+ const p=project(a.x,a.y,z),q=project(b.x,b.y,z);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
+}
+function box(x,y,w,h,z,top='#4c5556',front='#273238',right='#1c292f',bottom=0){
+ const a=project(x,y,z),b=project(x+w,y,z),c=project(x+w,y+h,z),d=project(x,y+h,z);
+ polygon([d,c,project(x+w,y+h,bottom),project(x,y+h,bottom)],front,'#0b171c55');
+ polygon([b,c,project(x+w,y+h,bottom),project(x+w,y,bottom)],right,'#0b171c55');
+ polygon([a,b,c,d],top,'#62747835');
+}
+function label(text,x,y,color='#8a9b9d',size=11,z=0,align='center'){
+ const p=project(x,y,z);ctx.fillStyle=color;ctx.font=size*view.s+'px monospace';ctx.textAlign=align;ctx.fillText(text,p.x,p.y);
+}
+function floorText(text,x,y,color,size=15){
+ const p=project(x,y);ctx.save();ctx.translate(p.x,p.y);ctx.transform(view.s,.075*view.s,-.36*view.s,.76*view.s,0,0);ctx.font=size+'px Georgia';ctx.textAlign='center';ctx.fillStyle=color;ctx.fillText(text,0,0);ctx.restore();
+}
+function glow(x,y,z,r,color,alpha=.18){
+ const p=project(x,y,z);ctx.save();ctx.globalAlpha=alpha;const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*view.s);g.addColorStop(0,color);g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(p.x-r*view.s,p.y-r*view.s,2*r*view.s,2*r*view.s);ctx.restore();
+}
+function circle(x,y,r,color){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}
+function drawFloor(){
+ floorRect(34,63,930,560,'#0005');
+ box(49,64,906,535,0,'#202e34','#0e171e','#111d24',-18);
+ for(let y=70;y<591;y+=40)for(let x=58;x<945;x+=40){
+   const n=(x*31+y*13)%17,light=33+n*.27;
+   floorRect(x,y,Math.min(40,945-x),Math.min(40,591-y),'rgb('+light+','+(light+11)+','+(light+17)+')','#40515b32');
+ }
+ floorRect(352,295,350,272,'#2b3939','#76807755');
+ floorRect(363,306,328,250,null,'#c5ae6e44');
+ floorRect(369,312,316,238,null,'#c5ae6e22');
+ floorRect(403,80,231,158,'#344140','#c5ae6e55');
+ floorRect(410,87,217,144,null,'#c5ae6e33');
+ floorCircle(525,417,91,null,'#b8a57425');floorCircle(525,417,85,null,'#b8a57433');
+ floorText('M E R I D I A N',524,553,'#b6b09465',17);
+ floorText('THE WEST COLLECTION',188,100,'#b0b3a885',11);
+ floorText('THE EAST COLLECTION',843,100,'#b0b3a885',11);
+ floorText('BORROWED TIME',524,108,'#e2c68a88',12);
+ const center=project(525,417);ctx.save();ctx.translate(center.x,center.y);ctx.transform(view.s,.075*view.s,-.36*view.s,.76*view.s,0,0);
+ ctx.strokeStyle='#c3b78128';ctx.lineWidth=1;for(let i=0;i<12;i++){const a=i*Math.PI/6;ctx.beginPath();ctx.moveTo(Math.cos(a)*62,Math.sin(a)*62);ctx.lineTo(Math.cos(a)*77,Math.sin(a)*77);ctx.stroke();}
+ ctx.beginPath();ctx.moveTo(-15,-27);ctx.lineTo(15,-27);ctx.lineTo(-15,27);ctx.lineTo(15,27);ctx.closePath();ctx.stroke();ctx.restore();
+ // Pools from the gallery spotlights, drawn in the floor's own coordinates.
+ for(const ex of exhibits){const p=project(ex.x+ex.w/2,ex.y+ex.h/2);ctx.save();ctx.translate(p.x,p.y);ctx.transform(view.s,.075*view.s,-.36*view.s,.76*view.s,0,0);const g=ctx.createRadialGradient(-16,-14,3,0,0,91);g.addColorStop(0,'#e0c68e18');g.addColorStop(.55,'#d3bc8c09');g.addColorStop(1,'#d3bc8c00');ctx.fillStyle=g;ctx.fillRect(-100,-100,200,200);ctx.restore();}
+ // Inlaid compass at the entry.
+ floorCircle(SPAWN.x,SPAWN.y,31,'#24493c88','#8bba9680');
+ floorCircle(SPAWN.x,SPAWN.y,25,null,'#84bfa466');
+ const p=project(SPAWN.x,SPAWN.y);ctx.fillStyle='#b1dcc4';ctx.font=20*view.s+'px Georgia';ctx.textAlign='center';ctx.fillText('↗',p.x,p.y+6*view.s);
+ label('ENTRY / EXIT',SPAWN.x,SPAWN.y+47,'#9cc4b2',10);
+ drawStation(WEST,state.west,'#dfbc78','I','WEST STATION');
+ drawStation(EAST,state.east,'#8ac3e8','II','EAST STATION');
+}
+function drawStation(station,held,color,numeral,name){
+ const t=reduced?0:decorativeTime;
+ if(held)glow(station.x,station.y,0,75,color,.15);
+ floorCircle(station.x,station.y,29,'#101d25',color);
+ floorCircle(station.x,station.y,23,held?color+'35':'#32454b',color+'88');
+ floorCircle(station.x,station.y,19,null,color+'55');
+ for(let i=0;i<4;i++){const a=i*Math.PI/2+t*.12;worldLine({x:station.x+Math.cos(a)*31,y:station.y+Math.sin(a)*31},{x:station.x+Math.cos(a)*35,y:station.y+Math.sin(a)*35},color,1);}
+ floorText(numeral,station.x,station.y+5,color,18);
+ label(name,station.x,station.y+49,color,10);
+ label(held?'HELD':'STAND HERE',station.x,station.y+62,held?'#9fe2cc':'#7b959e',8);
+}
+function drawBackWall(){
+ box(49,53,906,14,72,'#4e5657','#314247','#1c2e37');
+ for(let x=88;x<920;x+=152){
+   const p=project(x,67,17),w=75,h=36;
+   polygon([p,project(x+w,67,17),project(x+w,67,17+h),project(x,67,17+h)],'#18262c','#ac936478');
+   polygon([project(x+4,67,21),project(x+w-4,67,21),project(x+w-4,67,49),project(x+4,67,49)],'#46626a','#0b1319');
+   for(let j=0;j<4;j++)worldLine({x:x+7+j*12,y:67},{x:x+25+j*10,y:67},['#9fb5a077','#cfb57566','#e1ac8466','#7cabb655'][j],2,28+j*5);
+   const q=project(x+w/2,67,69);ctx.fillStyle='#edddad';ctx.fillRect(q.x-3*view.s,q.y,6*view.s,2*view.s);
+   glow(x+w/2,72,42,48,'#edcf96',.09);
+ }
+ label('THE MERIDIAN MUSEUM',512,67,'#c8ba8a88',11,61);
+}
+function drawWall(w){
+ box(w.x,w.y,w.w,w.h,w.z,'#58605d','#263a42','#203039');
+ // Pale bands on marble, with brass along the upper edge.
+ worldLine({x:w.x,y:w.y+w.h},{x:w.x+w.w,y:w.y+w.h},'#d7ba7677',1,w.z);
+ if(w.h>40)for(let y=w.y+30;y<w.y+w.h;y+=61)worldLine({x:w.x,y},{x:w.x+w.w,y:y+4},'#96a8ac28',.8,w.z);
+}
+function drawHourglass(x,y,z,size=1,alpha=1){
+ const p=project(x,y,z);ctx.save();ctx.translate(p.x,p.y);ctx.scale(view.s*size,view.s*size);ctx.globalAlpha*=alpha;
+ ctx.shadowColor='#e7c687';ctx.shadowBlur=8*view.s;
+ ctx.strokeStyle='#dbbc7b';ctx.lineWidth=1.7;
+ for(const v of [-10,10]){ctx.beginPath();ctx.moveTo(v,-33);ctx.lineTo(v,-4);ctx.stroke();}
+ polygon([{x:-9,y:-31},{x:9,y:-31},{x:2,y:-19},{x:9,y:-6},{x:-9,y:-6},{x:-2,y:-19}],'#badad820','#b9d2cbb0');
+ polygon([{x:-6,y:-29},{x:6,y:-29},{x:0,y:-21}],'#dfba78');
+ polygon([{x:0,y:-13},{x:6,y:-7},{x:-6,y:-7}],'#e9c884');
+ ctx.beginPath();ctx.moveTo(0,-21);ctx.lineTo(0,-11);ctx.strokeStyle='#f2d8a0';ctx.lineWidth=.7;ctx.stroke();
+ ctx.fillStyle='#dfbd81';ctx.fillRect(-13,-35,26,3);ctx.fillRect(-13,-5,26,3);ctx.shadowBlur=0;ctx.restore();
+}
+function drawExhibit(ex){
+ const x=ex.x+ex.w/2,y=ex.y+ex.h/2;
+ floorRect(ex.x+7,ex.y+8,ex.w+8,ex.h+8,'#030c1477');
+ box(ex.x,ex.y,ex.w,ex.h,ex.z,'#7a8072','#435254','#283b44');
+ box(ex.x+3,ex.y+3,ex.w-6,ex.h-6,ex.z+2,'#87908a','#64746e','#455758',ex.z);
+ const p=project(x,y,ex.z+3),s=view.s;
+ if(ex.type==='hourglass'){
+   if(!state.carry){drawHourglass(x,y,ex.z+6,1.15);glow(x,y,ex.z+28,62,'#ecd093',.18);}
+   else{label('GONE',x,y+3,'#adb7aa88',8,ex.z+3);}
+ }else if((ex.type==='orbit'&&ex.name==='THE FIRST MOON'&&state.loot.includes('moon'))||(ex.type==='knot'&&state.loot.includes('knot'))){
+   label('GONE',x,y,'#adb7aa88',8,ex.z+3);
+ }else if(ex.type==='sphere'){
+   const q=project(x,y,ex.z+20),r=15*s,g=ctx.createRadialGradient(q.x-5*s,q.y-7*s,1,q.x,q.y,r);g.addColorStop(0,'#e8d3a6');g.addColorStop(.4,'#a99b7f');g.addColorStop(1,'#374e58');ctx.fillStyle=g;ctx.beginPath();ctx.arc(q.x,q.y,r,0,Math.PI*2);ctx.fill();
+ }else if(ex.type==='orbit'){
+   const q=project(x,y,ex.z+24);const g=ctx.createRadialGradient(q.x-3*s,q.y-5*s,0,q.x,q.y,10*s);g.addColorStop(0,'#dccc9f');g.addColorStop(1,'#4a645b');circle(q.x,q.y,10*s,g);
+   ctx.strokeStyle='#bfa16e';ctx.lineWidth=1.2*s;for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(q.x,q.y,24*s,8*s,i*Math.PI/3,0,Math.PI*2);ctx.stroke();}
+   const t=reduced?.8:decorativeTime*.15;circle(q.x+Math.cos(t)*24*s,q.y+Math.sin(t)*8*s,2.6*s,'#c5dcd0');worldLine({x,y},{x,y},'#c6ad77',2,ex.z+24);
+ }else if(ex.type==='crystal'){
+   const top=project(x-3,y,ex.z+43),bottom=project(x+1,y,ex.z+5),a=project(x-13,y-4,ex.z+19),b=project(x+11,y-6,ex.z+22),c=project(x+12,y+7,ex.z+18);
+   polygon([top,a,bottom],'#789d9a','#a8c0b866');polygon([top,b,c,bottom],'#537d84','#a8c0b866');polygon([top,a,b],'#acc2ac','#d0d5b788');
+ }else{
+   const points=[];for(let i=0;i<161;i++){const t=i/160*Math.PI*2;points.push(project(x+(Math.sin(t)+2*Math.sin(2*t))*7,y+(Math.cos(t)-2*Math.cos(2*t))*7,ex.z+20-Math.sin(3*t)*8));}
+   ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#bda279';ctx.lineWidth=3*s;ctx.stroke();ctx.strokeStyle='#e1c18c99';ctx.lineWidth=1*s;ctx.stroke();
+ }
+ const q=project(x,ex.y+ex.h+9);ctx.save();ctx.translate(q.x,q.y);ctx.transform(s,.075*s,-.36*s,.76*s,0,0);ctx.fillStyle='#0e1c23';ctx.fillRect(-32,-4,64,9);ctx.fillStyle='#a49c7e';ctx.font='4.5px monospace';ctx.textAlign='center';ctx.fillText(ex.name,0,2);ctx.restore();
+ if(ex.name==='THE FIRST MOON'||ex.type==='knot'){const bonus=BONUS.find(b=>distance(b,{x,y})<5);if(bonus&&!state.loot.includes(bonus.id))label('◇ OPTIONAL',x,y+40,'#d9ba78a0',7);}
+}
+function castRay(guard,angle){
+ for(let d=4;d<=170;d+=4){const x=guard.x+Math.cos(angle)*d,y=guard.y+Math.sin(angle)*d;if(blocked(x,y,state.open,0))return {x,y};}
+ return {x:guard.x+Math.cos(angle)*170,y:guard.y+Math.sin(angle)*170};
+}
+function drawCone(guard){
+ const points=[project(guard.x,guard.y)];
+ for(let i=0;i<=30;i++){const point=castRay(guard,guard.angle-.47+i/30*.94);points.push(project(point.x,point.y));}
+ const detected=see(guard,state.player)&&state.mode!=='title';
+ polygon(points,detected?'#f787692e':'#dabc6913',detected?'#f393694f':'#d7bc6827',.6);
+}
+function drawGate(){
+ const left=project(489,259,3),right=project(559,259,3);
+ for(const x of [485,563]){box(x,253,5,15,15,'#84918a','#3c5359','#233840');glow(x,260,15,13,state.open?'#8de3c8':'#f09081',.28);}
+ if(!state.open){
+   ctx.save();ctx.strokeStyle='#f18878';ctx.shadowColor='#f17566';ctx.shadowBlur=9;ctx.lineWidth=1.1;
+   for(let z=4;z<34;z+=8){const a=project(489,259,z),b=project(559,259,z);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+   ctx.shadowBlur=0;ctx.restore();polygon([left,right,project(559,259,34),project(489,259,34)],'#ed70690d');
+ }else{worldLine({x:489,y:259},{x:559,y:259},'#8cdbb8',1.5,1);}
+ label(state.open?'VAULT OPEN':'TWO LOCKS',524,292,state.open?'#a4e4bf':'#e8a494',9);
+}
+function drawActor(actor,color,echo=false,guard=false,index=0){
+ if(!actor)return;
+ const t=state.tick/FPS,p=project(actor.x,actor.y),s=view.s;
+ floorCircle(actor.x+3,actor.y+4,12,'#020b1370');
+ if(echo){floorCircle(actor.x,actor.y,13,null,color+'85');if(!actor.moving)floorCircle(actor.x,actor.y,18,null,color+'35');}
+ ctx.save();ctx.translate(p.x,p.y);ctx.scale(s,s);ctx.globalAlpha=echo?.66:1;
+ const step=actor.moving?Math.sin(t*(actor.running?20:13)+index)*3:0;
+ ctx.strokeStyle=guard?'#253038':'#101c24';ctx.lineWidth=4;ctx.lineCap='round';
+ ctx.beginPath();ctx.moveTo(-3,-13);ctx.lineTo(-4-step,0);ctx.moveTo(3,-13);ctx.lineTo(4+step,-1);ctx.stroke();
+ ctx.strokeStyle=echo?color:guard?'#a8a78b':'#ede0bd';ctx.lineWidth=1;
+ polygon([{x:-7,y:-29},{x:7,y:-29},{x:9,y:-12},{x:-8,y:-11}],echo?color+'70':guard?'#747c6d':'#293e49',echo?color:guard?'#9fa185':'#b9cbd0',1);
+ ctx.strokeStyle=guard?'#7a8373':echo?color:'#597480';ctx.lineWidth=3;
+ ctx.beginPath();ctx.moveTo(-7,-25);ctx.lineTo(-10,-14-step);ctx.moveTo(7,-25);ctx.lineTo(10,-15+step);ctx.stroke();
+ circle(0,-36,5.6,guard?'#b5ab8c':echo?color:'#e5d5b1');
+ if(guard){ctx.fillStyle='#34464b';ctx.fillRect(-7,-42,14,4);ctx.fillStyle='#bbad70';ctx.fillRect(1,-26,3,3);}
+ else{ctx.fillStyle=echo?color:'#101e26';ctx.fillRect(-6,-41,12,4);ctx.strokeStyle=echo?color:'#dfbc78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,-30);ctx.lineTo(5,-29);ctx.lineTo(8,-23);ctx.stroke();}
+ ctx.fillStyle=echo?color:guard?'#969f8e':'#e4cf9e';ctx.font='8px monospace';ctx.textAlign='center';ctx.fillText(echo?String(index+1).padStart(2,'0'):guard?'SEC':'YOU',0,-50);
+ ctx.restore();
+ if(!echo&&!guard&&state.carry){drawHourglass(actor.x+15,actor.y,20,.42);glow(actor.x,actor.y,22,39,'#e2c685',.22);}
+ if(guard&&guard.investigate){label(guard.interest==='echo'?'?':'!',actor.x,actor.y,'#e8c77d',15,62);}
+}
+function drawTrails(){
+ state.echoes.forEach((echo,i)=>{
+   ctx.save();ctx.globalAlpha=hoveredEcho===i?.8:.25;ctx.strokeStyle=echo.color;ctx.lineWidth=Math.max(.8,view.s*1.1);
+   const stop=hoveredEcho===i?echo.track.length-1:Math.min(state.tick,echo.track.length-1);
+   ctx.beginPath();for(let t=0;t<=stop;t+=5){const p=project(echo.track[t].x,echo.track[t].y,1);t?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);}ctx.stroke();ctx.restore();
+ });
+ if(state.path.length&&state.mode==='playing'){
+   ctx.save();ctx.setLineDash([3,5]);ctx.strokeStyle='#ddc38580';ctx.lineWidth=1;ctx.beginPath();let p=project(state.player.x,state.player.y,1);ctx.moveTo(p.x,p.y);state.path.forEach(point=>{p=project(point.x,point.y,1);ctx.lineTo(p.x,p.y);});ctx.stroke();ctx.restore();
+   const target=state.path[state.path.length-1];floorCircle(target.x,target.y,8,null,'#dfbc7880');worldLine({x:target.x-3,y:target.y},{x:target.x+3,y:target.y},'#e3c481',1);
+ }
+}
+function draw(){
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);updateView();
+ drawFloor();drawBackWall();drawTrails();
+ const guards=state.mode==='title'?resetGuards():state.guards;
+ guards.forEach(drawCone);
+ const sorted=[
+   ...walls.map(w=>({depth:.075*(w.x+w.w/2)+.76*(w.y+w.h/2),fn:()=>drawWall(w)})),
+   ...exhibits.map(ex=>({depth:.075*(ex.x+ex.w/2)+.76*(ex.y+ex.h/2),fn:()=>drawExhibit(ex)})),
+   ...guards.map((g,i)=>({depth:.075*g.x+.76*g.y,fn:()=>drawActor(g,'#acb197',false,true,i)})),
+   ...state.echoes.map((e,i)=>({depth:.075*frameFor(e).x+.76*frameFor(e).y,fn:()=>drawActor(frameFor(e),e.color,true,false,i)})),
+   {depth:.075*state.player.x+.76*state.player.y,fn:()=>drawActor(state.player,'#dfbc78')},
+   {depth:.075*524+.76*260,fn:drawGate}
+ ];
+ sorted.sort((a,b)=>a.depth-b.depth).forEach(item=>item.fn());
+ box(945,68,10,527,14,'#46575b','#192d38','#172933');box(49,591,906,8,9,'#66736c','#22333b','#1b2c34');
+ for(const [x,y]of [[63,82],[933,82],[63,580],[933,580]]){box(x,y,13,13,48,'#7b8171','#3b5056','#2c404c');box(x-1,y-1,15,15,46,'#ab9864','#726a4d','#585239',42);}
+ // Airborne dust is decorative only; it never consumes simulation randomness.
+ if(!reduced){ctx.fillStyle='#e8d7a3';for(let i=0;i<44;i++){const x=80+(i*179)%850,y=85+(i*113)%490,z=15+(i*19)%55+Math.sin(decorativeTime*.2+i)*4,p=project(x,y,z);ctx.globalAlpha=.035+(i%4)*.012;ctx.fillRect(p.x,p.y,1,1);}ctx.globalAlpha=1;}
+ if(state.lastWhistle>0&&state.tick-state.lastWhistle<75){const age=(state.tick-state.lastWhistle)/75;floorCircle(state.player.x,state.player.y,20+age*100,null,'rgba(221,191,130,'+((1-age)*.45)+')');}
+}
+function initAudio(){
+ if(audio)return;
+ const AudioContext=window.AudioContext||window.webkitAudioContext;
+ if(!AudioContext){toast('Sound is unavailable in this browser.');return;}
+ const ac=new AudioContext(),master=ac.createGain(),analyser=ac.createAnalyser();
+ master.gain.value=.16;analyser.fftSize=256;master.connect(analyser);analyser.connect(ac.destination);
+ const noise=ac.createBuffer(1,Math.floor(ac.sampleRate*.3),ac.sampleRate),samples=noise.getChannelData(0);let seed=173;
+ for(let i=0;i<samples.length;i++){seed=(seed*16807)%2147483647;samples[i]=(seed/2147483647*2-1)*(1-i/samples.length);}
+ audio={ac,master,analyser,noise};
+}
+function tone(freq,time=.2,volume=.2,type='sine',delay=0,end=null,pan=0){
+ if(!audio||!soundOn)return;const {ac,master}=audio,t=ac.currentTime+delay,osc=ac.createOscillator(),gain=ac.createGain(),stereo=ac.createStereoPanner();
+ osc.type=type;osc.frequency.setValueAtTime(freq,t);if(end)osc.frequency.exponentialRampToValueAtTime(end,t+time);
+ gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(volume,t+.012);gain.gain.exponentialRampToValueAtTime(.001,t+time);stereo.pan.value=pan;
+ osc.connect(gain);gain.connect(stereo);stereo.connect(master);osc.start(t);osc.stop(t+time+.03);osc.onended=()=>{osc.disconnect();gain.disconnect();stereo.disconnect();};
+}
+function cue(name){
+ if(!soundOn)return;
+ if(name==='rewind'){tone(650,.6,.3,'triangle',0,75);tone(980,.45,.08,'sine',.06,120);}
+ else if(name==='whistle'){tone(1250,.18,.3,'sine',0,1460);tone(1350,.2,.22,'sine',.17,1190);}
+ else if(name==='gate'){[220,330,440,660].forEach((f,i)=>tone(f,.45,.17,'triangle',i*.08));}
+ else if(name==='take'){[660,880,1100,1320].forEach((f,i)=>tone(f,.65,.18,'sine',i*.065));}
+ else if(name==='noticed'){tone(196,.12,.25,'triangle');tone(185,.2,.15,'triangle',.1);}
+ else if(name==='caught'){tone(146,.5,.3,'triangle',0,73);tone(155,.5,.2,'sine');}
+ else if(name==='win'){[220,277.18,329.63,440,554.37,659.25].forEach((f,i)=>tone(f,1.2,.18,'sine',i*.09));}
+}
+function score(tick){
+ const beat=Math.floor(tick/30),roots=[110,110,87.31,98],root=roots[Math.floor(beat/16)%4];
+ if(beat%4===0)tone(root,.6,.2,'sine');
+ if(beat%2===0)tone(root*[2,3,4,3][Math.floor(beat/2)%4],.18,.09,'triangle',0,null,beat%4===0?-.4:.4);
+ if(state.carry&&beat%2)tone(root*6,.12,.06,'sine');
+}
+async function toggleSound(){
+ initAudio();if(!audio)return;
+ await audio.ac.resume();soundOn=!soundOn;audio.master.gain.setTargetAtTime(soundOn?.16:0,audio.ac.currentTime,.05);
+ $('sound').textContent=soundOn?'Sound on':'Sound off';$('sound').setAttribute('aria-label',soundOn?'Disable sound':'Enable sound');$('sound').setAttribute('aria-pressed',String(soundOn));
+ if(soundOn){tone(440,.3,.28);tone(660,.45,.2,'sine',.08);}
+}
+function seek(tick){
+ if(!state.replay)return;
+ const mode=state.mode==='demo'?'demo':'replay',trace=state.replay;
+ resetLoop(mode);state.replay=trace;
+ for(let i=0;i<tick&&['demo','replay'].includes(state.mode);i++)simulate();
+ setPause(true);updateUI(true);draw();
+}
+function keepFrame(){
+ draw();const a=document.createElement('a');a.download='borrowed-seconds-'+(state.tick/FPS).toFixed(1)+'s.png';a.href=canvas.toDataURL('image/png');a.click();toast('A frame of a very strange alibi.');
+}
+$('begin').onclick=start;$('demo').onclick=startDemo;$('record').onclick=saveEcho;$('undo').onclick=undoEcho;$('interact').onclick=takeOrWhistle;$('reset').onclick=start;$('sound').onclick=toggleSound;
+$('pause').onclick=()=>setPause();$('resume').onclick=()=>{setPause(false);canvas.focus({preventScroll:true});};
+$('map').onclick=()=>{overview=!overview;updateView(true);updateUI(true);};
+$('replay-toggle').onclick=()=>setPause();$('again').onclick=start;$('keep').onclick=keepFrame;
+$('scrub').oninput=event=>seek(Number(event.target.value));
+let pauseBeforeGuide=false;
+$('help').onclick=()=>{pauseBeforeGuide=state.paused;setPause(true);$('guide').showModal();};
+$('close-help').onclick=()=>$('guide').close();
+$('guide').addEventListener('close',()=>{setPause(pauseBeforeGuide);canvas.focus({preventScroll:true});});
+canvas.addEventListener('pointerdown',event=>{
+ if(event.button!==0||state.mode!=='playing'||state.paused)return;
+ const rect=canvas.getBoundingClientRect(),p=unproject(event.clientX-rect.left,event.clientY-rect.top);navigate(p.x,p.y);canvas.focus({preventScroll:true});
+});
+const arrowKeys={up:'arrowup',down:'arrowdown',left:'arrowleft',right:'arrowright'};
+document.querySelectorAll('[data-direction]').forEach(button=>{
+ const key=arrowKeys[button.dataset.direction];
+ button.onpointerdown=event=>{event.preventDefault();button.setPointerCapture(event.pointerId);if(state.mode==='playing'&&!state.paused){state.keys.add(key);if(width<700)overview=false;}};
+ const release=()=>state.keys.delete(key);button.onpointerup=release;button.onpointercancel=release;button.onlostpointercapture=release;
+});
+document.addEventListener('keydown',event=>{
+ if(event.ctrlKey||event.metaKey||event.altKey||$('guide').open||/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName))return;
+ const key=event.key.toLowerCase();
+ if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d','shift'].includes(key)){
+   if(state.mode==='playing'&&!state.paused){event.preventDefault();state.keys.add(key);}return;
+ }
+ if(event.repeat)return;
+ if(key==='r'){event.preventDefault();saveEcho();}
+ else if(key==='e'){event.preventDefault();takeOrWhistle();}
+ else if(key==='backspace'){event.preventDefault();undoEcho();}
+ else if((key===' '&&!['BUTTON','A'].includes(event.target.tagName))||key==='p'){event.preventDefault();setPause();}
+ else if(key==='escape'&&state.paused){event.preventDefault();setPause(false);}
+});
+document.addEventListener('keyup',event=>state.keys.delete(event.key.toLowerCase()));
+window.addEventListener('blur',()=>{state.keys.clear();setPause(true);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){state.keys.clear();setPause(true);}});
+new ResizeObserver(resize).observe(canvas);
+function snapshot(){
+ return {mode:state.mode,tick:state.tick,attempt:state.attempt,player:{...state.player},echoes:state.echoes.map(e=>({role:e.role,length:e.track.length,pose:{...frameFor(e)},whistles:e.events.filter(a=>a.type==='whistle').length})),west:state.west,east:state.east,open:state.open,carry:state.carry,loot:[...state.loot],alarm:state.alarm,paused:state.paused,path:state.path.map(p=>({...p})),guards:state.guards.map(g=>({x:g.x,y:g.y,angle:g.angle,interest:g.interest,index:g.index,until:g.until})),victoryTick:state.victory?.tick??null};
+}
+if(manual)window.BorrowedSeconds=Object.freeze({
+ snapshot,step:(n,keys)=>{if(keys!==undefined)state.keys=new Set(keys);for(let i=0;i<n;i++)simulate();if(keys!==undefined)state.keys.clear();updateUI(true);updateView(true);draw();return snapshot();},
+ screen:(x,y)=>{updateView(true);const p=project(x,y),rect=canvas.getBoundingClientRect();return {x:p.x+rect.left,y:p.y+rect.top};},
+ navigate:(x,y)=>navigate(x,y,true),
+ recording:()=>({track:state.track.map(p=>({...p})),events:state.events.map(e=>({...e}))}),
+ audioLevel:()=>{if(!audio)return 0;const data=new Float32Array(audio.analyser.fftSize);audio.analyser.getFloatTimeDomainData(data);return Math.sqrt(data.reduce((s,x)=>s+x*x,0)/data.length);},
+ seek,draw
+});
+function frame(now){
+ if(!lastFrame)lastFrame=now;const delta=Math.min((now-lastFrame)/1000,.1);lastFrame=now;
+ if(!manual&&!state.paused){accumulator+=delta*(state.mode==='demo'?1.3:1);let steps=0;while(accumulator>=DT&&steps++<12){simulate();accumulator-=DT;}}
+ decorativeTime=reduced?0:now/1000;
+ if(toastUntil&&now>toastUntil){$('toast').hidden=true;toastUntil=0;}
+ draw();updateUI();requestAnimationFrame(frame);
+}
+state.guards=resetGuards();renderCrew();resize();updateUI(true);requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

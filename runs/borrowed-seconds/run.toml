@@ -1,0 +1,26 @@
+schema = 1
+slug = "borrowed-seconds"
+title = "Borrowed Seconds"
+summary = "A midnight museum heist: record your past selves, coordinate two locks, distract security, and steal three treasures in sixty seconds."
+date = 2026-09-30
+kind = "single-file"
+medium = ["web", "game", "simulation", "audio", "procedural"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "GPT-6.1 Sol"
+model_id = "unrecorded"
+harness = "Codex (cloud session)"
+reasoning = "xhigh"
+
+[run]
+brief = "brief.md"
+human_turns = 3
+wall_clock_minutes = 64
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+verify = "node verify.mjs"
