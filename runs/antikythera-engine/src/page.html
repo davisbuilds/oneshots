@@ -1,0 +1,1458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Antikythera Engine</title>
+<meta name="description" content="A brass orrery whose every gear train was designed by search, turning at its true ratio, checked against JPL ephemerides.">
+<style>
+:root {
+  --ink: #efe4cc;
+  --dim: #a89d86;
+  --faint: #6f6757;
+  --brass: #d9b36a;
+  --line: rgba(217, 179, 106, 0.22);
+  --panel: rgba(14, 12, 10, 0.72);
+  --good: #9fc79a;
+  --warn: #e3a268;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #0b0a09; color: var(--ink); overflow: hidden;
+  font: 14px/1.4 var(--serif); -webkit-font-smoothing: antialiased; }
+canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+canvas#gl.dragging { cursor: grabbing; }
+.panel { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+button { font: inherit; color: var(--ink); background: rgba(217,179,106,0.08); border: 1px solid var(--line);
+  border-radius: 6px; padding: 5px 9px; cursor: pointer; }
+button:hover { background: rgba(217,179,106,0.18); }
+button.on { background: rgba(217,179,106,0.28); border-color: rgba(217,179,106,0.6); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+
+#title { top: 16px; left: 16px; padding: 14px 16px 12px; max-width: 330px; }
+#title h1 { margin: 0; font-size: 22px; font-weight: 400; letter-spacing: 0.06em; color: var(--brass); text-transform: uppercase; }
+#title p { margin: 6px 0 0; color: var(--dim); font-size: 13px; }
+#title .toggles { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+#title .toggles button { font-size: 12px; padding: 4px 8px; }
+
+#time { left: 50%; bottom: 16px; transform: translateX(-50%); padding: 10px 14px; display: flex; align-items: center; gap: 14px; }
+#date { min-width: 250px; text-align: center; }
+#date .d { font-size: 24px; letter-spacing: 0.02em; }
+#date .s { font: 11px var(--mono); color: var(--dim); margin-top: 2px; }
+#time .ctl { display: flex; gap: 5px; align-items: center; }
+#time .speed { font: 12px var(--mono); color: var(--dim); min-width: 92px; text-align: center; }
+#knob { width: 66px; height: 66px; cursor: grab; touch-action: none; }
+#knob:active { cursor: grabbing; }
+#jump { display: flex; gap: 5px; align-items: center; }
+#jump input { width: 78px; font: 13px var(--mono); color: var(--ink); background: rgba(0,0,0,0.3);
+  border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; }
+
+#ledger { top: 16px; right: 16px; width: 420px; padding: 12px 12px 10px; max-height: calc(100% - 140px); overflow: auto; }
+#ledger h2 { margin: 0 0 2px; font-size: 13px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); }
+#ledger .sub { color: var(--dim); font-size: 12px; margin-bottom: 8px; }
+table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
+th { text-align: right; font-weight: 400; color: var(--faint); padding: 3px 4px; border-bottom: 1px solid var(--line); font-size: 11px; }
+th:first-child, td:first-child { text-align: left; }
+td { text-align: right; padding: 4px 4px; border-bottom: 1px solid rgba(217,179,106,0.08); white-space: nowrap; }
+tr.body { cursor: pointer; }
+tr.body:hover td { background: rgba(217,179,106,0.07); }
+tr.body.sel td { background: rgba(217,179,106,0.16); }
+td .nm { font-family: var(--serif); font-size: 13.5px; }
+td .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.pos { color: var(--warn); } .neg { color: #8fb6d8; }
+#inspect { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; font-size: 13px; color: var(--dim); }
+#inspect b { color: var(--ink); font-weight: 400; }
+#inspect .train { font: 12px var(--mono); color: var(--ink); margin: 6px 0; line-height: 1.7; }
+#inspect .train span.ax { color: var(--brass); }
+#inspect .big { font-size: 17px; color: var(--ink); }
+#inspect canvas { width: 100%; height: 90px; display: block; margin-top: 8px; }
+#note { color: var(--faint); font-size: 11.5px; margin-top: 8px; }
+
+.label { position: fixed; pointer-events: none; font: 11px var(--serif); letter-spacing: 0.08em; color: var(--ink);
+  text-transform: uppercase; text-shadow: 0 1px 3px #000, 0 0 8px #000; white-space: nowrap; transform: translate(-50%, -150%); opacity: 0.85; }
+.label.ghost { color: #9fd3e6; font-size: 10px; opacity: 0.8; transform: translate(-50%, 60%); }
+
+#help { position: fixed; bottom: 16px; left: 16px; font-size: 11.5px; color: var(--faint); max-width: 260px; }
+#caption { position: fixed; left: 50%; bottom: 118px; transform: translateX(-50%); width: min(760px, calc(100% - 32px));
+  text-align: center; font-size: 19px; line-height: 1.45; color: var(--ink); text-shadow: 0 1px 4px #000, 0 0 14px #000;
+  opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
+#caption.on { opacity: 1; }
+#err { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 40px; color: var(--dim); }
+
+@media (max-width: 1100px) {
+  #ledger { width: 360px; }
+}
+@media (max-width: 760px) {
+  #title { max-width: calc(100% - 32px); padding: 10px 12px; }
+  #title p { display: none; }
+  #ledger { top: auto; bottom: 178px; right: 16px; left: 16px; width: auto; max-height: 24%; padding: 8px 10px; }
+  #ledger .sub, #note { display: none; }
+  #time { left: 16px; right: 16px; transform: none; flex-wrap: wrap; justify-content: center; gap: 6px 10px; padding: 8px 10px; }
+  #knob { width: 46px; height: 46px; }
+  #date { min-width: 0; flex: 1 1 100%; order: -1; }
+  #date .d { font-size: 18px; }
+  #caption { bottom: 190px; font-size: 15px; }
+  #help { display: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div id="title" class="panel">
+  <h1>The Antikythera Engine</h1>
+  <p>A brass orrery whose gear trains were found by search. Every wheel turns at the ratio its teeth dictate; glass beads show where JPL's ephemeris says each body really is.</p>
+  <div class="toggles">
+    <button id="tSky" class="on" title="Show true positions (G)">True sky</button>
+    <button id="tLabels" class="on" title="Labels (L)">Labels</button>
+    <button id="vOver">Overview</button>
+    <button id="vMove">Movement</button>
+    <button id="vCrank">Crank</button>
+    <button id="vTop">Plan</button>
+    <button id="vEarth">Earth &amp; Moon</button>
+    <button id="bSvg" title="Download every wheel as a 1:1 laser-cutting sheet">Cut sheets (SVG)</button>
+    <button id="bTour" title="A one-minute guided tour (T)">Take the tour</button>
+  </div>
+</div>
+
+<div id="ledger" class="panel">
+  <h2>Ledger: brass against sky</h2>
+  <div class="sub">Heliocentric ecliptic longitude, J2000 (the Moon: geocentric). Click a row to see its train.</div>
+  <table>
+    <thead><tr><th>Body</th><th>Brass</th><th>Sky</th><th>Brass − sky</th><th>of which gears</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="inspect"></div>
+  <div id="note">Gears can keep a body's <i>mean</i> motion almost exactly; they cannot make it speed up near the Sun. Most of "brass − sky" is Kepler's second law, and it never grows. The last column is the part that does.</div>
+</div>
+
+<div id="time" class="panel">
+  <svg id="knob" viewBox="-40 -40 80 80" aria-label="Crank: drag round to turn the machine; one turn is one year" role="slider">
+    <circle r="36" fill="rgba(0,0,0,0.35)" stroke="rgba(217,179,106,0.45)"/>
+    <g id="knobTicks"></g>
+    <g id="knobArm"><line x1="0" y1="0" x2="0" y2="-27" stroke="#d9b36a" stroke-width="3" stroke-linecap="round"/>
+      <circle cy="-27" r="6.5" fill="#6b3f22" stroke="#d9b36a" stroke-width="1.5"/></g>
+    <circle r="5" fill="#d9b36a"/>
+  </svg>
+  <div id="date"><div class="d" id="dateMain">—</div><div class="s" id="dateSub">—</div></div>
+  <div class="ctl">
+    <button id="bSlow" title="Slower ([)">◀</button>
+    <button id="bPlay" title="Play / pause (space)">❚❚</button>
+    <button id="bFast" title="Faster (])">▶</button>
+    <button id="bRev" title="Run time backwards (R)">⇄</button>
+  </div>
+  <div class="speed" id="speed">—</div>
+  <div id="jump">
+    <input id="year" aria-label="Year (negative or BC for before Christ)" placeholder="year">
+    <button id="bGo">Go</button>
+    <button id="bNow">Now</button>
+  </div>
+</div>
+
+<div id="caption"></div>
+<div id="help">Drag to orbit · scroll to zoom · right-drag or shift-drag to pan · drag the crank dial to turn the machine by hand</div>
+<div id="err"></div>
+<div id="labels"></div>
+
+<script type="application/json" id="design">
+/*DESIGN*/
+</script>
+
+<script>
+'use strict';
+// =====================================================================
+// The Antikythera Engine: one page, no dependencies. The machine's
+// geometry comes from data/design.json (embedded above by src/embed.py);
+// nothing here chooses a tooth count.
+// =====================================================================
+const D = JSON.parse(document.getElementById('design').textContent);
+const TAU = Math.PI * 2, RAD = Math.PI / 180;
+const BODY = {
+  mercury: { name: 'Mercury', r: 4.2, color: [0.62, 0.60, 0.57], dot: '#a39e96' },
+  venus:   { name: 'Venus',   r: 6.2, color: [0.93, 0.86, 0.68], dot: '#eadcb0' },
+  emb:     { name: 'Earth',   r: 6.6, color: [0.20, 0.38, 0.66], dot: '#4d7fc4' },
+  moon:    { name: 'Moon',    r: 2.8, color: [0.72, 0.71, 0.69], dot: '#c9c6c0' },
+  mars:    { name: 'Mars',    r: 5.0, color: [0.72, 0.33, 0.18], dot: '#c56a42' },
+  jupiter: { name: 'Jupiter', r: 11.0, color: [0.80, 0.70, 0.56], dot: '#d4b98f' },
+  saturn:  { name: 'Saturn',  r: 9.2, color: [0.86, 0.78, 0.58], dot: '#e0cd98' },
+  uranus:  { name: 'Uranus',  r: 7.4, color: [0.60, 0.80, 0.84], dot: '#a3d4dc' },
+  neptune: { name: 'Neptune', r: 7.2, color: [0.26, 0.40, 0.78], dot: '#5b7fd6' },
+};
+const ORDER = ['mercury', 'venus', 'emb', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+
+// ------------------------------------------------------------ ephemeris
+// Standish & Williams, JPL "Approximate Positions of the Planets", Tables
+// 2a/2b (3000 BC - AD 3000). Identical numbers to src/ephemeris.py, which is
+// tested against JPL Horizons; verify.mjs checks this port against Python.
+const J2000 = 2451545.0;
+const T2A = {
+  mercury: [[0.38709843, 0.20563661, 7.00559432, 252.25166724, 77.45771895, 48.33961819], [0.00000000, 0.00002123, -0.00590158, 149472.67486623, 0.15940013, -0.12214182]],
+  venus:   [[0.72332102, 0.00676399, 3.39777545, 181.97970850, 131.76755713, 76.67261496], [-0.00000026, -0.00005107, 0.00043494, 58517.81560260, 0.05679648, -0.27274174]],
+  emb:     [[1.00000018, 0.01673163, -0.00054346, 100.46691572, 102.93005885, -5.11260389], [-0.00000003, -0.00003661, -0.01337178, 35999.37306329, 0.31795260, -0.24123856]],
+  mars:    [[1.52371243, 0.09336511, 1.85181869, -4.56813164, -23.91744784, 49.71320984], [0.00000097, 0.00009149, -0.00724757, 19140.29934243, 0.45223625, -0.26852431]],
+  jupiter: [[5.20248019, 0.04853590, 1.29861416, 34.33479152, 14.27495244, 100.29282654], [-0.00002864, 0.00018026, -0.00322699, 3034.90371757, 0.18199196, 0.13024619]],
+  saturn:  [[9.54149883, 0.05550825, 2.49424102, 50.07571329, 92.86136063, 113.63998702], [-0.00003065, -0.00032044, 0.00451969, 1222.11494724, 0.54179478, -0.25015002]],
+  uranus:  [[19.18797948, 0.04685740, 0.77298127, 314.20276625, 172.43404441, 73.96250215], [-0.00020455, -0.00001550, -0.00180155, 428.49512595, 0.09266985, 0.05739699]],
+  neptune: [[30.06952752, 0.00895439, 1.77005520, 304.22289287, 46.68158724, 131.78635853], [0.00006447, 0.00000818, 0.00022400, 218.46515314, 0.01009938, -0.00606302]],
+};
+const T2B = {
+  jupiter: [-0.00012452, 0.06064060, -0.35635438, 38.35125000],
+  saturn:  [0.00025899, -0.13434469, 0.87320147, 38.35125000],
+  uranus:  [0.00058331, -0.97731848, 0.17689245, 7.67025000],
+  neptune: [-0.00041348, 0.68346318, -0.10162547, 7.67025000],
+};
+function planetLongitude(body, jd) {
+  const T = (jd - J2000) / 36525;
+  const [e0, rt] = T2A[body];
+  const [a, e, I, L, wbar, node] = e0.map((x, i) => x + rt[i] * T);
+  const w = wbar - node;
+  let M = L - wbar;
+  if (T2B[body]) { const [b, c, s, f] = T2B[body]; M += b * T * T + c * Math.cos(f * T * RAD) + s * Math.sin(f * T * RAD); }
+  M = ((M + 180) % 360 + 360) % 360 - 180;
+  const es = e / RAD;
+  let E = M + es * Math.sin(M * RAD);
+  for (let k = 0; k < 50; k++) {
+    const dM = M - (E - es * Math.sin(E * RAD));
+    const dE = dM / (1 - e * Math.cos(E * RAD));
+    E += dE; if (Math.abs(dE) <= 1e-9) break;
+  }
+  const xp = a * (Math.cos(E * RAD) - e), yp = a * Math.sqrt(1 - e * e) * Math.sin(E * RAD);
+  const cw = Math.cos(w * RAD), sw = Math.sin(w * RAD), cO = Math.cos(node * RAD), sO = Math.sin(node * RAD);
+  const cI = Math.cos(I * RAD);
+  const x = (cw * cO - sw * sO * cI) * xp + (-sw * cO - cw * sO * cI) * yp;
+  const y = (cw * sO + sw * cO * cI) * xp + (-sw * sO + cw * cO * cI) * yp;
+  return ((Math.atan2(y, x) / RAD) % 360 + 360) % 360;
+}
+// Moon: principal ELP-2000/82 terms from Meeus, Astronomical Algorithms ch. 47
+// (same table as src/ephemeris.py), rotated to J2000 by general precession.
+const MOON_LON = [[0,0,1,0,6288774],[2,0,-1,0,1274027],[2,0,0,0,658314],[0,0,2,0,213618],[0,1,0,0,-185116],[0,0,0,2,-114332],[2,0,-2,0,58793],[2,-1,-1,0,57066],[2,0,1,0,53322],[2,-1,0,0,45758],[0,1,-1,0,-40923],[1,0,0,0,-34720],[0,1,1,0,-30383],[2,0,0,-2,15327],[0,0,1,2,-12528],[0,0,1,-2,10980],[4,0,-1,0,10675],[0,0,3,0,10034],[4,0,-2,0,8548],[2,1,-1,0,-7888],[2,1,0,0,-6766],[1,0,-1,0,-5163],[1,1,0,0,4987],[2,-1,1,0,4036],[2,0,2,0,3994],[4,0,0,0,3861],[2,0,-3,0,3665],[0,1,-2,0,-2689],[2,0,-1,2,-2602],[2,-1,-2,0,2390],[1,0,1,0,-2348],[2,-2,0,0,2236],[0,1,2,0,-2120],[0,2,0,0,-2069],[2,-2,-1,0,2048],[2,0,1,-2,-1773],[2,0,0,2,-1595],[4,-1,-1,0,1215],[0,0,2,2,-1110]];
+const PREC = 5028.796195 / 3600;
+function moonLongitude(jd) {
+  const T = (jd - J2000) / 36525;
+  const Lp = 218.3164477 + 481267.88123421 * T - 0.0015786 * T * T + T ** 3 / 538841 - T ** 4 / 65194000;
+  const Dm = 297.8501921 + 445267.1114034 * T - 0.0018819 * T * T + T ** 3 / 545868 - T ** 4 / 113065000;
+  const M = 357.5291092 + 35999.0502909 * T - 0.0001536 * T * T + T ** 3 / 24490000;
+  const Mp = 134.9633964 + 477198.8675055 * T + 0.0087414 * T * T + T ** 3 / 69699 - T ** 4 / 14712000;
+  const F = 93.2720950 + 483202.0175233 * T - 0.0036539 * T * T - T ** 3 / 3526000 + T ** 4 / 863310000;
+  const E = 1 - 0.002516 * T - 0.0000074 * T * T;
+  let s = 0;
+  for (const [d, m, mp, f, c] of MOON_LON) s += c * E ** Math.abs(m) * Math.sin((d * Dm + m * M + mp * Mp + f * F) * RAD);
+  s += 3958 * Math.sin((119.75 + 131.849 * T) * RAD) + 1962 * Math.sin((Lp - F) * RAD) + 318 * Math.sin((53.09 + 479264.290 * T) * RAD);
+  return (((Lp + s / 1e6 - PREC * T) % 360) + 360) % 360;
+}
+function trueLongitude(body, jd) { return body === 'moon' ? moonLongitude(jd) : planetLongitude(body, jd); }
+const wrap180 = d => ((d + 180) % 360 + 360) % 360 - 180;
+
+// ------------------------------------------------------------ calendar
+// Julian day <-> date, Julian calendar before 1582 Oct 15, Gregorian after
+// (as Horizons does). Astronomical year numbering: year 0 = 1 BC.
+function jdFromDate(y, mo, d) {
+  if (mo <= 2) { y -= 1; mo += 12; }
+  let B = 0;
+  if (y > 1582 || (y === 1582 && (mo > 10 || (mo === 10 && d >= 15)))) { const A = Math.floor(y / 100); B = 2 - A + Math.floor(A / 4); }
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (mo + 1)) + d + B - 1524.5;
+}
+function dateFromJd(jd) {
+  const Z = Math.floor(jd + 0.5), F = jd + 0.5 - Z;
+  let A = Z;
+  if (Z >= 2299161) { const al = Math.floor((Z - 1867216.25) / 36524.25); A = Z + 1 + al - Math.floor(al / 4); }
+  const B = A + 1524, C = Math.floor((B - 122.1) / 365.25), Dd = Math.floor(365.25 * C), E = Math.floor((B - Dd) / 30.6001);
+  const day = B - Dd - Math.floor(30.6001 * E) + F;
+  const mo = E < 14 ? E - 1 : E - 13, y = mo > 2 ? C - 4716 : C - 4715;
+  return { y, mo, d: Math.floor(day), frac: day - Math.floor(day), julian: Z < 2299161 };
+}
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function fmtDate(jd) {
+  const t = dateFromJd(jd);
+  const yr = t.y > 0 ? `${t.y}` : `${1 - t.y} BC`;
+  return `${t.d} ${MONTHS[t.mo - 1]} ${yr}`;
+}
+
+// ------------------------------------------------------------ kinematics
+// Rates in turns of the arbor per turn of the crank (anticlockwise positive,
+// seen from above). The crank turns L clockwise once per sidereal year; each
+// mesh reverses the sense and scales by drv/drn. Exact fractions live in
+// design.json; floats are ample for display (angles are reduced mod 1 turn).
+const P_SID = D.sidereal_year_days;
+const AX = D.axes;
+function axisPos(a) { return AX[a]; }
+const TRAINS = D.trains.map(t => {
+  let rate = -1;
+  const gears = [];      // {axis, z, m, rate, phase, level, role, body}
+  let phase = 0;          // tooth phase of the current driving wheel (radians)
+  t.meshes.forEach((ms, k) => {
+    const pa = axisPos(ms.src), pb = axisPos(ms.dst);
+    const phi = Math.atan2(pb[1] - pa[1], pb[0] - pa[0]);
+    const drv = { axis: ms.src, z: ms.drv, m: ms.m, rate, phase, level: ms.level, body: t.body, mesh: k, role: 'drv' };
+    const rateB = -rate * ms.drv / ms.drn;
+    // Teeth interlock: when a tooth of A faces B, a gap of B faces A.
+    const phaseB = phi + Math.PI - Math.PI / ms.drn - (ms.drv / ms.drn) * (phase - phi);
+    const drn = { axis: ms.dst, z: ms.drn, m: ms.m, rate: rateB, phase: phaseB, level: ms.level, body: t.body, mesh: k, role: 'drn' };
+    gears.push(drv, drn);
+    rate = rateB; phase = 0.37 * k;       // next driver: fixed to the same pipe, own tooth phase
+  });
+  return { ...t, gears, finalRate: rate, ratioF: t.ratio[0] / t.ratio[1] };
+});
+const TRAIN = Object.fromEntries(TRAINS.map(t => [t.body, t]));
+const L0 = D.j2000_mean_longitude;
+
+function crankTurns(jd) { return (jd - D.epoch_jd) / P_SID; }
+// What the brass shows: the arm is set to the J2000 mean longitude and then
+// turned by its tube, whose rate is the exact product of its train's teeth.
+function brassLongitude(body, jd) {
+  const turns = crankTurns(jd);
+  const rot = (TRAIN[body].ratioF * turns) % 1;   // ratio as float; exactness in design.json
+  return ((L0[body] + rot * 360) % 360 + 360) % 360;
+}
+// Exact version for the verifier: rational ratio times crank turns.
+function gearDrift(body, jd) {
+  const T = (jd - J2000) / 36525;
+  return TRAIN[body].drift_deg_per_century * T;
+}
+
+// ------------------------------------------------------------ small linear algebra (column-major mat4)
+const M4 = {
+  id: () => new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]),
+  mul(a, b) { const o = new Float32Array(16);
+    for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) {
+      let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; }
+    return o; },
+  persp(fovy, asp, n, f) { const t = 1 / Math.tan(fovy / 2), o = new Float32Array(16);
+    o[0] = t / asp; o[5] = t; o[10] = (f + n) / (n - f); o[11] = -1; o[14] = 2 * f * n / (n - f); return o; },
+  ortho(l, r, b, t, n, f) { const o = M4.id();
+    o[0] = 2 / (r - l); o[5] = 2 / (t - b); o[10] = -2 / (f - n);
+    o[12] = -(r + l) / (r - l); o[13] = -(t + b) / (t - b); o[14] = -(f + n) / (f - n); return o; },
+  look(e, c, up) {
+    let zx = e[0] - c[0], zy = e[1] - c[1], zz = e[2] - c[2]; let l = Math.hypot(zx, zy, zz); zx /= l; zy /= l; zz /= l;
+    let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx; l = Math.hypot(xx, xy, xz); xx /= l; xy /= l; xz /= l;
+    const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+    return new Float32Array([xx, yx, zx, 0, xy, yy, zy, 0, xz, yz, zz, 0,
+      -(xx * e[0] + xy * e[1] + xz * e[2]), -(yx * e[0] + yy * e[1] + yz * e[2]), -(zx * e[0] + zy * e[1] + zz * e[2]), 1]); },
+  // Model matrix from design coordinates: translate (x, y, z) then rotate about
+  // the design z axis (= world +y) by angle a (radians, anticlockwise from above).
+  // Design (x, y, z) maps to world (x, z, -y).
+  rt(x, y, z, a, s = 1) { const c = Math.cos(a) * s, n = Math.sin(a) * s;
+    return new Float32Array([c, 0, -n, 0, 0, s, 0, 0, n, 0, c, 0, x, z, -y, 1]); },
+  // world-space helpers for parts whose axis is not vertical
+  tr(x, y, z) { const o = M4.id(); o[12] = x; o[13] = y; o[14] = z; return o; },
+  ry(a) { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]); },
+  rz(a) { const c = Math.cos(a), s = Math.sin(a); return new Float32Array([c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]); },
+  tform(m, p) { return [m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13],
+    m[2] * p[0] + m[6] * p[1] + m[10] * p[2] + m[14], m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15]]; },
+};
+const W = (x, y, z) => [x, z, -y];     // design -> world
+
+// ------------------------------------------------------------ geometry (built in design coordinates, z up)
+class Geo {
+  constructor() { this.p = []; this.n = []; this.i = []; }
+  v(x, y, z, nx, ny, nz) { this.p.push(x, z, -y); this.n.push(nx, nz, -ny); return this.p.length / 3 - 1; }
+  tri(a, b, c) { this.i.push(a, b, c); }
+  quad(a, b, c, d) { this.i.push(a, b, c, a, c, d); }
+  // A closed outline (x, y points, anticlockwise) extruded between z0 and z1,
+  // walls only. Normals are smoothed where the outline turns less than `smooth`.
+  walls(pts, z0, z1, outward = 1, smooth = 0.6) {
+    const n = pts.length, en = [];
+    for (let k = 0; k < n; k++) {
+      const a = pts[k], b = pts[(k + 1) % n]; const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1;
+      en.push([outward * dy / l, -outward * dx / l]);
+    }
+    for (let k = 0; k < n; k++) {
+      const a = pts[k], b = pts[(k + 1) % n];
+      const np = en[(k + n - 1) % n], nc = en[k], nn = en[(k + 1) % n];
+      const na = (np[0] * nc[0] + np[1] * nc[1] > Math.cos(smooth)) ? norm2([np[0] + nc[0], np[1] + nc[1]]) : nc;
+      const nb = (nc[0] * nn[0] + nc[1] * nn[1] > Math.cos(smooth)) ? norm2([nc[0] + nn[0], nc[1] + nn[1]]) : nc;
+      const i0 = this.v(a[0], a[1], z0, na[0], na[1], 0), i1 = this.v(b[0], b[1], z0, nb[0], nb[1], 0);
+      const i2 = this.v(b[0], b[1], z1, nb[0], nb[1], 0), i3 = this.v(a[0], a[1], z1, na[0], na[1], 0);
+      this.quad(i0, i1, i2, i3);
+    }
+  }
+  // Two point rings (same count) joined as a flat face at height z.
+  zip(outer, inner, z, nz) {
+    const n = outer.length, base = this.p.length / 3;
+    for (let k = 0; k < n; k++) { this.v(outer[k][0], outer[k][1], z, 0, 0, nz); this.v(inner[k][0], inner[k][1], z, 0, 0, nz); }
+    for (let k = 0; k < n; k++) { const a = base + 2 * k, b = base + 2 * ((k + 1) % n); this.quad(a, b, b + 1, a + 1); }
+  }
+  fan(pts, z, nz) {
+    const base = this.p.length / 3; let cx = 0, cy = 0;
+    for (const p of pts) { cx += p[0]; cy += p[1]; } cx /= pts.length; cy /= pts.length;
+    this.v(cx, cy, z, 0, 0, nz); for (const p of pts) this.v(p[0], p[1], z, 0, 0, nz);
+    for (let k = 0; k < pts.length; k++) this.tri(base, base + 1 + k, base + 1 + (k + 1) % pts.length);
+  }
+  prism(pts, z0, z1) { this.fan(pts, z1, 1); this.fan(pts, z0, -1); this.walls(pts, z0, z1, 1, 0.5); return this; }
+  // Surface of revolution about the z axis: profile [[r, z], ...]. A repeated
+  // point makes a sharp crease.
+  lathe(prof, seg = 48, x = 0, y = 0) {
+    const rows = [];
+    for (let k = 0; k < prof.length; k++) {
+      const a = prof[Math.max(0, k - 1)], b = prof[k], c = prof[Math.min(prof.length - 1, k + 1)];
+      const sharpBefore = k > 0 && a[0] === b[0] && a[1] === b[1], sharpAfter = k < prof.length - 1 && c[0] === b[0] && c[1] === b[1];
+      let tr, tz;
+      if (sharpAfter) { const p = prof[Math.max(0, k - 1)]; tr = b[0] - p[0]; tz = b[1] - p[1]; }
+      else if (sharpBefore) { const q = prof[Math.min(prof.length - 1, k + 1)]; tr = q[0] - b[0]; tz = q[1] - b[1]; }
+      else { tr = c[0] - a[0]; tz = c[1] - a[1]; }
+      const l = Math.hypot(tr, tz) || 1; rows.push({ r: b[0], z: b[1], nr: tz / l, nz: -tr / l, cut: sharpAfter });
+    }
+    const base = this.p.length / 3;
+    for (const row of rows) for (let s = 0; s <= seg; s++) {
+      const a = s / seg * TAU, c = Math.cos(a), sn = Math.sin(a);
+      this.v(x + row.r * c, y + row.r * sn, row.z, row.nr * c, row.nr * sn, row.nz);
+    }
+    for (let k = 0; k < rows.length - 1; k++) {
+      if (rows[k].cut) continue;
+      for (let s = 0; s < seg; s++) {
+        const a = base + k * (seg + 1) + s, b = a + seg + 1;
+        this.quad(a, a + 1, b + 1, b);
+      }
+    }
+    return this;
+  }
+  tube(ri, ro, z0, z1, seg = 40, x = 0, y = 0) {
+    return this.lathe([[ri, z0], [ro, z0], [ro, z0], [ro, z1], [ro, z1], [ri, z1], [ri, z1], [ri, z0]], seg, x, y);
+  }
+  cyl(r, z0, z1, seg = 32, x = 0, y = 0) {
+    return this.lathe([[0, z0], [r, z0], [r, z0], [r, z1], [r, z1], [0, z1]], seg, x, y);
+  }
+  sphere(r, seg = 40, x = 0, y = 0, z = 0) {
+    const prof = []; for (let k = 0; k <= seg / 2; k++) { const a = -Math.PI / 2 + k / (seg / 2) * Math.PI; prof.push([r * Math.cos(a), z + r * Math.sin(a)]); }
+    prof[0][0] = 0; prof[prof.length - 1][0] = 0;
+    return this.lathe(prof, seg, x, y);
+  }
+}
+const norm2 = v => { const l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
+
+// Involute tooth outline, anticlockwise, tooth 0 centred on +x.
+function gearOutline(z, m, pa = D.rules.pressure_angle * RAD) {
+  const rp = m * z / 2, rb = rp * Math.cos(pa), ra = rp + m, rf = Math.max(rp - 1.25 * m, 0.5);
+  const inv = a => Math.tan(a) - a;
+  const half = Math.PI / (2 * z) + inv(pa);
+  const psi = r => half - inv(Math.acos(Math.min(1, rb / r)));
+  const rs = Math.max(rf, rb), nf = m >= 1.2 ? 6 : 5;
+  let raEff = ra; while (psi(raEff) < 0.01 / z && raEff > rs) raEff -= 0.02 * m;
+  const pts = [], P = (r, a) => pts.push([r * Math.cos(a), r * Math.sin(a)]);
+  for (let k = 0; k < z; k++) {
+    const c = k * TAU / z;
+    if (rf < rb) P(rf, c - psi(rb));
+    for (let i = 0; i <= nf; i++) { const r = rs + (raEff - rs) * i / nf; P(r, c - psi(r)); }
+    const pt = psi(raEff); P(raEff, c - pt * 0.35); P(raEff, c + pt * 0.35);
+    for (let i = nf; i >= 0; i--) { const r = rs + (raEff - rs) * i / nf; P(r, c + psi(r)); }
+    if (rf < rb) P(rf, c + psi(rb));
+    const c2 = c + TAU / z, a0 = c + psi(rs), a1 = c2 - psi(rs);
+    for (let i = 1; i <= 2; i++) P(rf, a0 + (a1 - a0) * i / 3);
+  }
+  return pts;
+}
+const ringAt = (pts, r) => pts.map(p => { const a = Math.atan2(p[1], p[0]); return [r * Math.cos(a), r * Math.sin(a)]; });
+function circle(r, n) { const o = []; for (let k = 0; k < n; k++) { const a = k / n * TAU; o.push([r * Math.cos(a), r * Math.sin(a)]); } return o; }
+
+// How a wheel is crossed out: solid for pinions, spoked for wheels.
+function wheelStyle(z, m, bore) {
+  const rf = m * (z / 2 - 1.25), rim = rf - Math.max(1.6, 1.1 * m);
+  const hub = Math.max(bore + 2.6, 5.0);
+  if (rim - hub < 7) return { spokes: 0, rim, hub: rf };
+  const n = rim < 20 ? 4 : rim < 32 ? 5 : 6;
+  return { spokes: n, rim, hub, w0: Math.max(2.4, 0.16 * rim), w1: Math.max(1.8, 0.1 * rim) };
+}
+function gearGeo(z, m, bore, face, collet = 0) {
+  const g = new Geo(), out = gearOutline(z, m), st = wheelStyle(z, m, bore);
+  const z0 = -face / 2, z1 = face / 2;
+  g.walls(out, z0, z1, 1, 0.9);
+  if (!st.spokes) {
+    const inner = ringAt(out, bore);
+    g.zip(out, inner, z1, 1); g.zip(out, inner, z0, -1);
+    g.walls(circle(bore, 40), z0, z1, -1, 1);
+  } else {
+    const rim = ringAt(out, st.rim);
+    g.zip(out, rim, z1, 1); g.zip(out, rim, z0, -1);
+    g.walls(circle(st.rim, 96), z0, z1, -1, 1);
+    const hubO = circle(st.hub, 48), hubI = circle(bore, 48);
+    g.zip(hubO, hubI, z1, 1); g.zip(hubO, hubI, z0, -1);
+    g.walls(hubO, z0, z1, 1, 1); g.walls(hubI, z0, z1, -1, 1);
+    for (let k = 0; k < st.spokes; k++) {
+      const a = (k + 0.5) / st.spokes * TAU, c = Math.cos(a), s = Math.sin(a);
+      const p = (r, w) => [r * c - w * s, r * s + w * c];
+      const r0 = st.hub - 0.3, r1 = st.rim + 0.3;
+      const q = [p(r0, -st.w0 / 2), p(r1, -st.w1 / 2), p(r1, st.w1 / 2), p(r0, st.w0 / 2)];
+      g.fan(q, z1, 1); g.fan(q, z0, -1);
+      g.walls([q[0], q[1]].concat([q[1], q[0]]).slice(0, 2).concat([q[2], q[3]]), z0, z1, 1, 0);
+    }
+  }
+  if (collet) g.tube(bore, Math.max(bore + 1.6, collet), z1 - 0.01, z1 + 2.2, 28);
+  return g;
+}
+// A mitre bevel: the tooth outline lofted down a 45 degree pitch cone.
+function bevelGeo(z, m, bore) {
+  const g = new Geo(), out = gearOutline(z, m), rp = m * z / 2, k = 0.62, h = (1 - k) * rp;
+  const inn = out.map(p => [p[0] * k, p[1] * k]);
+  const n = out.length;
+  for (let i = 0; i < n; i++) {
+    const a = out[i], b = out[(i + 1) % n], c = inn[(i + 1) % n], d = inn[i];
+    const ex = b[0] - a[0], ey = b[1] - a[1]; const l = Math.hypot(ex, ey) || 1;
+    const nx = ey / l, ny = -ex / l;
+    const i0 = g.v(a[0], a[1], 0, nx * 0.7, ny * 0.7, 0.7), i1 = g.v(b[0], b[1], 0, nx * 0.7, ny * 0.7, 0.7);
+    const i2 = g.v(c[0], c[1], h, nx * 0.7, ny * 0.7, 0.7), i3 = g.v(d[0], d[1], h, nx * 0.7, ny * 0.7, 0.7);
+    g.quad(i0, i1, i2, i3);
+  }
+  g.zip(out, ringAt(out, bore), -0.001, -1);
+  g.zip(inn, ringAt(inn, bore), h, 1);
+  g.cyl(bore + 2.5, -4, 0, 24);
+  return g;
+}
+// Arm: a tapered bar from a hub boss to an end boss, as a convex outline.
+function armOutline(r0, r1, len) {
+  const pts = [];
+  for (let k = 0; k <= 16; k++) { const a = Math.PI / 2 + k / 16 * Math.PI; pts.push([r0 * Math.cos(a), r0 * Math.sin(a)]); }
+  for (let k = 0; k <= 16; k++) { const a = -Math.PI / 2 + k / 16 * Math.PI; pts.push([len + r1 * Math.cos(a), r1 * Math.sin(a)]); }
+  return pts;
+}
+function stadium(x0, x1, r, n = 24) {
+  const pts = [];
+  for (let k = 0; k <= n; k++) { const a = -Math.PI / 2 + k / n * Math.PI; pts.push([x1 + r * Math.cos(a), r * Math.sin(a)]); }
+  for (let k = 0; k <= n; k++) { const a = Math.PI / 2 + k / n * Math.PI; pts.push([x0 + r * Math.cos(a), r * Math.sin(a)]); }
+  return pts;
+}
+
+// ------------------------------------------------------------ WebGL
+const canvas = document.getElementById('gl');
+const gl = canvas.getContext('webgl2', { antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+if (!gl) {
+  const e = document.getElementById('err'); e.style.display = 'flex';
+  e.textContent = 'This page needs WebGL 2. The design and its checks are in data/design.json and src/.';
+  throw new Error('no webgl2');
+}
+
+const VS = `#version 300 es
+layout(location=0) in vec3 aP; layout(location=1) in vec3 aN;
+uniform mat4 uVP, uM, uLVP;
+out vec3 vP; out vec3 vN; out vec4 vL;
+void main(){ vec4 w = uM * vec4(aP,1.); vP = w.xyz; vN = mat3(uM) * aN; vL = uLVP * w; gl_Position = uVP * w; }`;
+
+const FS = `#version 300 es
+precision highp float; precision highp sampler2DShadow;
+in vec3 vP; in vec3 vN; in vec4 vL;
+uniform vec3 uCam, uBase, uEmit, uCenter, uAxis, uKeyDir;
+uniform float uMetal, uRough, uFinish, uDim, uExposure, uSpin;
+uniform sampler2DShadow uShadow; uniform sampler2D uEngrave;
+out vec4 frag;
+float h1(float n){ return fract(sin(n)*43758.5453); }
+float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+float vnoise(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+  return mix(mix(h2(i),h2(i+vec2(1,0)),f.x), mix(h2(i+vec2(0,1)),h2(i+vec2(1,1)),f.x), f.y); }
+float fbm(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*vnoise(p); p*=2.03; a*=.5; } return s; }
+float n3(vec3 p){ return fbm(p.xy*1.7+p.z*3.1) ; }
+// Studio: a dark room with soft boxes. d is a world direction.
+float box(vec3 d, vec3 c, vec3 r, vec3 u, vec2 hsz, float soft){
+  float z = dot(d,c); if (z <= 0.) return 0.;
+  vec2 q = vec2(dot(d,r), dot(d,u)) / z;
+  vec2 e = smoothstep(hsz + soft, hsz - soft*0.35, abs(q));
+  return e.x*e.y;
+}
+vec3 env(vec3 d, float rough){
+  float s = 0.04 + rough*rough*1.4;
+  float up = d.y;
+  // room: dark floor, warm-grey walls, a brighter ceiling
+  vec3 c = mix(vec3(0.030,0.025,0.020), vec3(0.16,0.14,0.12), smoothstep(-0.25,0.35,up));
+  c = mix(c, vec3(0.36,0.33,0.30), smoothstep(0.35,0.95,up));
+  float norm = 1./(1.+rough*rough*4.);
+  // key: large soft box overhead, a little left and in front
+  c += vec3(3.4,3.1,2.7) * norm * box(d, normalize(vec3(-0.35,0.88,0.32)), normalize(vec3(0.93,0.37,0.)), normalize(vec3(-0.12,0.30,-0.95)), vec2(0.75,0.45), s);
+  // tall strips either side
+  c += vec3(2.6,2.7,2.9) * norm * box(d, normalize(vec3(0.97,0.15,-0.15)), normalize(vec3(0.15,0.,0.99)), vec3(0.,1.,0.), vec2(0.16,1.1), s);
+  c += vec3(2.2,2.0,1.8) * norm * box(d, normalize(vec3(-0.95,0.2,-0.2)), normalize(vec3(-0.2,0.,0.98)), vec3(0.,1.,0.), vec2(0.14,1.0), s);
+  // warm low kicker behind, cool fill in front
+  c += vec3(2.2,1.5,0.9) * norm * box(d, normalize(vec3(0.1,0.12,-0.99)), vec3(1.,0.,0.), vec3(0.,1.,0.), vec2(1.4,0.14), s);
+  c += vec3(0.7,0.8,1.0) * norm * box(d, normalize(vec3(-0.1,0.28,0.95)), vec3(1.,0.,0.), vec3(0.,1.,0.), vec2(1.0,0.25), s);
+  return c;
+}
+float D_GGX(float nh, float a){ float a2=a*a; float d=nh*nh*(a2-1.)+1.; return a2/(3.14159*d*d); }
+float V_S(float nv, float nl, float a){ float k=a*0.5; return 0.25/((nv*(1.-k)+k)*(nl*(1.-k)+k)); }
+vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.,1.); }
+void main(){
+  vec3 N = normalize(vN);
+  vec3 V = normalize(uCam - vP);
+  if (dot(N,V) < 0.) N = -N;                  // two-sided
+  vec3 base = uBase; float rough = uRough; float metal = uMetal; vec3 emit = uEmit;
+  vec3 rel = vP - uCenter;
+  if (uFinish > 0.5 && uFinish < 1.5) {        // circular graining on flat faces
+    float r = length(rel.xz);
+    if (abs(N.y) > 0.9) {
+      float g = h1(floor(r*38.)) ;
+      vec2 rd = rel.xz / max(r,1e-3);
+      N = normalize(N + vec3(rd.x,0.,rd.y)*(g-0.5)*0.07);
+      rough = clamp(rough + (g-0.5)*0.08, 0.05, 1.);
+    }
+  } else if (uFinish > 1.5 && uFinish < 2.5) {  // perlage: overlapping spots of graining
+    if (abs(N.y) > 0.9) {
+      vec2 q = vP.xz / 7.0; vec2 cell = floor(q + vec2(0.5*mod(floor(q.y),2.),0.));
+      float best = 1e9; vec2 bc;
+      for (int j=-1;j<=1;j++) for (int i=-1;i<=1;i++) {
+        vec2 c = cell + vec2(float(i),float(j)); vec2 cc = c + vec2(0.5 - 0.5*mod(c.y,2.), 0.5);
+        float dd = length(q - cc); float order = c.x + c.y*0.37;
+        if (dd < 0.62 && order < best) { best = order; bc = cc; }
+      }
+      vec2 d = q - bc; float r = length(d);
+      float g = h1(floor(r*26.) + bc.x*7. + bc.y*13.);
+      N = normalize(N + vec3(d.x,0.,d.y)/max(r,1e-3)*(g-0.5)*0.09 + vec3(-d.y,0.,d.x)*0.03);
+      rough = clamp(rough + (g-0.5)*0.1, 0.05, 1.);
+    }
+  } else if (uFinish > 2.5 && uFinish < 3.5) {  // walnut, lacquered
+    vec2 q = vP.xz*vec2(0.004,0.022);
+    float w = fbm(q*vec2(1.,3.)+fbm(q*2.)*1.2);
+    float fig = 0.5+0.5*sin((vP.x*0.012 + w*6.)*3.14159);
+    float fine = fbm(vP.xz*vec2(0.02,0.6));
+    base = mix(vec3(0.032,0.014,0.006), vec3(0.095,0.045,0.018), fig*0.55 + w*0.3 + fine*0.15);
+    rough = 0.42 + fine*0.08;
+  } else if (uFinish > 3.5 && uFinish < 4.5) {  // planet surfaces
+    vec3 d = normalize(rel);
+    float ca = cos(uSpin), sa = sin(uSpin); d.xz = mat2(ca,-sa,sa,ca)*d.xz;
+    float lat = d.y;
+    if (uAxis.x > 0.5 && uAxis.x < 1.5) {      // Earth
+      float land = smoothstep(0.52,0.58, fbm(vec2(atan(d.z,d.x)*1.3, lat*2.4)*1.6 + 3.1));
+      base = mix(vec3(0.05,0.15,0.40), vec3(0.20,0.34,0.14), land);
+      base = mix(base, vec3(0.85), smoothstep(0.82,0.9,abs(lat)));
+      rough = mix(0.18, 0.6, land);
+    } else if (uAxis.x > 1.5 && uAxis.x < 2.5) { // Jupiter / Saturn bands
+      float b = sin(lat*26. + fbm(vec2(atan(d.z,d.x)*2., lat*6.))*2.2);
+      base = uBase * (0.82 + 0.22*b);
+      if (uAxis.y > 0.5) base = mix(base, vec3(0.62,0.30,0.20), smoothstep(0.1,0.0, length(vec2(atan(d.z,d.x)-1.2, (lat+0.35)*3.)))*0.8);
+    } else if (uAxis.x > 2.5) {               // rocky mottling
+      base = uBase * (0.8 + 0.4*fbm(vec2(atan(d.z,d.x)*3., lat*5.)));
+    }
+  } else if (uFinish > 4.5 && uFinish < 5.5) {  // engraved zodiac ring
+    float r = length(rel.xz);
+    float a = atan(-rel.z, rel.x); if (a < 0.) a += 6.2831853;
+    if (N.y > 0.9) {
+      vec2 uv = vec2(a/6.2831853, (r - uAxis.x)/(uAxis.y - uAxis.x));
+      float ink = texture(uEngrave, uv).r;
+      base = mix(base, vec3(0.03,0.025,0.02), ink); metal = mix(metal, 0.0, ink); rough = mix(rough, 0.7, ink);
+      float g = h1(floor(a*900.)); N = normalize(N + vec3(-sin(a),0.,-cos(a))*(g-0.5)*0.02);
+    }
+  } else if (uFinish > 5.5 && uFinish < 6.5) {  // straight brushing along uAxis
+    float t = dot(vP, uAxis);
+    vec3 side = normalize(cross(uAxis, vec3(0.,1.,0.)));
+    float s = dot(vP, side);
+    float g = h1(floor(s*9.) + floor(t*0.02)*3.1);
+    if (abs(N.y) > 0.9) { N = normalize(N + side*(g-0.5)*0.05); rough = clamp(rough + (g-0.5)*0.06, 0.05, 1.); }
+  }
+  vec3 F0 = mix(vec3(0.04), base, metal);
+  vec3 diff = base * (1.-metal);
+  float a = max(rough*rough, 0.002);
+  float nv = max(dot(N,V), 1e-4);
+  // key light with shadow (direction matches the big soft box)
+  vec3 Ld = normalize(uKeyDir); vec3 H = normalize(Ld + V);
+  float nl = max(dot(N,Ld),0.), nh = max(dot(N,H),0.), vh = max(dot(V,H),0.);
+  vec3 lp = vL.xyz / vL.w * 0.5 + 0.5;
+  float sh = 1.;
+  if (all(greaterThan(lp.xy, vec2(0.))) && all(lessThan(lp.xy, vec2(1.)))) {
+    float bias = 0.0006 + 0.0012*(1.-nl);
+    sh = 0.;
+    for (int j=-1;j<=1;j++) for(int i=-1;i<=1;i++) sh += texture(uShadow, vec3(lp.xy + vec2(i,j)/2048., lp.z - bias));
+    sh /= 9.;
+  }
+  vec3 F = F0 + (1.-F0)*pow(1.-vh,5.);
+  vec3 spec = D_GGX(nh,a)*V_S(nv,nl,a)*F;
+  vec3 col = (diff/3.14159 + spec) * nl * vec3(2.6,2.4,2.1) * sh;
+  // image-based: studio environment, dimmed in shadow a little
+  vec3 R = reflect(-V, N);
+  vec3 Fr = F0 + (max(vec3(1.-rough),F0)-F0)*pow(1.-nv,5.);
+  float occ = mix(0.55, 1., sh);
+  col += env(R, rough) * Fr * occ;
+  col += diff * env(N, 1.0) * 0.55 * occ;
+  col += emit;
+  if (uDim < 0.99) { float l = dot(col, vec3(0.3,0.59,0.11)); col = mix(vec3(l), col, 0.35) * uDim; }
+  col *= uExposure;
+  // Tone map luminance, keep hue: bright brass stays golden, easing to white only at the top.
+  float L = dot(col, vec3(0.2126,0.7152,0.0722));
+  float Lm = aces(vec3(L)).x;
+  col = col * (Lm / max(L, 1e-5));
+  col = mix(col, vec3(Lm), smoothstep(0.75, 1.0, Lm) * 0.55);
+  col = clamp(col, 0., 1.);
+  frag = vec4(pow(col, vec3(1./2.2)), 1.);
+}`;
+
+// background: studio falloff with a vignette
+const BG_VS = `#version 300 es
+out vec2 vU; void main(){ vec2 p = vec2((gl_VertexID<<1)&2, gl_VertexID&2); vU = p; gl_Position = vec4(p*2.-1., 0.9999, 1.); }`;
+const BG_FS = `#version 300 es
+precision highp float; in vec2 vU; out vec4 frag;
+void main(){ vec2 q = vU - vec2(0.5, 0.62); float v = 1. - dot(q,q)*1.3;
+  vec3 c = mix(vec3(0.020,0.017,0.014), vec3(0.085,0.072,0.058), clamp(v,0.,1.)) ;
+  c += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233)))*43758.5453)-0.5)/255.;
+  frag = vec4(c, 1.); }`;
+
+// shadow depth pass
+const SH_VS = `#version 300 es
+layout(location=0) in vec3 aP; uniform mat4 uLVP, uM; void main(){ gl_Position = uLVP * uM * vec4(aP,1.); }`;
+const SH_FS = `#version 300 es
+precision mediump float; out vec4 f; void main(){ f = vec4(1.); }`;
+
+// glowing things: ghosts, error arcs, sun halo (additive)
+const GL_VS = `#version 300 es
+layout(location=0) in vec3 aP; layout(location=1) in vec3 aN;
+uniform mat4 uVP, uM; out vec3 vN; out vec3 vP;
+void main(){ vec4 w = uM*vec4(aP,1.); vP = w.xyz; vN = mat3(uM)*aN; gl_Position = uVP*w; }`;
+const GL_FS = `#version 300 es
+precision highp float; in vec3 vN; in vec3 vP; uniform vec3 uCol, uCam; uniform float uAlpha, uFres; out vec4 f;
+void main(){ vec3 N = normalize(vN), V = normalize(uCam - vP); float fr = pow(1.-abs(dot(N,V)), 2.);
+  float k = mix(1., 0.25 + 1.4*fr, uFres); f = vec4(uCol * k * uAlpha, 1.); }`;
+
+function compile(vs, fs) {
+  const p = gl.createProgram();
+  for (const [t, s] of [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]]) {
+    const sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh);
+    if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh));
+    gl.attachShader(p, sh);
+  }
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let k = 0; k < n; k++) { const inf = gl.getActiveUniform(p, k); u[inf.name] = gl.getUniformLocation(p, inf.name); }
+  return { p, u };
+}
+const PR = compile(VS, FS), PB = compile(BG_VS, BG_FS), PS = compile(SH_VS, SH_FS), PG = compile(GL_VS, GL_FS);
+
+function upload(g) {
+  const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  const b0 = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b0); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.p), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+  const b1 = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b1); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(g.n), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+  const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(g.i), gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
+  return { vao, count: g.i.length };
+}
+
+// ------------------------------------------------------------ materials
+const MAT = {
+  brass:    { base: [0.95, 0.72, 0.34], metal: 1, rough: 0.22, finish: 1 },
+  brassOld: { base: [0.84, 0.58, 0.26], metal: 1, rough: 0.30, finish: 1 },
+  plate:    { base: [0.94, 0.74, 0.40], metal: 1, rough: 0.26, finish: 2 },
+  gilt:     { base: [1.00, 0.76, 0.33], metal: 1, rough: 0.16, finish: 1 },
+  steel:    { base: [0.62, 0.63, 0.65], metal: 1, rough: 0.20, finish: 0 },
+  blued:    { base: [0.13, 0.20, 0.42], metal: 1, rough: 0.18, finish: 0 },
+  wood:     { base: [0.12, 0.07, 0.035], metal: 0, rough: 0.4, finish: 3 },
+  ring:     { base: [0.94, 0.73, 0.38], metal: 1, rough: 0.24, finish: 5 },
+  arm:      { base: [0.95, 0.72, 0.35], metal: 1, rough: 0.20, finish: 6 },
+  ebony:    { base: [0.03, 0.025, 0.02], metal: 0, rough: 0.35, finish: 0 },
+};
+
+// ------------------------------------------------------------ build the machine
+const parts = [];     // {mesh, mat, model(t) -> mat4, center(t), body, kind, shadow}
+function add(geo, mat, opts = {}) {
+  const part = { mesh: upload(geo), mat, ...opts };
+  if (!part.model) { const m = opts.static || M4.id(); part.model = () => m; }
+  parts.push(part); return part;
+}
+const lv = D.levels.z, FACE = D.rules.face_mm;
+const R = D.radii;
+const topZ = D.top_plate_z, baseTop = D.base_top;
+const xL = AX.L[0], xM = AX.M[0], xN = AX.N[0];
+const gearCache = new Map();
+function cachedGear(z, m, bore, collet) {
+  const k = `${z}/${m}/${bore.toFixed(2)}/${collet}`;
+  if (!gearCache.has(k)) gearCache.set(k, upload(gearGeo(z, m, bore, FACE, collet)));
+  return gearCache.get(k);
+}
+function addMesh(mesh, mat, opts) { const part = { mesh, mat, ...opts }; if (!part.model) { const m = opts.static || M4.id(); part.model = () => m; } parts.push(part); return part; }
+
+// state the animation reads
+const S = { turns: 0, jd: J2000 };
+
+// wheels
+const tubeByBody = Object.fromEntries(D.tubes.map(t => [t.body, t]));
+for (const t of TRAINS) {
+  for (const g of t.gears) {
+    const [x, y] = AX[g.axis];
+    const z = lv[g.level] + FACE / 2;
+    const bore = g.axis === 'C' ? tubeByBody[t.body].r_out : g.axis === 'L' ? R.l_arbor : R.pipe;
+    const collet = g.axis === 'C' ? bore + 2.2 : g.axis === 'L' ? R.l_arbor + 2 : 0;
+    const mesh = cachedGear(g.z, g.m, bore, collet);
+    const mat = g.axis === 'C' ? MAT.gilt : (g.z < 20 ? MAT.brassOld : MAT.brass);
+    addMesh(mesh, mat, { kind: 'wheel', body: t.body, gear: g, shadow: true,
+      model: () => M4.rt(x, y, z, g.phase + g.rate * S.turns * TAU), center: () => [x, z, -y] });
+  }
+  // pipes between consecutive meshes on the dead arbors
+  t.meshes.forEach((a, k) => {
+    const b = t.meshes[k + 1]; if (!b) return;
+    const [x, y] = AX[a.dst];
+    const z0 = lv[Math.min(a.level, b.level)] + FACE / 2, z1 = lv[Math.max(a.level, b.level)] + FACE / 2;
+    const rate = t.gears[2 * k + 1].rate;
+    addMesh(upload(new Geo().tube(R.dead_arbor + 0.1, R.pipe - 0.3, z0, z1, 20)), MAT.steel,
+      { kind: 'pipe', body: t.body, shadow: true, model: () => M4.rt(x, y, 0, rate * S.turns * TAU), center: () => [x, 0, -y] });
+  });
+}
+// arbors: L is live (turns with the crank), M and N are dead studs
+const zA0 = baseTop, zA1 = topZ + 4;
+add(new Geo().lathe([[0, zA0 - 2], [R.l_arbor, zA0 - 2], [R.l_arbor, zA1], [R.l_arbor * 0.6, zA1 + 1.2], [0, zA1 + 1.5]], 24), MAT.steel,
+  { kind: 'arbor', shadow: true, model: () => M4.rt(xL, 0, 0, -S.turns * TAU) });
+for (const x of [xM, xN]) add(new Geo().cyl(R.dead_arbor, zA0 - 2, zA1 + 1, 16).lathe([[0, zA1 + 1], [3.2, zA1 + 1], [3.2, zA1 + 3], [0, zA1 + 3]], 20), MAT.blued, { kind: 'arbor', shadow: true, static: M4.rt(x, 0, 0, 0) });
+// tubes at the centre, each turning with its train; arms on top
+const armZ = D.arms;
+for (const tb of D.tubes) {
+  const t = TRAIN[tb.body];
+  const rot = () => t.finalRate * S.turns * TAU;
+  addMesh(upload(new Geo().tube(tb.r_in, tb.r_out, tb.z0 - 1, tb.z1, 36)), MAT.brass,
+    { kind: 'tube', body: tb.body, shadow: true, model: () => M4.rt(0, 0, 0, rot()), center: () => [0, 0, 0] });
+}
+// sun rod and the Sun
+const pp = D.planet_plane_z;
+add(new Geo().cyl(R.sun_rod, zA0 - 2, pp - 14, 16), MAT.steel, { kind: 'rod', shadow: true });
+add(new Geo().lathe([[0, pp - 26], [3.4, pp - 26], [3.0, pp - 22], [4.6, pp - 19], [2.2, pp - 16], [2.2, pp - 14], [0, pp - 14]], 32), MAT.gilt, { kind: 'rod', shadow: true });
+const sunPart = add(new Geo().sphere(17, 64, 0, 0, pp), { base: [1.0, 0.72, 0.30], metal: 1, rough: 0.12, finish: 0, emit: [0.9, 0.48, 0.14] },
+  { kind: 'sun', shadow: false, center: () => [0, pp, 0] });
+
+// Arms: bar from the tube, post up to the planet plane, ball on top.
+const armParts = {};
+function armAngle(body) { return (L0[body] * RAD) + TRAIN[body].finalRate * S.turns * TAU; }
+for (const body of ['mercury', 'venus', 'emb', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']) {
+  const a = armZ[body], tb = tubeByBody[body];
+  const w0 = tb.r_out + 3.5, w1 = 3.2, thick = 2.6;
+  const g = new Geo().prism(armOutline(w0, w1, a.r), a.z - thick / 2, a.z + thick / 2);
+  g.tube(tb.r_out - 0.1, tb.r_out + 2.4, a.z - 7, a.z - thick / 2 + 0.05, 32);              // boss
+  // post: a slender baluster rising from the arm end to the ball
+  const b = BODY[body], top = pp - b.r * 0.9;
+  g.lathe([[0, a.z + thick / 2], [2.6, a.z + thick / 2], [2.2, a.z + 4], [1.25, a.z + 7], [1.1, top - 5], [1.9, top - 3.2], [1.4, top - 1.2], [0.8, top + 0.6], [0, top + 0.6]], 18, a.r, 0);
+  const part = add(g, MAT.arm, { kind: 'arm', body, shadow: true, model: () => M4.rt(0, 0, 0, armAngle(body)) });
+  part.axisDir = () => { const ang = armAngle(body); return [Math.cos(ang), 0, -Math.sin(ang)]; };
+  armParts[body] = part;
+  const ball = new Geo().sphere(b.r, 48, 0, 0, 0);
+  const mat = { base: b.color, metal: 0, rough: 0.35, finish: 4, planet: body === 'emb' ? 1 : (body === 'jupiter' || body === 'saturn') ? 2 : 3, spot: body === 'jupiter' ? 1 : 0 };
+  add(ball, mat, { kind: 'planet', body, shadow: true,
+    model: () => { const ang = armAngle(body); return M4.rt(a.r * Math.cos(ang), a.r * Math.sin(ang), pp, 0); },
+    center: () => { const ang = armAngle(body); return W(a.r * Math.cos(ang), a.r * Math.sin(ang), pp); } });
+  if (body === 'saturn') {
+    const ring = new Geo(); const o = circle(b.r * 2.2, 64), i = circle(b.r * 1.35, 64);
+    ring.zip(o, i, 0.2, 1); ring.zip(o, i, -0.2, -1);
+    add(ring, { base: [0.82, 0.74, 0.56], metal: 0.2, rough: 0.4, finish: 0 }, { kind: 'planet', body, shadow: true,
+      model: () => { const ang = armAngle(body); return M4.mul(M4.rt(a.r * Math.cos(ang), a.r * Math.sin(ang), pp, 0), tilt(26.7)); } });
+  }
+}
+function tilt(deg) { const c = Math.cos(deg * RAD), s = Math.sin(deg * RAD); return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]); }
+
+// The Moon: a wheel on the Moon's tube above the Earth arm drives three idlers
+// along the arm and an equal wheel at the Earth (1:1, even number of meshes).
+const MO = D.moon, eArm = armZ.emb;
+const moonTubeAngle = () => L0.moon * RAD + TRAIN.moon.finalRate * S.turns * TAU;
+{
+  const zG = MO.gear_z + FACE / 2;
+  const rel = () => moonTubeAngle() - armAngle('emb');       // Moon tube relative to the arm
+  const chain = [{ z: MO.end, x: 0 }];
+  let x = MO.m * MO.end / 2;
+  for (let k = 0; k < MO.idlers; k++) { x += MO.m * MO.idler / 2; chain.push({ z: MO.idler, x }); x += MO.m * MO.idler / 2; }
+  x += MO.m * MO.end / 2; chain.push({ z: MO.end, x });
+  // relative rates and tooth phases along the chain (in the arm's frame)
+  let ph = 0, rr = 1;
+  chain.forEach((c, k) => {
+    if (k > 0) { const p = chain[k - 1]; const nph = Math.PI - Math.PI / c.z - (p.z / c.z) * ph; rr = -rr * p.z / c.z; ph = nph; }
+    c.rr = rr; c.ph = ph;
+  });
+  chain.forEach((c, k) => {
+    const bore = k === 0 ? tubeByBody.moon.r_out : 1.6;
+    const mesh = upload(gearGeo(c.z, MO.m, bore, FACE, k === 0 ? 0 : bore + 1.6));
+    addMesh(mesh, k === 0 || k === chain.length - 1 ? MAT.gilt : MAT.brass, { kind: 'wheel', body: 'moon', shadow: true,
+      model: () => { const A = armAngle('emb'); const own = A + c.ph + c.rr * rel();
+        return M4.rt(c.x * Math.cos(A), c.x * Math.sin(A), zG, own); },
+      center: () => { const A = armAngle('emb'); return W(c.x * Math.cos(A), c.x * Math.sin(A), zG); } });
+    if (k > 0 && k < chain.length - 1) {                 // idler studs on the arm
+      add(new Geo().cyl(1.6, eArm.z, zG + FACE / 2 + 1.5, 12).lathe([[0, zG + FACE / 2 + 1.5], [2.6, zG + FACE / 2 + 1.5], [2.6, zG + FACE / 2 + 2.6], [0, zG + FACE / 2 + 2.6]], 16),
+        MAT.blued, { kind: 'arm', body: 'emb', shadow: true, model: () => { const A = armAngle('emb'); return M4.rt(c.x * Math.cos(A), c.x * Math.sin(A), 0, A); } });
+    }
+  });
+  // Moon arbor at the Earth: short arm and the Moon ball
+  const moonGeo = new Geo();
+  const mz = zG + FACE / 2 + 5;
+  moonGeo.tube(2.0, 3.3, zG, mz + 1.2, 16);
+  moonGeo.prism(armOutline(3.8, 1.8, MO.arm_r), mz - 0.8, mz + 0.8);
+  moonGeo.lathe([[0, mz], [1.0, mz], [0.8, pp - 2.5], [0, pp - 2.5]], 12, MO.arm_r, 0);
+  const moonAng = () => moonTubeAngle();
+  const earthXY = () => { const A = armAngle('emb'); return [eArm.r * Math.cos(A), eArm.r * Math.sin(A)]; };
+  add(moonGeo, MAT.arm, { kind: 'arm', body: 'moon', shadow: true, model: () => { const [ex, ey] = earthXY(); return M4.rt(ex, ey, 0, moonAng()); } });
+  add(new Geo().sphere(BODY.moon.r, 32, 0, 0, 0), { base: BODY.moon.color, metal: 0, rough: 0.5, finish: 4, planet: 3 }, { kind: 'planet', body: 'moon', shadow: true,
+    model: () => { const [ex, ey] = earthXY(); const a = moonAng(); return M4.rt(ex + MO.arm_r * Math.cos(a), ey + MO.arm_r * Math.sin(a), pp, 0); },
+    center: () => { const [ex, ey] = earthXY(); const a = moonAng(); return W(ex + MO.arm_r * Math.cos(a), ey + MO.arm_r * Math.sin(a), pp); } });
+}
+
+// frame: base plate, top plate, pillars; plinth; zodiac ring on columns
+const plateShape = stadium(0, xL, 58, 28);
+add(new Geo().prism(plateShape, 0, baseTop), MAT.plate, { kind: 'frame', shadow: true, center: () => [0, 0, 0] });
+add(new Geo().prism(plateShape.map(p => [p[0], p[1]]), topZ - 1.5, topZ + 1.5), MAT.plate, { kind: 'frame', shadow: true, center: () => [0, 0, 0] });
+for (const [px, py] of [[-44, 40], [-44, -40], [xL + 44, 40], [xL + 44, -40], [xM - 0, 52], [xM - 0, -52]]) {
+  const prof = [[0, baseTop], [5.2, baseTop], [5.2, baseTop + 3], [3.4, baseTop + 5], [2.8, baseTop + 14], [3.3, (baseTop + topZ) / 2 - 2], [4.0, (baseTop + topZ) / 2], [3.3, (baseTop + topZ) / 2 + 2], [2.8, topZ - 14], [3.4, topZ - 5], [5.2, topZ - 3], [5.2, topZ - 1.5], [0, topZ - 1.5]];
+  add(new Geo().lathe(prof, 28, px, py), MAT.brass, { kind: 'frame', shadow: true, center: () => W(px, py, 0) });
+}
+const PLR = 400;
+add(new Geo().lathe([[0, -46], [PLR - 6, -46], [PLR, -40], [PLR, -12], [PLR - 6, -8], [PLR - 12, -8], [PLR - 12, -4], [PLR - 18, 0], [0, 0]], 128), MAT.wood, { kind: 'plinth', shadow: true });
+add(new Geo().lathe([[PLR - 17.5, -0.2], [PLR - 12.5, -0.2], [PLR - 12.5, 1.2], [PLR - 17.5, 1.2]], 160), MAT.brass, { kind: 'plinth', shadow: true, center: () => [0, 0, 0] });
+const RING0 = 334, RING1 = 368, ringZ = pp - 14;
+{
+  const g = new Geo(), o = circle(RING1, 360), i = circle(RING0, 360);
+  g.zip(o, i, ringZ + 1.5, 1); g.zip(o, i, ringZ - 1.5, -1); g.walls(o, ringZ - 1.5, ringZ + 1.5, 1, 1); g.walls(i, ringZ - 1.5, ringZ + 1.5, -1, 1);
+  add(g, MAT.ring, { kind: 'ring', shadow: true, center: () => [0, 0, 0], ringR: [RING0, RING1] });
+  for (let k = 0; k < 4; k++) {
+    const a = (k + 0.5) * TAU / 4 + 0.12, cx = 380 * Math.cos(a), cy = 380 * Math.sin(a);
+    const col = new Geo().lathe([[0, 0], [9, 0], [9, 4], [6.5, 7], [4.4, 12], [3.6, ringZ * 0.4], [4.4, ringZ * 0.55], [3.4, ringZ * 0.62], [3.0, ringZ - 12], [4.6, ringZ - 6], [5.4, ringZ - 1.6], [0, ringZ - 1.6]], 28, cx, cy);
+    const bx = [[cx - 3, cy - 3], [cx + 3, cy - 3], [cx + 3, cy + 3], [cx - 3, cy + 3]];
+    add(col, MAT.brass, { kind: 'frame', shadow: true, center: () => W(cx, cy, 0) });
+    // bracket from column head to ring
+    const br = armOutline(5, 3, 30).map(p => [p[0] * Math.cos(a + Math.PI) - p[1] * Math.sin(a + Math.PI) + cx, p[0] * Math.sin(a + Math.PI) + p[1] * Math.cos(a + Math.PI) + cy]);
+    add(new Geo().prism(br, ringZ - 3.4, ringZ - 1.5), MAT.brass, { kind: 'frame', shadow: true, center: () => W(cx, cy, 0) });
+  }
+}
+
+// crank: mitre bevel on L, horizontal shaft to a handle off the plinth edge
+const CK = D.crank;
+{
+  const rp = CK.m * CK.bevel_teeth / 2;
+  const zb = CK.bevel_z, zs = CK.shaft_z;
+  const bevelL = upload(bevelGeo(CK.bevel_teeth, CK.m, R.l_arbor));
+  addMesh(bevelL, MAT.brass, { kind: 'crank', shadow: true, model: () => M4.rt(xL, 0, zb, -S.turns * TAU), center: () => [xL, 0, 0] });
+  // Horizontal parts are built with their axis vertical and turned on their
+  // side: rz(+90deg) points a part's axis along -x (toward L), rz(-90deg) along +x.
+  const onX = (x, spin, out) => M4.mul(M4.mul(M4.tr(x, zs, 0), M4.rz(out ? -Math.PI / 2 : Math.PI / 2)), M4.ry(spin));
+  const bevelH = upload(bevelGeo(CK.bevel_teeth, CK.m, 1.8));
+  const xs0 = xL + rp;
+  addMesh(bevelH, MAT.brass, { kind: 'crank', shadow: true, model: () => onX(xs0, -S.turns * TAU + Math.PI / CK.bevel_teeth, false), center: () => [xs0, zs, 0] });
+  const shaftLen = CK.handle_x - xs0;
+  addMesh(upload(new Geo().lathe([[0, 0], [2.2, 0], [2.2, shaftLen + 6], [0, shaftLen + 6]], 16)), MAT.steel,
+    { kind: 'crank', shadow: true, model: () => onX(xs0, S.turns * TAU, true) });
+  // bearing standard on the plinth edge
+  const bs = new Geo().prism([[-7, -12], [7, -12], [7, 12], [-7, 12]], 0, zs - 4).tube(2.3, 6.5, zs - 6.5, zs + 6.5, 24);
+  add(bs, MAT.brass, { kind: 'crank', shadow: true, static: M4.rt(PLR - 40, 0, 0, 0), center: () => [PLR - 40, 0, 0] });
+  const bs2 = new Geo().prism([[-6, -10], [6, -10], [6, 10], [-6, 10]], baseTop, zs - 4).tube(2.3, 6, zs - 6, zs + 6, 24);
+  add(bs2, MAT.brass, { kind: 'crank', shadow: true, static: M4.rt(xL + 70, 0, 0, 0), center: () => [xL + 70, 0, 0] });
+  // handle: crank web and a turned ebony grip
+  const web = new Geo().prism(armOutline(7, 5, 44), -2.5, 2.5).cyl(4.5, -8, 2.5, 20);
+  const grip = new Geo().lathe([[0, 5], [3.2, 5], [5.5, 11], [6.2, 21], [5.0, 31], [3.0, 35], [0, 35]], 24, 44, 0);
+  grip.cyl(1.8, 2, 5, 12, 44, 0);
+  const handleM = () => onX(CK.handle_x, S.turns * TAU, true);
+  add(web, MAT.brass, { kind: 'crank', shadow: true, model: handleM });
+  add(grip, MAT.ebony, { kind: 'crank', shadow: true, model: handleM });
+}
+
+// ------------------------------------------------------------ engraving texture (degrees, signs)
+function engraveTexture() {
+  const c = document.createElement('canvas'); c.width = 8192; c.height = 256;
+  const x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, c.width, c.height);
+  x.fillStyle = '#fff'; x.strokeStyle = '#fff';
+  const W_ = c.width, H = c.height;
+  const at = deg => deg / 360 * W_;              // u runs with longitude; letters read anticlockwise, tops toward the centre
+  x.lineWidth = 3; x.beginPath(); x.moveTo(0, H * 0.34); x.lineTo(W_, H * 0.34); x.moveTo(0, H * 0.70); x.lineTo(W_, H * 0.70); x.stroke();
+  for (let d = 0; d < 360; d++) {
+    const px = at(d); const len = d % 10 === 0 ? 0.30 : d % 5 === 0 ? 0.2 : 0.12;
+    x.lineWidth = d % 10 === 0 ? 3 : 2; x.beginPath(); x.moveTo(px, H * 0.70); x.lineTo(px, H * (0.70 + len)); x.stroke();
+    if (d % 30 === 0) { x.lineWidth = 4; x.beginPath(); x.moveTo(px, H * 0.05); x.lineTo(px, H * 0.70); x.stroke(); }
+  }
+  x.font = '600 34px Georgia, serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  for (let d = 10; d < 360; d += 10) if (d % 30) { x.fillText(String(d), at(d), H * 0.52); }
+  const signs = ['ARIES', 'TAURUS', 'GEMINI', 'CANCER', 'LEO', 'VIRGO', 'LIBRA', 'SCORPIO', 'SAGITTARIUS', 'CAPRICORN', 'AQUARIUS', 'PISCES'];
+  x.font = '600 54px Georgia, serif';
+  signs.forEach((s, k) => x.fillText(s.split('').join(' '), at(k * 30 + 15), H * 0.19));
+  const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, W_, H, 0, gl.RED, gl.UNSIGNED_BYTE, rgbaToR(x.getImageData(0, 0, W_, H).data));
+  gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameterf(gl.TEXTURE_2D, 0x84FE, 8);  // anisotropy if available (ignored otherwise)
+  return tex;
+}
+function rgbaToR(d) { const o = new Uint8Array(d.length / 4); for (let i = 0; i < o.length; i++) o[i] = d[i * 4]; return o; }
+gl.getExtension('EXT_texture_filter_anisotropic');
+const engraveTex = engraveTexture();
+
+// ------------------------------------------------------------ shadow map
+const SHADOW = 2048;
+const shTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, shTex);
+gl.texStorage2D(gl.TEXTURE_2D, 1, gl.DEPTH_COMPONENT24, SHADOW, SHADOW);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+const shFB = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, shFB);
+gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, shTex, 0);
+gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+const KEY = (() => { const v = [-0.45, 0.85, 0.30], l = Math.hypot(...v); return v.map(x => x / l); })();
+const LVP = (() => {
+  const c = [60, 150, 0], e = [c[0] + KEY[0] * 900, c[1] + KEY[1] * 900, c[2] + KEY[2] * 900];
+  return M4.mul(M4.ortho(-470, 470, -470, 470, 300, 1600), M4.look(e, c, [0, 1, 0]));
+})();
+
+// ------------------------------------------------------------ glow meshes (ghosts, error arcs)
+const ghostSphere = upload(new Geo().sphere(1, 24));
+// The sky's verdict: a thin ring of light lying level around the true position.
+const ghostRing = upload(new Geo().lathe(Array.from({ length: 13 }, (_, k) => { const a = k / 12 * TAU; return [1 + 0.07 * Math.cos(a), 0.07 * Math.sin(a)]; }), 64));
+const arcBuf = { vao: gl.createVertexArray(), vb: gl.createBuffer(), nb: gl.createBuffer(), n: 0 };
+gl.bindVertexArray(arcBuf.vao);
+gl.bindBuffer(gl.ARRAY_BUFFER, arcBuf.vb); gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * 20000, gl.DYNAMIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
+gl.bindBuffer(gl.ARRAY_BUFFER, arcBuf.nb); gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * 20000, gl.DYNAMIC_DRAW); gl.enableVertexAttribArray(1); gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 0, 0);
+gl.bindVertexArray(null);
+
+// ------------------------------------------------------------ camera
+const CAM = { yaw: -0.55, pitch: 0.40, dist: 1450, target: [20, 130, 0], goal: null };
+const VIEWS = {
+  over:  { yaw: -0.55, pitch: 0.40, dist: 1450, target: [20, 130, 0] },
+  move:  { yaw: -1.05, pitch: 0.10, dist: 470, target: [75, 110, 0] },
+  crank: { yaw: 0.55, pitch: 0.22, dist: 330, target: [395, 30, 0] },
+  top:   { yaw: -Math.PI / 2, pitch: 1.45, dist: 1250, target: [0, 150, 0] },
+  earth: { yaw: -0.4, pitch: 0.42, dist: 300, target: [0, 0, 0], follow: 'emb' },
+};
+// A camera aimed at one train's band of levels in the movement.
+function trainView(body) {
+  const lvls = TRAIN[body].meshes.map(m => lv[m.level]);
+  const zmid = (Math.min(...lvls) + Math.max(...lvls)) / 2 + FACE;
+  return { yaw: -1.12, pitch: 0.38, dist: 330, target: [xN + 10, zmid, 0] };
+}
+function camEye() {
+  const c = Math.cos(CAM.pitch);
+  return [CAM.target[0] + CAM.dist * c * Math.sin(CAM.yaw), CAM.target[1] + CAM.dist * Math.sin(CAM.pitch), CAM.target[2] + CAM.dist * c * Math.cos(CAM.yaw)];
+}
+function setView(v, instant) { CAM.follow = v.follow || null; CAM.goal = { ...v, target: [...v.target] }; if (instant) { Object.assign(CAM, CAM.goal, { goal: null }); } }
+
+// ------------------------------------------------------------ time
+const params = new URLSearchParams(location.search);
+const nowJD = () => Date.now() / 86400000 + 2440587.5;
+const T = { jd: params.has('jd') ? parseFloat(params.get('jd')) : nowJD(), speed: 30, dir: 1, playing: !params.has('paused'), focus: params.get('focus') || null, sky: true, labels: true };
+const SPEEDS = [1 / 24, 1, 7, 30, 91.3, 365.25, 3652.5, 36525];
+const SPEED_NAMES = ['1 hour/s', '1 day/s', '1 week/s', '1 month/s', '1 season/s', '1 year/s', '10 years/s', '1 century/s'];
+let speedIdx = 3;
+const JD_MIN = 625673.5, JD_MAX = 2817152.5;   // 3000 BC .. AD 3000: where the ephemeris is valid
+
+// ------------------------------------------------------------ UI: ledger
+const rowsEl = document.getElementById('rows');
+const rowEls = {};
+for (const b of ORDER) {
+  const tr = document.createElement('tr'); tr.className = 'body'; tr.dataset.body = b;
+  tr.innerHTML = `<td><span class="dot" style="background:${BODY[b].dot}"></span><span class="nm">${BODY[b].name}</span></td><td class="br"></td><td class="sk"></td><td class="df"></td><td class="gd"></td>`;
+  tr.addEventListener('click', () => focus(T.focus === b ? null : b));
+  rowsEl.appendChild(tr); rowEls[b] = tr;
+}
+const fmtDeg = d => `${d.toFixed(2)}°`;
+const fmtSigned = d => { const s = d >= 0 ? '+' : '−'; return `${s}${Math.abs(d).toFixed(2)}°`; };
+function fmtYears(y) { return y >= 1e6 ? `${(y / 1e6).toFixed(1)} million years` : `${Math.round(y).toLocaleString('en-US')} years`; }
+const inspect = document.getElementById('inspect');
+function focus(b) {
+  T.focus = b;
+  for (const k of ORDER) rowEls[k].classList.toggle('sel', k === b);
+  if (!b) { inspect.innerHTML = ''; return; }
+  const t = TRAIN[b];
+  const chain = t.meshes.map(m => `<span class="ax">${m.src}</span> ${m.drv}→${m.drn} <span class="ax">${m.dst}</span> <span style="color:var(--faint)">m${m.m}</span>`).join('<br>');
+  const ypd = t.years_per_degree;
+  const period = P_SID / (t.ratio[0] / t.ratio[1]);
+  const truePeriod = P_SID / t.target;
+  inspect.innerHTML = `<div class="big">${BODY[b].name}: ${t.meshes.length} meshes, ${t.teeth} teeth
+      <button id="bShow" style="float:right;font-size:12px;padding:3px 8px">Show me the train</button></div>
+    <div class="train">${chain}</div>
+    <div>Ratio <b>${t.ratio[0].toLocaleString('en-US')} / ${t.ratio[1].toLocaleString('en-US')}</b> turns per year
+    (needed ${t.target.toFixed(9)}).</div>
+    <div>Brass period <b>${period.toFixed(5)} d</b>; true ${truePeriod.toFixed(5)} d.</div>
+    <div>${ypd ? `Drifts <b>1° every ${fmtYears(ypd)}</b> (${t.drift_deg_per_century >= 0 ? 'runs ahead' : 'falls behind'}).` : `<b>Exact</b>: the crank is the Earth's year.`}</div>
+    ${b === 'moon' ? `<div style="margin-top:6px">The Antikythera mechanism geared the Moon at 254/19 per year, a convergent of the same continued fraction; that ratio drifts ${Math.abs(D.history.antikythera_254_19_drift_deg_per_century).toFixed(1)}° per century.</div>` : ''}
+    ${b === 'moon' ? `<div style="margin-top:6px" id="greek"></div>` : ''}
+    ${b === 'moon' ? `<div style="margin-top:6px">Its tube's motion reaches the Earth through the wheels on the Earth's arm: ${MO.end}, three idlers of ${MO.idler}, ${MO.end}. Equal end wheels, an even number of meshes: exactly 1 : 1.</div>` : ''}
+    <canvas id="spark" width="800" height="180"></canvas>
+    <div style="font-size:11.5px;color:var(--faint)">Brass − sky, 3000 BC to AD 3000 (grey), and the gear part alone (gold).</div>`;
+  drawSpark(b);
+  $('bShow').onclick = () => setView(b === 'moon' ? VIEWS.earth : trainView(b));
+}
+function drawSpark(b) {
+  const cv = document.getElementById('spark'); if (!cv) return;
+  const x = cv.getContext('2d'); const w = cv.width, h = cv.height;
+  x.clearRect(0, 0, w, h);
+  const n = 600, ys = [], gs = [];
+  for (let k = 0; k <= n; k++) { const jd = JD_MIN + (JD_MAX - JD_MIN) * k / n;
+    const trueL = b === 'moon' ? moonLongitude(jd) : planetLongitude(b, jd);
+    ys.push(wrap180(brassLongitude(b, jd) - trueL)); gs.push(gearDrift(b, jd)); }
+  const lim = Math.max(1, ...ys.map(Math.abs), ...gs.map(Math.abs)) * 1.1;
+  const Y = v => h / 2 - v / lim * (h / 2 - 8);
+  x.strokeStyle = 'rgba(217,179,106,0.25)'; x.lineWidth = 1; x.beginPath(); x.moveTo(0, h / 2); x.lineTo(w, h / 2); x.stroke();
+  x.strokeStyle = 'rgba(200,190,170,0.45)'; x.lineWidth = 1.5; x.beginPath();
+  ys.forEach((v, k) => { const px = k / n * w; k ? x.lineTo(px, Y(v)) : x.moveTo(px, Y(v)); }); x.stroke();
+  x.strokeStyle = '#d9b36a'; x.lineWidth = 3; x.beginPath();
+  gs.forEach((v, k) => { const px = k / n * w; k ? x.lineTo(px, Y(v)) : x.moveTo(px, Y(v)); }); x.stroke();
+  const nowX = (T.jd - JD_MIN) / (JD_MAX - JD_MIN) * w;
+  x.strokeStyle = '#9fd3e6'; x.lineWidth = 2; x.beginPath(); x.moveTo(nowX, 0); x.lineTo(nowX, h); x.stroke();
+  x.fillStyle = '#6f6757'; x.font = '22px Georgia, serif';
+  x.fillText(`±${lim.toFixed(1)}°`, 6, 22); x.fillText('3000 BC', 6, h - 8); x.textAlign = 'right'; x.fillText('AD 3000', w - 6, h - 8); x.textAlign = 'left';
+  drawSpark.last = b;
+}
+
+// ------------------------------------------------------------ UI: time controls
+const $ = id => document.getElementById(id);
+function speedLabel() { $('speed').textContent = (T.dir < 0 ? '−' : '') + SPEED_NAMES[speedIdx]; $('bPlay').textContent = T.playing ? '❚❚' : '▶'; }
+$('bPlay').onclick = () => { T.playing = !T.playing; speedLabel(); };
+$('bFast').onclick = () => { speedIdx = Math.min(SPEEDS.length - 1, speedIdx + 1); speedLabel(); };
+$('bSlow').onclick = () => { speedIdx = Math.max(0, speedIdx - 1); speedLabel(); };
+$('bRev').onclick = () => { T.dir = -T.dir; speedLabel(); };
+$('bNow').onclick = () => { T.jd = nowJD(); };
+function goYear() {
+  const s = $('year').value.trim().toUpperCase(); if (!s) return;
+  const m = s.match(/^(-?\d+)\s*(BC|BCE|AD|CE)?$/); if (!m) return;
+  let y = parseInt(m[1], 10); if (m[2] && m[2].startsWith('B')) y = 1 - y;
+  T.jd = Math.min(JD_MAX, Math.max(JD_MIN, jdFromDate(y, 1, 1)));
+}
+$('bGo').onclick = goYear; $('year').addEventListener('keydown', e => { if (e.key === 'Enter') goYear(); });
+$('tSky').onclick = () => { T.sky = !T.sky; $('tSky').classList.toggle('on', T.sky); };
+$('tLabels').onclick = () => { T.labels = !T.labels; $('tLabels').classList.toggle('on', T.labels); };
+$('vOver').onclick = () => setView(VIEWS.over); $('vMove').onclick = () => setView(VIEWS.move);
+$('vCrank').onclick = () => setView(VIEWS.crank); $('vTop').onclick = () => setView(VIEWS.top); $('vEarth').onclick = () => setView(VIEWS.earth);
+$('bSvg').onclick = () => { const s = cutSheets(); const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([s], { type: 'image/svg+xml' })); a.download = 'antikythera-engine-wheels.svg'; a.click(); };
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === ' ') { e.preventDefault(); $('bPlay').click(); }
+  else if (e.key === ']') $('bFast').click(); else if (e.key === '[') $('bSlow').click();
+  else if (e.key === 'r' || e.key === 'R') $('bRev').click();
+  else if (e.key === 'g' || e.key === 'G') $('tSky').click(); else if (e.key === 'l' || e.key === 'L') $('tLabels').click();
+});
+// crank dial: one turn of the dial is one turn of the crank, one sidereal year
+{
+  const ticks = $('knobTicks'); let h = '';
+  for (let k = 0; k < 12; k++) { const a = k / 12 * TAU; h += `<line x1="${31 * Math.sin(a)}" y1="${-31 * Math.cos(a)}" x2="${35 * Math.sin(a)}" y2="${-35 * Math.cos(a)}" stroke="rgba(217,179,106,0.6)" stroke-width="${k % 3 ? 1 : 2}"/>`; }
+  ticks.innerHTML = h;
+  const knob = $('knob'); let last = null, wasPlaying = false;
+  const ang = e => { const r = knob.getBoundingClientRect(); return Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))); };
+  knob.addEventListener('pointerdown', e => { knob.setPointerCapture(e.pointerId); last = ang(e); wasPlaying = T.playing; T.playing = false; speedLabel(); });
+  knob.addEventListener('pointermove', e => { if (last === null) return; const a = ang(e); let d = a - last; d = (d + 3 * Math.PI) % TAU - Math.PI; last = a;
+    T.jd = Math.min(JD_MAX, Math.max(JD_MIN, T.jd + d / TAU * P_SID)); });
+  const end = () => { last = null; T.playing = wasPlaying; speedLabel(); };
+  knob.addEventListener('pointerup', end); knob.addEventListener('pointercancel', end);
+}
+// orbit camera
+{
+  let drag = null;
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+  canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.shiftKey, moved: 0 }; canvas.classList.add('dragging'); CAM.goal = null; if (drag.pan) CAM.follow = null; });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy);
+    if (drag.pan) { const s = CAM.dist * 0.0012; const cy = Math.cos(CAM.yaw), sy = Math.sin(CAM.yaw);
+      CAM.target[0] -= (dx * cy) * s; CAM.target[2] -= (-dx * sy) * s; CAM.target[1] += dy * s; }
+    else { CAM.yaw -= dx * 0.005; CAM.pitch = Math.min(1.5, Math.max(-0.15, CAM.pitch + dy * 0.004)); }
+  });
+  canvas.addEventListener('pointerup', e => { canvas.classList.remove('dragging'); if (drag && drag.moved < 4) pick(e.clientX, e.clientY); drag = null; });
+  canvas.addEventListener('wheel', e => { e.preventDefault(); CAM.goal = null; CAM.dist = Math.min(2600, Math.max(140, CAM.dist * Math.exp(e.deltaY * 0.001))); }, { passive: false });
+}
+function pick(x, y) {
+  let best = null, bd = 30;
+  for (const b of ORDER) { const p = screenPos[b]; if (!p) continue; const d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = b; } }
+  focus(best);
+}
+
+// ------------------------------------------------------------ labels
+const labelsEl = document.getElementById('labels');
+const labelEls = {}, ghostLabelEls = {}, screenPos = {};
+for (const b of ORDER) {
+  const e = document.createElement('div'); e.className = 'label'; e.textContent = BODY[b].name; labelsEl.appendChild(e); labelEls[b] = e;
+}
+
+// ------------------------------------------------------------ laser-cutting sheets
+function cutSheets() {
+  const wheels = [];
+  for (const t of TRAINS) for (const g of t.gears) {
+    const bore = g.axis === 'C' ? tubeByBody[t.body].r_out : g.axis === 'L' ? R.l_arbor : R.pipe;
+    wheels.push({ z: g.z, m: g.m, bore, label: `${BODY[t.body].name} ${g.role === 'drv' ? 'drv' : 'drn'} ${g.mesh + 1}  z${g.z} m${g.m}` });
+  }
+  for (let k = 0; k < MO.idlers + 2; k++) { const e = k === 0 || k === MO.idlers + 1; wheels.push({ z: e ? MO.end : MO.idler, m: MO.m, bore: k === 0 ? tubeByBody.moon.r_out : 1.6, label: `Moon transfer ${k + 1}  z${e ? MO.end : MO.idler} m${MO.m}` }); }
+  wheels.sort((a, b) => b.m * b.z - a.m * a.z);
+  const SW = 600, SH = 400, gap = 4;
+  const sheets = [[]]; let x = gap, y = gap, rowH = 0;
+  for (const w of wheels) {
+    const d = w.m * (w.z + 2) + 2;
+    if (x + d > SW - gap) { x = gap; y += rowH + gap + 6; rowH = 0; }
+    if (y + d + 6 > SH - gap) { sheets.push([]); x = gap; y = gap; rowH = 0; }
+    sheets[sheets.length - 1].push({ ...w, cx: x + d / 2, cy: y + d / 2 }); x += d + gap; rowH = Math.max(rowH, d);
+  }
+  const f = v => v.toFixed(3);
+  let body = '';
+  sheets.forEach((sh, si) => {
+    const oy = si * (SH + 20);
+    body += `<g transform="translate(0 ${oy})"><rect x="0" y="0" width="${SW}" height="${SH}" fill="none" stroke="#0000ff" stroke-width="0.2"/>`;
+    body += `<text x="${SW - 4}" y="${SH - 4}" font-size="5" text-anchor="end" fill="#ff0000">The Antikythera Engine: sheet ${si + 1} of ${sheets.length}. Red: engrave. Black: cut. 25 deg involute. 1 unit = 1 mm.</text>`;
+    for (const w of sh) {
+      const out = gearOutline(w.z, w.m);
+      let d = 'M' + out.map(p => `${f(w.cx + p[0])} ${f(w.cy - p[1])}`).join('L') + 'Z';
+      const st = wheelStyle(w.z, w.m, w.bore);
+      if (st.spokes) {
+        for (let k = 0; k < st.spokes; k++) {
+          const a0 = (k + 0.5) / st.spokes * TAU, a1 = (k + 1.5) / st.spokes * TAU;
+          const pts = [];
+          const offA = r => Math.asin(Math.min(0.95, (st.w0 + (st.w1 - st.w0) * (r - st.hub) / (st.rim - st.hub)) / 2 / r));
+          const N = 24;
+          for (let i = 0; i <= N; i++) { const a = a0 + offA(st.rim) + (a1 - offA(st.rim) - a0 - offA(st.rim)) * i / N; pts.push([st.rim * Math.cos(a), st.rim * Math.sin(a)]); }
+          for (let i = N; i >= 0; i--) { const a = a0 + offA(st.hub) + (a1 - offA(st.hub) - a0 - offA(st.hub)) * i / N; pts.push([st.hub * Math.cos(a), st.hub * Math.sin(a)]); }
+          d += 'M' + pts.map(p => `${f(w.cx + p[0])} ${f(w.cy - p[1])}`).join('L') + 'Z';
+        }
+      }
+      body += `<path d="${d}" fill="none" stroke="#000" stroke-width="0.1"/>`;
+      body += `<circle cx="${f(w.cx)}" cy="${f(w.cy)}" r="${f(w.bore)}" fill="none" stroke="#000" stroke-width="0.1"/>`;
+      body += `<text x="${f(w.cx)}" y="${f(w.cy + w.m * (w.z / 2 + 1) + 4)}" font-size="2.6" text-anchor="middle" fill="#ff0000">${w.label}</text>`;
+    }
+    body += '</g>';
+  });
+  const H = sheets.length * (SH + 20) - 20;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${SW}mm" height="${H}mm" viewBox="0 0 ${SW} ${H}" data-wheels="${wheels.length}">\n${body}\n</svg>\n`;
+}
+
+// ------------------------------------------------------------ render loop
+function resize() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = Math.floor(canvas.clientWidth * dpr), h = Math.floor(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+}
+function drawParts(prog, VP, eye, shadowPass) {
+  for (const p of parts) {
+    if (shadowPass && !p.shadow) continue;
+    const M = p.model();
+    gl.uniformMatrix4fv(prog.u.uM, false, M);
+    if (!shadowPass) {
+      const m = p.mat;
+      const c = p.center ? p.center() : [M[12], M[13], M[14]];
+      const dimmed = T.focus && (p.kind === 'wheel' || p.kind === 'pipe' || p.kind === 'tube' || p.kind === 'arm') && p.body !== T.focus
+        && !(T.focus === 'moon' && p.body === 'emb' && p.kind === 'arm');
+      gl.uniform3fv(prog.u.uBase, m.base); gl.uniform1f(prog.u.uMetal, m.metal); gl.uniform1f(prog.u.uRough, m.rough);
+      gl.uniform1f(prog.u.uFinish, m.finish); gl.uniform3fv(prog.u.uEmit, m.emit || [0, 0, 0]);
+      gl.uniform3fv(prog.u.uCenter, c); gl.uniform1f(prog.u.uDim, dimmed ? 0.16 : 1.0);
+      let axis = [0, 0, 0];
+      if (m.finish === 4) axis = [m.planet || 0, m.spot || 0, 0];
+      else if (m.finish === 5) axis = [p.ringR[0], p.ringR[1], 0];
+      else if (m.finish === 6 && p.axisDir) axis = p.axisDir();
+      gl.uniform3fv(prog.u.uAxis, axis);
+      gl.uniform1f(prog.u.uSpin, p.body === 'emb' && p.kind === 'planet' ? ((T.jd % 1) * TAU) : 0);
+    }
+    gl.bindVertexArray(p.mesh.vao);
+    gl.drawElements(gl.TRIANGLES, p.mesh.count, gl.UNSIGNED_INT, 0);
+  }
+}
+let lastT = performance.now(), frames = 0;
+function step(dt, draw = true) {
+  if (TOUR.on) tourStep(dt);
+  if (T.playing) T.jd = T.jd + T.dir * SPEEDS[speedIdx] * dt;
+  if (TOUR.on && TOUR.speed !== null) T.jd += TOUR.speed * dt;
+  if (T.jd > JD_MAX) { T.jd = JD_MAX; T.playing = false; speedLabel(); }
+  if (T.jd < JD_MIN) { T.jd = JD_MIN; T.playing = false; speedLabel(); }
+  S.jd = T.jd; S.turns = crankTurns(T.jd);
+  if (CAM.follow) {
+    const A = armAngle('emb'); const p = W(0.8 * eArm.r * Math.cos(A), 0.8 * eArm.r * Math.sin(A), eArm.z + 0.55 * (pp - eArm.z));
+    const g = CAM.goal || CAM; g.target = p; if (!CAM.goal) CAM.target = p;
+  }
+  if (CAM.goal) {
+    const g = CAM.goal, k = 1 - Math.exp(-dt * (TOUR.on ? 1.6 : 4));
+    let dy = g.yaw - CAM.yaw; dy = (dy + 3 * Math.PI) % TAU - Math.PI;
+    CAM.yaw += dy * k; CAM.pitch += (g.pitch - CAM.pitch) * k; CAM.dist += (g.dist - CAM.dist) * k;
+    for (let i = 0; i < 3; i++) CAM.target[i] += (g.target[i] - CAM.target[i]) * k;
+    if (!TOUR.on && Math.abs(dy) + Math.abs(g.pitch - CAM.pitch) + Math.abs(g.dist - CAM.dist) / 1000 < 1e-4) CAM.goal = null;
+  }
+  if (draw) { render(); frames++; }
+}
+const CAPTURE = new URLSearchParams(location.search).has('capture');
+function frame(now) {
+  const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+  step(dt);
+  requestAnimationFrame(frame);
+}
+
+// ------------------------------------------------------------ the tour
+// A scripted minute: each stop sets a view, a focus, a pace, and a caption.
+const TOUR = { on: false, t: 0, k: -1, speed: null, orbit: 0 };
+const TOUR_STOPS = [
+  { at: 0, view: 'over', focus: null, speed: 30, orbit: 0.035,
+    text: 'Seventy brass wheels, every tooth count found by search. One turn of the crank is one sidereal year.' },
+  { at: 9, view: 'crank', speed: 45, orbit: 0,
+    text: 'The crank turns the driving arbor through a pair of mitre bevels: once round, once a year.' },
+  { at: 17, view: 'move', speed: 20, orbit: 0.045,
+    text: 'Nine trains leave the driving arbor. Each hops between two fixed arbors on loose pipes and ends on a tube at the centre. Four axes carry everything.' },
+  { at: 28, view: 'train:mercury', focus: 'mercury', speed: 20, orbit: 0.03,
+    text: "Mercury's train: 33:15, 29:19, 34:14, 49:47, 21:43. That is 797,181 / 191,995 turns a year, and it loses one degree in 1,919 years." },
+  { at: 39, view: 'earth', focus: 'moon', speed: 4, orbit: 0.06,
+    text: "The Moon's motion rides out along the Earth's arm through three idlers, exactly 1 : 1. Its continued fraction passes through 254/19, the Antikythera mechanism's own ratio. The bronze ring is a 254/19 Moon, set in 100 BC." },
+  { at: 52, view: 'over', focus: null, back: 12, orbit: 0.02,
+    text: "Now run back fifty centuries. The rings of light are where JPL's ephemeris puts each body." },
+  { at: 65, view: 'top', speed: 0, orbit: 0,
+    text: '3000 BC. No gear has drifted four degrees. What still separates brass from sky is Kepler\'s second law: planets hurry near the Sun, and no uniform gear can.' },
+  { at: 78, end: true },
+];
+function tourStart() {
+  Object.assign(TOUR, { on: true, t: 0, k: -1, speed: null, orbit: 0 });
+  T.playing = false; T.dir = 1; speedLabel();
+  if (!params.has('jd')) T.jd = nowJD();
+  document.body.classList.add('touring'); $('bTour').classList.add('on'); $('bTour').textContent = 'Stop the tour';
+}
+function tourStop() {
+  TOUR.on = false; TOUR.speed = null; CAM.goal = null; CAM.follow = null;
+  $('caption').classList.remove('on'); document.body.classList.remove('touring');
+  $('bTour').classList.remove('on'); $('bTour').textContent = 'Take the tour';
+}
+function tourStep(dt) {
+  TOUR.t += dt;
+  let k = TOUR.k;
+  while (k + 1 < TOUR_STOPS.length && TOUR.t >= TOUR_STOPS[k + 1].at) k++;
+  if (k !== TOUR.k) {
+    TOUR.k = k; const st = TOUR_STOPS[k];
+    if (st.end) { tourStop(); focus(null); return; }
+    if (st.view) setView(st.view.startsWith('train:') ? trainView(st.view.slice(6)) : VIEWS[st.view]);
+    if ('focus' in st) focus(st.focus);
+    TOUR.orbit = st.orbit || 0;
+    TOUR.speed = st.back ? (JD_MIN - T.jd) / st.back : st.speed;
+    const c = $('caption'); c.classList.remove('on');
+    setTimeout(() => { c.textContent = st.text; c.classList.add('on'); }, CAPTURE ? 0 : 350);
+    if (CAPTURE) { c.textContent = st.text; c.classList.add('on'); }
+  }
+  if (TOUR.orbit) { CAM.yaw += TOUR.orbit * dt; if (CAM.goal) CAM.goal.yaw += TOUR.orbit * dt; }
+}
+$('bTour').onclick = () => TOUR.on ? tourStop() : tourStart();
+addEventListener('keydown', e => { if (e.target.tagName !== 'INPUT' && (e.key === 't' || e.key === 'T')) $('bTour').click(); });
+
+// ------------------------------------------------------------ a 254/19 Moon
+// What the Antikythera mechanism's lunar ratio would show if it were set right
+// on 1 January 100 BC and geared at 254/19 sidereal months per sidereal year.
+const GREEK_JD = jdFromDate(-99, 1, 1);
+function greekMoonAngle(jd) {
+  const base = L0.moon + TRAIN.moon.ratioF * crankTurns(GREEK_JD) * 360;
+  return base + (254 / 19) * (jd - GREEK_JD) / P_SID * 360;       // degrees, unwrapped
+}
+function greekMoonOffset(jd) { return greekMoonAngle(jd) - (L0.moon + TRAIN.moon.ratioF * crankTurns(jd) * 360); }
+
+function render() {
+  resize();
+  const w = canvas.width, h = canvas.height;
+  const eye = camEye();
+    // Portrait screens keep the horizontal field of a 30-degree landscape view.
+  const fovy = w >= h ? 30 * RAD : Math.min(75 * RAD, 2 * Math.atan(Math.tan(15 * RAD) / (w / h) * 0.8));
+  const VP = M4.mul(M4.persp(fovy, w / h, 20, 6000), M4.look(eye, CAM.target, [0, 1, 0]));
+  // shadow pass
+  gl.bindFramebuffer(gl.FRAMEBUFFER, shFB); gl.viewport(0, 0, SHADOW, SHADOW);
+  gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
+  gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.5, 3.0);
+  gl.useProgram(PS.p); gl.uniformMatrix4fv(PS.u.uLVP, false, LVP);
+  drawParts(PS, null, null, true);
+  gl.disable(gl.POLYGON_OFFSET_FILL);
+  // main pass
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, w, h);
+  gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  gl.disable(gl.DEPTH_TEST); gl.useProgram(PB.p); gl.drawArrays(gl.TRIANGLES, 0, 3); gl.enable(gl.DEPTH_TEST);
+  gl.useProgram(PR.p);
+  gl.uniformMatrix4fv(PR.u.uVP, false, VP); gl.uniformMatrix4fv(PR.u.uLVP, false, LVP);
+  gl.uniform3fv(PR.u.uCam, eye); gl.uniform3fv(PR.u.uKeyDir, KEY); gl.uniform1f(PR.u.uExposure, 1.3);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, shTex); gl.uniform1i(PR.u.uShadow, 0);
+  gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, engraveTex); gl.uniform1i(PR.u.uEngrave, 1);
+  drawParts(PR, VP, eye, false);
+  // glow: sun halo, ghosts and error arcs
+  gl.useProgram(PG.p); gl.uniformMatrix4fv(PG.u.uVP, false, VP); gl.uniform3fv(PG.u.uCam, eye);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.depthMask(false);
+  gl.bindVertexArray(ghostSphere.vao);
+  gl.uniform1f(PG.u.uFres, 1); gl.uniform1f(PG.u.uAlpha, 1);
+  for (const [s, c] of [[21, [0.22, 0.11, 0.03]], [28, [0.07, 0.03, 0.01]]]) {
+    gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(0, 0, pp, 0, s)); gl.uniform3fv(PG.u.uCol, c);
+    gl.drawElements(gl.TRIANGLES, ghostSphere.count, gl.UNSIGNED_INT, 0);
+  }
+  const ghosts = ghostPositions();
+  if (T.sky) {
+    gl.bindVertexArray(ghostRing.vao);
+    for (const gp of ghosts) {
+      const dim = T.focus && T.focus !== gp.body ? 0.25 : 1;
+      gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(gp.x, gp.y, pp, 0, gp.r * 1.75)); gl.uniform3fv(PG.u.uCol, [0.35 * dim, 0.85 * dim, 1.1 * dim]);
+      gl.uniform1f(PG.u.uFres, 0);
+      gl.drawElements(gl.TRIANGLES, ghostRing.count, gl.UNSIGNED_INT, 0);
+    }
+    if (T.focus === 'moon') {
+      const A = armAngle('emb'), g = greekMoonAngle(T.jd) * RAD;
+      const x = eArm.r * Math.cos(A) + MO.arm_r * Math.cos(g), y = eArm.r * Math.sin(A) + MO.arm_r * Math.sin(g);
+      gl.uniformMatrix4fv(PG.u.uM, false, M4.rt(x, y, pp, 0, BODY.moon.r * 1.9)); gl.uniform3fv(PG.u.uCol, [1.0, 0.45, 0.12]);
+      gl.drawElements(gl.TRIANGLES, ghostRing.count, gl.UNSIGNED_INT, 0);
+    }
+    drawArcs(ghosts);
+  }
+  gl.depthMask(true); gl.disable(gl.BLEND);
+  updateLabels(VP, w, h, ghosts);
+}
+// true positions: planets on their own arm radius; the Moon around the brass Earth
+function ghostPositions() {
+  const out = [];
+  for (const b of ORDER) {
+    const lam = trueLongitude(b, T.jd) * RAD;
+    if (b === 'moon') {
+      const A = armAngle('emb'); const ex = eArm.r * Math.cos(A), ey = eArm.r * Math.sin(A);
+      out.push({ body: b, x: ex + MO.arm_r * Math.cos(lam), y: ey + MO.arm_r * Math.sin(lam), r: BODY.moon.r, lam, R: MO.arm_r, cx: ex, cy: ey });
+    } else {
+      const r = armZ[b].r;
+      out.push({ body: b, x: r * Math.cos(lam), y: r * Math.sin(lam), r: BODY[b].r, lam, R: r, cx: 0, cy: 0 });
+    }
+  }
+  return out;
+}
+function drawArcs(ghosts) {
+  const P = [], Nn = [];
+  for (const g of ghosts) {
+    if (T.focus && T.focus !== g.body) continue;
+    const brass = (g.body === 'moon' ? moonTubeAngle() : armAngle(g.body));
+    let d = wrap180((g.lam - brass) / RAD) * RAD;
+    const n = Math.max(2, Math.ceil(Math.abs(d) / RAD * 2));
+    const hw = 0.7, z = pp - g.r - 1.5;
+    for (let k = 0; k < n; k++) {
+      const a0 = brass + d * k / n, a1 = brass + d * (k + 1) / n;
+      const q = (a, rr) => W(g.cx + rr * Math.cos(a), g.cy + rr * Math.sin(a), z);
+      const v = [q(a0, g.R - hw), q(a1, g.R - hw), q(a1, g.R + hw), q(a0, g.R - hw), q(a1, g.R + hw), q(a0, g.R + hw)];
+      for (const p of v) { P.push(...p); Nn.push(0, 1, 0); }
+    }
+  }
+  if (!P.length) return;
+  gl.bindBuffer(gl.ARRAY_BUFFER, arcBuf.vb); gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(P.slice(0, 60000)));
+  gl.bindBuffer(gl.ARRAY_BUFFER, arcBuf.nb); gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(Nn.slice(0, 60000)));
+  gl.bindVertexArray(arcBuf.vao);
+  gl.uniformMatrix4fv(PG.u.uM, false, M4.id()); gl.uniform3fv(PG.u.uCol, [0.30, 0.62, 0.78]); gl.uniform1f(PG.u.uFres, 0);
+  gl.drawArrays(gl.TRIANGLES, 0, Math.min(P.length, 60000) / 3);
+}
+function project(VP, p, w, h) {
+  const c = M4.tform(VP, [p[0], p[1], p[2], 1]); if (c[3] <= 0) return null;
+  return [(c[0] / c[3] * 0.5 + 0.5) * w / (Math.min(devicePixelRatio || 1, 2)), (1 - (c[1] / c[3] * 0.5 + 0.5)) * h / (Math.min(devicePixelRatio || 1, 2))];
+}
+let uiTick = 0;
+function updateLabels(VP, w, h, ghosts) {
+  for (const b of ORDER) {
+    const part = parts.find(p => p.kind === 'planet' && p.body === b);
+    const c = part.center(); const s = project(VP, [c[0], c[1] + BODY[b].r, c[2]], w, h); screenPos[b] = s;
+    const e = labelEls[b];
+    if (!s || !T.labels) { e.style.display = 'none'; continue; }
+    e.style.display = 'block'; e.style.left = s[0] + 'px'; e.style.top = s[1] + 'px';
+    e.style.opacity = T.focus && T.focus !== b ? 0.3 : 0.9;
+  }
+  if (++uiTick % 4) return;
+  $('dateMain').textContent = fmtDate(T.jd);
+  const dd = dateFromJd(T.jd);
+  $('dateSub').textContent = `JD ${T.jd.toFixed(2)} · crank turn ${S.turns.toFixed(3)}${dd.julian ? ' · Julian calendar' : ''}`;
+  $('knobArm').setAttribute('transform', `rotate(${((S.turns % 1) * 360).toFixed(2)})`);
+  for (const b of ORDER) {
+    const br = b === 'moon' ? ((moonTubeAngle() / RAD) % 360 + 360) % 360 : brassLongitude(b, T.jd);
+    const sk = trueLongitude(b, T.jd), df = wrap180(br - sk), gd = gearDrift(b, T.jd);
+    const r = rowEls[b];
+    r.children[1].textContent = fmtDeg(br); r.children[2].textContent = fmtDeg(sk);
+    r.children[3].textContent = fmtSigned(df); r.children[3].className = 'df ' + (df >= 0 ? 'pos' : 'neg');
+    r.children[4].textContent = b === 'emb' ? 'exact' : (Math.abs(gd) < 0.005 ? fmtSigned(gd).replace('.00', '.00') : fmtSigned(gd));
+  }
+  if (T.focus && uiTick % 60 === 0) drawSpark(T.focus);
+  const gk = document.getElementById('greek');
+  if (gk) { const off = greekMoonOffset(T.jd);
+    gk.innerHTML = `<span style="color:#ff9a4a">Bronze ring:</span> a 254/19 Moon set right on 1 January 100 BC is ${Math.abs(off) < 0.05 ? 'still right' : `<b>${Math.abs(off).toFixed(1)}° ${off < 0 ? 'behind' : 'ahead'}</b>`} here${Math.abs(off) >= 360 ? ` (${Math.floor(Math.abs(off) / 360)} whole turn${Math.abs(off) >= 720 ? 's' : ''} and more)` : ''}.`; }
+}
+
+// ------------------------------------------------------------ public hooks (used by verify.mjs)
+window.__engine = {
+  step, tourStart, tourStop, tour: () => ({ ...TOUR }), greekMoonOffset,
+  design: D, trains: TRAINS,
+  brassLongitude, trueLongitude, planetLongitude, moonLongitude, gearDrift, crankTurns, jdFromDate, dateFromJd, fmtDate,
+  setJD(jd) { T.jd = jd; T.playing = false; speedLabel(); },
+  setView(name) { setView(VIEWS[name], true); },
+  focus, cutSheets, frames: () => frames,
+  state: () => ({ jd: T.jd, turns: S.turns, playing: T.playing, focus: T.focus }),
+  wheelAngles() { return parts.filter(p => p.gear).map(p => ({ body: p.body, axis: p.gear.axis, z: p.gear.z, level: p.gear.level, rate: p.gear.rate })); },
+};
+
+speedLabel();
+if (params.has('clean')) { for (const id of ['title', 'ledger', 'time', 'help']) $(id).style.display = 'none'; T.labels = false; }
+if (params.get('view') && VIEWS[params.get('view')]) setView(VIEWS[params.get('view')], true);
+if (params.get('cam')) { const [yaw, pitch, dist, tx, ty, tz] = params.get('cam').split(',').map(Number); setView({ yaw, pitch, dist, target: [tx, ty, tz] }, true); }
+if (T.focus) focus(T.focus);
+if (params.has('tour')) tourStart();
+if (CAPTURE) { T.playing = false; step(0); } else requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# Python 3.11 (3.11.15 used).
+# src/design.py (the tooth-count search):
+numpy==2.4.6
+# src/render_assets.py and src/check_assets.py (the release assets): headless
+# Chromium driven from the page itself, and a bundled FFmpeg with libx264.
+# After installing: python3 -m playwright install --with-deps chromium
+playwright==1.63.0
+imageio-ffmpeg==0.6.0
+# The ephemeris, the tests, the fixture and the embed step use only the standard library.
+# Optional, for verify.mjs: Node 22+ and the repository's locked @playwright/test.

@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**The Antikythera Engine**](runs/antikythera-engine/) | A brass orrery whose gear trains were found by search; every wheel turns at its true ratio, and the planets are checked against JPL ephemerides from 3000 BC to AD 3000 (the Moon, AD 1800 to 2200). | Claude Opus 5.5 (high) | 2 | [brief](runs/antikythera-engine/brief.md) · [log](runs/antikythera-engine/process/PROGRESS.md) · [snapshots](runs/antikythera-engine/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-antikythera-engine) |
 | [**One Equation, Three Worlds**](runs/three-worlds/) | One Lorenz trajectory, integrated once, rendered as a copper sculpture, an ink painting and a travelling light, joined by a 30 s film. | Claude Opus 5.5 | 2 | [brief](runs/three-worlds/brief.md) · [log](runs/three-worlds/process/PROGRESS.md) · [snapshots](runs/three-worlds/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds) |
 | [**ARTEMIS II — Built for the Journey**](runs/artemis-ii/) | An 89-second Blender film: the Artemis II SLS Block 1 and Orion resolve from their components into the full stack, then launch from Pad 39B. | Claude Opus 5.5 | 3 | [brief](runs/artemis-ii/brief.md) · [log](runs/artemis-ii/process/PROGRESS.md) · [snapshots](runs/artemis-ii/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-artemis-ii) |
 | [**Two Kinds of Fire**](runs/two-kinds-of-fire/) | A nocturne painted entirely by Python code: a kayak stirs bioluminescence while a rocket rises over Cape Canaveral. | Claude Opus 5.5 | 1 | [brief](runs/two-kinds-of-fire/brief.md) · [log](runs/two-kinds-of-fire/process/PROGRESS.md) · [snapshots](runs/two-kinds-of-fire/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-two-kinds-of-fire) |
@@ -74,11 +75,12 @@ is not required.
 - **Long-horizon runs:** see the run's README. It has a one-command
   reproduction and the dependencies it was run with.
 
-Several single-file runs include a headless `verify.mjs` smoke test that uses
+Several runs include a headless `verify.mjs` smoke test that uses
 `@playwright/test` from this repository's `node_modules`. With Node 22+ and npm,
 run `npm ci` and `npx playwright install chromium`, then
-`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all four existing
-verifiers. The locked tooling is optional; the HTML runs still open without it.
+`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all five existing
+verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
+The locked tooling is optional; the HTML runs still open without it.
 Screenshots from the verifiers stay in their run directories and are ignored.
 
 Collection scripts need only Python 3.11+; they have no third-party dependencies.
