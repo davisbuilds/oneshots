@@ -9,7 +9,7 @@
   "scripts": {
     "check": "python3 scripts/validate_runs.py && python3 scripts/check_publication_hygiene.py",
     "test": "python3 runs/three-worlds/src/test_build.py && python3 runs/artemis-ii/src/test_build_all.py",
-    "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs && node runs/antikythera-engine/verify.mjs"
+    "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs && node runs/antikythera-engine/verify.mjs && node runs/borrowed-seconds/verify.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0"

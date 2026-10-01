@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**Borrowed Seconds**](runs/borrowed-seconds/) | A midnight museum heist: record your past selves, coordinate two locks, distract security, and steal three treasures in sixty seconds. | GPT-6.1 Sol (xhigh) | 3 | [brief](runs/borrowed-seconds/brief.md) · [log](runs/borrowed-seconds/process/PROGRESS.md) · [snapshots](runs/borrowed-seconds/process/snapshots) |
 | [**The Antikythera Engine**](runs/antikythera-engine/) | A brass orrery whose gear trains were found by search; every wheel turns at its true ratio, and the planets are checked against JPL ephemerides from 3000 BC to AD 3000 (the Moon, AD 1800 to 2200). | Claude Opus 5.5 (high) | 2 | [brief](runs/antikythera-engine/brief.md) · [log](runs/antikythera-engine/process/PROGRESS.md) · [snapshots](runs/antikythera-engine/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-antikythera-engine) |
 | [**One Equation, Three Worlds**](runs/three-worlds/) | One Lorenz trajectory, integrated once, rendered as a copper sculpture, an ink painting and a travelling light, joined by a 30 s film. | Claude Opus 5.5 | 2 | [brief](runs/three-worlds/brief.md) · [log](runs/three-worlds/process/PROGRESS.md) · [snapshots](runs/three-worlds/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds) |
 | [**ARTEMIS II — Built for the Journey**](runs/artemis-ii/) | An 89-second Blender film: the Artemis II SLS Block 1 and Orion resolve from their components into the full stack, then launch from Pad 39B. | Claude Opus 5.5 | 3 | [brief](runs/artemis-ii/brief.md) · [log](runs/artemis-ii/process/PROGRESS.md) · [snapshots](runs/artemis-ii/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-artemis-ii) |
@@ -78,7 +79,7 @@ is not required.
 Several runs include a headless `verify.mjs` smoke test that uses
 `@playwright/test` from this repository's `node_modules`. With Node 22+ and npm,
 run `npm ci` and `npx playwright install chromium`, then
-`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all five existing
+`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all six existing
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
 The locked tooling is optional; the HTML runs still open without it.
 Screenshots from the verifiers stay in their run directories and are ignored.
