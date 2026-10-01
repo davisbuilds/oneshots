@@ -1,0 +1,19 @@
+{
+  "samples": 3501,
+  "time_monotonic": true,
+  "finite": true,
+  "max_local_reintegration_error": 2.4304471882112967e-07,
+  "endpoint_separation": 13.122283097499837,
+  "normalized_image_bounds": [
+    [
+      0.2854762077331543,
+      0.10836273431777954
+    ],
+    [
+      0.6899521350860596,
+      0.7643978893756866
+    ]
+  ],
+  "all_centerline_points_inside_frame": true,
+  "csv_npz_max_coordinate_error": 4.999378688808065e-11
+}
