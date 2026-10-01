@@ -60,7 +60,9 @@ frames → film. It writes and verifies `SHA256SUMS` for every declared asset.
 
 `--skip-matter` reuses an existing `output/Matter.png`. `--resimulate` repeats
 the integration and selection in `output/data/`; it does not replace committed
-historical data. Preserve the supplied dataset when exact geometry matters:
+historical data. These options cannot be combined: a new trajectory requires
+regenerating the copper still and camera projection. Run the fast CLI regression
+checks with `python3 src/test_build.py`. Preserve the supplied dataset when exact geometry matters:
 chaotic trajectories amplify tiny numerical differences across environments.
 The light-frame cache validates completed PNGs and writes replacements
 atomically. Remove only that cache when deliberately changing its renderer or

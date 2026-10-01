@@ -13,6 +13,8 @@ def main():
     parser.add_argument('--resimulate', action='store_true')
     parser.add_argument('--skip-matter', action='store_true', help='Reuse an existing output/Matter.png')
     args = parser.parse_args()
+    if args.resimulate and args.skip_matter:
+        parser.error('--resimulate cannot be combined with --skip-matter; regenerate geometry for the new trajectory')
     for executable in (['ffmpeg'] if args.skip_matter else ['blender', 'ffmpeg']):
         if not shutil.which(executable):
             raise SystemExit(f'{executable} must be installed and on PATH; see README.md')

@@ -28,5 +28,6 @@ jobs:
 
       - name: Check resumable build recovery
         run: |
+          python3 runs/three-worlds-chatgpt/src/test_build.py
           python3 runs/three-worlds/src/test_build.py
           python3 runs/artemis-ii/src/test_build_all.py
