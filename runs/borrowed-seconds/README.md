@@ -113,7 +113,7 @@ Checks cover a complete three-treasure escape, exact replay of thief and guard
 states, replay scrubbing, the five-person demonstration, recorded whistles,
 solid walls and the locked vault, stationary echo endpoints, the crew limit,
 capture, sixty-second expiry, retry, undo and removal, pause, sound output,
-PNG export, phone input, rotation, reduced-motion startup, and the ordinary
+PNG export, phone input, rotation with movement/action controls inside the viewport, reduced-motion startup, and the ordinary
 animation loop. It also rejects browser errors and external HTTP requests.
 Browser evidence stays in ignored `output/playwright/`.
 

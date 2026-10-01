@@ -214,6 +214,22 @@ try {
   assert.equal((await phone.evaluate(() => window.BorrowedSeconds.snapshot())).echoes.length, 1);
   await phone.screenshot({ path: output + '07-phone.png', fullPage: true });
   await phone.setViewportSize({ width: 844, height: 390 });
+  await phone.waitForFunction(() => getComputedStyle(document.querySelector('.controls')).position === 'fixed');
+  for (const selector of ['.controls', '.dpad button', '#record', '#interact', '#undo']) {
+    for (const control of await phone.locator(selector).all()) {
+      const bounds = await control.boundingBox();
+      assert.ok(bounds && bounds.x >= 0 && bounds.y >= 0 &&
+        bounds.x + bounds.width <= 844 && bounds.y + bounds.height <= 390,
+        `${selector} must remain inside the landscape phone viewport: ${JSON.stringify(bounds)}`);
+    }
+  }
+  await phone.locator('#interact').tap();
+  await phone.evaluate(() => window.BorrowedSeconds.step(20));
+  await phone.locator('#record').tap();
+  assert.equal((await phone.evaluate(() => window.BorrowedSeconds.snapshot())).echoes.length, 2);
+  await phone.locator('#undo').tap();
+  assert.equal((await phone.evaluate(() => window.BorrowedSeconds.snapshot())).echoes.length, 1);
+  await phone.screenshot({ path: output + '08-phone-landscape.png', fullPage: true });
   assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await phone.getByRole('button', { name: 'How to play', exact: true }).tap();
   assert.equal(await phone.locator('#guide').evaluate(el => el.open), true);
