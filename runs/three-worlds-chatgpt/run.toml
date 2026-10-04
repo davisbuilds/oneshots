@@ -1,0 +1,52 @@
+schema = 1
+slug = "three-worlds-chatgpt"
+title = "One Equation, Three Worlds — ChatGPT Work"
+summary = "A single Lorenz trajectory becomes copper, ink, and moving light in a matched triptych and a 28-second silent film."
+date = 2026-09-26
+kind = "long-horizon"
+medium = ["sculpture", "ink", "light", "film", "python", "blender", "procedural"]
+hero = "preview/hero.webp"
+entry = "src/build.py"
+curator_note = ""
+
+[agent]
+model = "unrecorded"
+model_id = "unrecorded"
+harness = "ChatGPT Work (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 2
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+command = "bash src/build_release.sh"
+verify = "python3 src/verify.py"
+timeout_minutes = 110
+
+[[assets]]
+file = "One-Equation-Three-Worlds.mp4"
+description = "Original 28-second silent film, 1920 x 1080, 24 fps, H.264"
+[[assets]]
+file = "Matter.png"
+description = "Copper sculpture, 3200 x 1800 PNG"
+[[assets]]
+file = "Trace.png"
+description = "Procedural ink on paper, 3200 x 1800 PNG"
+[[assets]]
+file = "Energy.png"
+description = "Depth-aware light composite at model t=46.5, 3200 x 1800 PNG"
+[[assets]]
+file = "One-Equation-Three-Worlds.png"
+description = "Composed triptych, 4200 x 2120 PNG"
+[[assets]]
+file = "One-Equation-Three-Worlds.blend"
+description = "Editable Blender copper sculpture and gallery"
+[[assets]]
+file = "trajectory.csv"
+description = "Canonical open Lorenz segment, 3501 samples, t=40–47"
+[[assets]]
+file = "trajectory.npz"
+description = "Full-precision canonical trajectory; arrays t and xyz"

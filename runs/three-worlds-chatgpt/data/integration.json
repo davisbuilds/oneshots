@@ -1,0 +1,31 @@
+{
+  "equations": [
+    "dx/dt = 10(y-x)",
+    "dy/dt = x(28-z)-y",
+    "dz/dt = xy-(8/3)z"
+  ],
+  "initial_condition": [
+    1,
+    1,
+    1
+  ],
+  "solver": "scipy.integrate.solve_ivp / DOP853",
+  "rtol": 1e-11,
+  "atol": 1e-13,
+  "max_step": 0.01,
+  "integration_interval": [
+    0,
+    60
+  ],
+  "transient_discarded": [
+    0,
+    20
+  ],
+  "canonical_sample_step": 0.002,
+  "selected_segment": [
+    40,
+    47
+  ],
+  "samples": 3501,
+  "dataset_sha256": "00390a4d208ce4602a6f0e102972f88ce220895116c53d0f79a1896451079bc9"
+}
