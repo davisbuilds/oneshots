@@ -61,3 +61,14 @@ The owner subsequently confirmed that the artwork was created by **GPT 6 Astra**
 with **medium** reasoning in ChatGPT Work. The manifest and current README now
 record that attribution. The exact API model identifier remains unrecorded; the
 original agent account and import-time uncertainty above remain historical evidence.
+
+## Hosted rebuild and publication — 4 October 2026
+
+[Run assets #37237737242](https://github.com/davisbuilds/oneshots/actions/runs/37237737242)
+completed in 11 minutes 31 seconds and published all eight declared files plus
+`SHA256SUMS` to `run-three-worlds-chatgpt`, from source commit
+`11f97d8654020406684b782f6c3849c6880c51cc`. Downloaded assets passed their
+checksums and the complete run verifier, including 672 decoded video frames.
+Trace, Energy, CSV, and NPZ retain their original hashes; Matter, the scene,
+triptych, and film differ. The separately recovered original film matches
+`ORIGINAL-SHA256SUMS`. Original previews and recovery files remain preserved.

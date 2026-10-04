@@ -29,7 +29,7 @@ timeout_minutes = 110
 
 [[assets]]
 file = "One-Equation-Three-Worlds.mp4"
-description = "Original 28-second silent film, 1920 x 1080, 24 fps, H.264"
+description = "28-second silent film, 1920 x 1080, 24 fps, H.264"
 [[assets]]
 file = "Matter.png"
 description = "Copper sculpture, 3200 x 1800 PNG"
