@@ -13,13 +13,13 @@ replaces the other.
 | | |
 | :-- | :-- |
 | Run date | 26 September 2026 |
-| Model | Exact model name and identifier unrecorded |
+| Model | GPT 6 Astra, medium reasoning; exact API identifier unrecorded |
 | Harness | ChatGPT Work, cloud session |
 | Human turns | 2: initial brief, then repository import; no mid-artwork intervention |
 | Brief | [Verbatim requests](brief.md) |
 | Process | [Original agent log](process/PROGRESS.md), [import notes](process/IMPORT.md), [snapshots](process/snapshots/), [studies](process/studies/) |
 | Source account | [Original delivery README](process/ORIGINAL-README.md), preserved as historical evidence |
-| Release | `run-three-worlds-chatgpt` — pending publication after merge |
+| Release | [Verified hosted rebuild](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds-chatgpt) |
 
 <p>
   <img src="preview/matter.webp" width="32%" alt="Suspended copper sculpture">
@@ -121,7 +121,8 @@ closing connector or physically seamless loop is claimed.
   from the repository's MIT license. Unrelated Debian packaging/AppStream
   notices were omitted from the font-specific extracts.
 - The historical progress log is a concise self-report, not a timestamped
-  transcript. Wall-clock time and exact model identity are unrecorded. The
+  transcript. Wall-clock time is unrecorded. The owner later confirmed GPT 6 Astra with
+  medium reasoning; the exact API identifier remains unrecorded. The
   curator's verdict is intentionally empty.
 - One archived intermediate (`03-ink-2.png`) was truncated and could not be
   decoded during import. It was omitted from committed previews. The surviving
@@ -137,12 +138,12 @@ Committed previews are downsized from those originals. Full media and the
 archive is preserved separately from adapted source; its checksum is recorded
 in the import notes.
 
-After merge, dispatch the existing **Run assets** workflow with input
+To rebuild, dispatch the existing **Run assets** workflow with input
 `three-worlds-chatgpt`. Its run-local `src/build_release.sh` installs Blender and
 FFmpeg only when missing on a GitHub Actions runner, then runs the pinned Python
 pipeline. The manifest allows 110 minutes within the workflow's 120-minute job
-limit. The hosted build has not yet been measured; its CPU speed and package
-versions may affect duration and pixels. This workflow publishes a **rebuild**
+limit. The first hosted build completed successfully on 4 October 2026 in 11 minutes
+31 seconds. Future runner speed and package versions may affect duration and pixels. This workflow publishes a **rebuild**
 with its own checksums and commit provenance, not a claim of byte-identical
 original rendering.
 
@@ -150,4 +151,13 @@ If that build exceeds the runner limits, publish the preserved original eight
 assets and their `SHA256SUMS` manually to `run-three-worlds-chatgpt`, clearly
 labeling them as original outputs from 2026-09-26. Do not remove recovery copies
 until downloaded assets pass `python3 scripts/fetch_assets.py three-worlds-chatgpt`.
-No release is published by this import PR itself.
+The import PR itself did not publish a release.
+
+The [first hosted rebuild](https://github.com/davisbuilds/oneshots/actions/runs/37237737242)
+published all eight assets plus `SHA256SUMS` from commit
+`11f97d8654020406684b782f6c3849c6880c51cc`. Downloaded files passed the
+run verifier, including full decoding of the 672-frame film. Trace, Energy, CSV,
+and NPZ match their original hashes exactly; Matter, the Blender scene, triptych,
+and encoded film have new hashes. Committed previews remain evidence of the
+original artwork. The original film was separately recovered and matched its
+recorded original hash; no recovery files were deleted.
