@@ -54,3 +54,10 @@ Original source ZIP SHA-256:
 ```text
 88a6ea5d7db94415dc06aa30ddc259c47edb22f99125254fb55d1348c9bec71a  One-Equation-Three-Worlds-Source.zip
 ```
+
+## Owner confirmation — 4 October 2026
+
+The owner subsequently confirmed that the artwork was created by **GPT 6 Astra**
+with **medium** reasoning in ChatGPT Work. The manifest and current README now
+record that attribution. The exact API model identifier remains unrecorded; the
+original agent account and import-time uncertainty above remain historical evidence.

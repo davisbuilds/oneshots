@@ -10,9 +10,10 @@ entry = "src/build.py"
 curator_note = ""
 
 [agent]
-model = "unrecorded"
+model = "GPT 6 Astra"
 model_id = "unrecorded"
 harness = "ChatGPT Work (cloud session)"
+reasoning = "medium"
 
 [run]
 brief = "brief.md"
