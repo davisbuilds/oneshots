@@ -1,0 +1,16 @@
+{
+  "xyz_to_blender": "(x/10, y/10, (z-6.26469892)/10+1.0)",
+  "camera_location": [
+    6.0,
+    -24.0,
+    7.300000190734863
+  ],
+  "camera_target": [
+    0.0,
+    0.0,
+    2.450000047683716
+  ],
+  "orthographic_scale": 10.3,
+  "tube_radius": 0.014,
+  "cyclic": false
+}
