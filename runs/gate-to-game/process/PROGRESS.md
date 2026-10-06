@@ -177,3 +177,24 @@ Decisions made before writing code:
   that is the Run assets workflow's job after merge. The verifier ran against
   the preinstalled Chromium 1194 build via `CHROMIUM_PATH`, because the locked
   Playwright wants a newer build than this container has.
+
+## 7. Follow-up: Node 24, matching the owner's other repositories
+
+Asked after delivery whether the Run assets workflow can rebuild the assets,
+and why CI used whatever Node the runner shipped. Checked locally: the test
+suite passes on Node 20.20, 22.22 and 24.21; the film command chain (with the
+`imageio-ffmpeg` encoder) works on Node 20; two renders of the same commit are
+not byte-identical (frames 276 to 500 differ slightly, PSNR at least 43 dB;
+cause not found). The committed previews were made with scratch scripts that
+are not in the repository.
+
+The owner asked to match their other repositories. Of agentmonitor, dojo and
+engram, only agentmonitor uses Node: `actions/setup-node` pinned to
+`820762786026740c76f36085b0efc47a31fe5020` with `node-version: 24`, and
+`.nvmrc` / `engines` at 24.13.0. (That SHA is the v7.0.0 tag; its comment
+there says v6.) dojo is Python and engram is Go. Adopted here: a root
+`.nvmrc` of `24`, `engines` `>=24`, and the same pinned `setup-node` (commented
+v7.0.0) reading `.nvmrc` in Validate Runs and Run assets. A major-version
+`.nvmrc` rather than agentmonitor's exact patch, because nothing here bumps a
+patch pin and the collection only needs a known major. zizmor 1.30.0, offline:
+no new findings. `npm ci` and `verify.mjs` pass on Node 24.21.

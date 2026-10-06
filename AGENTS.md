@@ -29,7 +29,8 @@ node --test runs/gate-to-game/tests/*.test.js
 ```
 
 Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser
-verification uses Node 22+ and the locked npm tooling:
+verification uses Node 24 (`.nvmrc`; CI installs it with `actions/setup-node`)
+and the locked npm tooling:
 
 ```bash
 npm ci

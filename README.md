@@ -79,7 +79,7 @@ is not required.
   reproduction and the dependencies it was run with.
 
 Several runs include a headless `verify.mjs` smoke test that uses
-`@playwright/test` from this repository's `node_modules`. With Node 22+ and npm,
+`@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and npm,
 run `npm ci` and `npx playwright install chromium`, then
 `node runs/<slug>/verify.mjs` or `npm run verify:browser` for all seven existing
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values).

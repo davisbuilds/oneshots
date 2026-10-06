@@ -3,7 +3,7 @@
   "private": true,
   "description": "Optional browser verification tooling for independent agent runs",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "packageManager": "npm@11.6.2",
   "scripts": {
