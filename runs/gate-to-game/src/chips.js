@@ -407,6 +407,7 @@
         decode: [0, 0], amux: [1, 1], A: [2, 1], ymux: [3, 1], D: [2, 2], alu: [4, 1], jump: [5, 0], pc: [6, 0],
       },
       cols: 7, rows: 3,
+      names: { decode: 'Decoder', amux: 'A input', A: 'A register', D: 'D register', ymux: 'A or M', alu: 'ALU', jump: 'Jump logic', pc: 'Program counter' },
     },
     build: (c, p) => {
       const alu = c.wires(16), zr = c.wire(), ng = c.wire();

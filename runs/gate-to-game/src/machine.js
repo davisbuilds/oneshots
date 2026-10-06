@@ -50,6 +50,7 @@
         const r = this.log.regs, o = p * 8;
         r[o] = st.pc; r[o + 1] = st.A; r[o + 2] = st.D; r[o + 3] = st.inM;
         r[o + 4] = prev.pc; r[o + 5] = prev.A; r[o + 6] = prev.D; r[o + 7] = prev.inM;
+        if (this.onScreen) this.onScreen(p, st.pc);
       }
     }
     pixelRecord(p) {
