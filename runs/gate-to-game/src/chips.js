@@ -425,5 +425,21 @@
     // Checked against the ISA reference in tests/03-cpu.test.js.
   });
 
+  defChip('Computer', {
+    about: 'The CPU and 4K words of RAM, all NAND. Only the ROM, the program, stays outside.',
+    ins: { inst: 16, reset: 1 }, outs: { outM: 16, writeM: 1, addressM: 16, pc: 16 },
+    build: (c, p) => {
+      const inM = c.wires(16);
+      const cpu = c.use('CPU', { inst: p.inst, inM, reset: p.reset }, 'cpu');
+      const a = cpu.addressM;
+      // The RAM answers below address 4096: the top four address bits are 0.
+      const high = or(c, or(c, a[12], a[13], 'hi01'), or(c, a[14], a[15], 'hi23'), 'hi');
+      const isRam = not(c, high, 'isram');
+      const ram = c.use('RAM4K', { in: cpu.outM, load: and(c, cpu.writeM, isRam, 'store'), address: a.slice(0, 12) }, 'ram').out;
+      c.bind(inM, c.use('And16', { a: ram, b: Array(16).fill(isRam) }, 'gate').out);
+      return cpu;
+    },
+  });
+
   G.chips = { aluSpec };
 })(globalThis.G2G || (globalThis.G2G = {}));

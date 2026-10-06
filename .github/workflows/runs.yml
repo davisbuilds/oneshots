@@ -31,3 +31,8 @@ jobs:
           python3 runs/three-worlds-chatgpt/src/test_build.py
           python3 runs/three-worlds/src/test_build.py
           python3 runs/artemis-ii/src/test_build_all.py
+
+      - name: Test the gate-to-game stack
+        run: |
+          node --version
+          node --test runs/gate-to-game/tests/*.test.js

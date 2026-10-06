@@ -57,6 +57,11 @@
   #ruler-ticks .tick::before { content: ""; position: absolute; left: 50%; top: -12px; width: 2px; height: 8px; background: #3a4c74; }
   #ruler-ticks .tick.on { color: var(--ink); font-weight: 650; }
   #scale { position: absolute; right: 12px; top: 15px; font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
+  body.clean #side, body.clean #ruler { display: none; }
+  body.film #side { display: contents; }
+  body.film header, body.film #controls, body.film #help, body.film #stats, body.film #touch { display: none; }
+  body.film #bottom { position: fixed; left: var(--g); bottom: calc(var(--g) + 64px); width: min(560px, 46vw); }
+  body.film #caption { background: rgba(8, 12, 21, 0.82); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
   /* Narrow or short screens: a top bar and a bottom sheet. */

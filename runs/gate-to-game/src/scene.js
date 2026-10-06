@@ -133,7 +133,7 @@
         case 'game': this.drawGame(T); break;
         case 'pixel': this.drawPixel(T, alpha); break;
         case 'program': this.drawProgram(T, alpha); break;
-        case 'chip': this.drawChip(l.inst, T, alpha, 0, true); return;
+        case 'chip': this.drawChip(l.inst, T, alpha, 0); return;
         case 'nand': this.drawCmos(l.inst, T, alpha, true); return;
         case 'mosfet': this.drawMosfet(this.levels[i - 1].inst, this.transistor, T, alpha); return;
       }
@@ -238,11 +238,12 @@
       }
       this.hit(T, scr, { kind: 'screen', scr });
       // The selected pixel.
-      if (sel && pw < 400) {
+      const fade = 1 - smooth(30, 90, pw);
+      if (sel && fade > 0.01) {
         const r = { x: scr.x + sel.x * 20, y: scr.y + sel.y * 20, w: 20, h: 20 };
-        const pulse = 0.55 + 0.45 * Math.sin(this.time / 220);
+        const pulse = this.env.still ? 1 : 0.55 + 0.45 * Math.sin(this.time / 220);
         ctx.save();
-        ctx.strokeStyle = `rgba(95,212,255,${0.5 + 0.5 * pulse})`;
+        ctx.strokeStyle = `rgba(95,212,255,${(0.5 + 0.5 * pulse) * fade})`;
         ctx.lineWidth = Math.max(1.5, pw * 0.08);
         const g = Math.max(3, pw * 0.25) / T.s;
         this.rect(T, { x: r.x - g, y: r.y - g, w: r.w + 2 * g, h: r.h + 2 * g }, null, ctx.strokeStyle, ctx.lineWidth);
@@ -362,7 +363,7 @@
     }
 
     // Draw an instance's schematic in its frame T.
-    drawChip(inst, T, alpha, depth, isLevel) {
+    drawChip(inst, T, alpha, depth) {
       if (!this.visible(T) || alpha < 0.02) return;
       const ctx = this.ctx, nl = this.env.nl;
       const lay = G.layout.layoutOf(nl, inst);
@@ -404,7 +405,7 @@
             this.text(sub, T, b.x + b.w / 2, b.y + b.h / 2 + size * 0.7, size * 0.6, C.muted, 'center', MONO);
             ctx.restore();
           }
-          if (ia > 0.01) this.drawChip(c, Tc, ia, depth + 1, false);
+          if (ia > 0.01) this.drawChip(c, Tc, ia, depth + 1);
         }
         this.hit(T, b, { kind: 'inst', inst: c });
       });

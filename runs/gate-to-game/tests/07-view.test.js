@@ -84,6 +84,25 @@ test('the trace: from any drawn pixel to a gate that flipped, and a transistor t
   assert.ok(traced > 300, `${traced} pixels traced`);
 });
 
+test('the slow-motion replay settles on exactly the state the fast simulator computed', () => {
+  const { c, m, probe } = playedMachine();
+  let n = 0, maxSteps = 0;
+  for (let p = 0; p < 3072; p += 11) {
+    const s = G.trace.select(m, c, p, probe);
+    if (!s.record || !s.record.before) continue;
+    const r = G.trace.replay(nl, s.before, s.now);
+    assert.ok(r.settled, `pixel ${p}: unit-delay replay settles on the two-phase result`);
+    assert.ok(r.steps > 5 && r.steps < 200, `pixel ${p}: ${r.steps} gate delays`);
+    // The chosen gate's output changes at some step of the replay.
+    const out = nl.gOut[s.gate];
+    assert.ok(r.history.some((h, i) => i && h[out] !== r.history[i - 1][out]), `pixel ${p}: the gate flips in the replay`);
+    maxSteps = Math.max(maxSteps, r.steps);
+    n++;
+  }
+  assert.ok(n > 150);
+  console.log(`${n} cycles replayed; the longest took ${maxSteps} gate delays to settle`);
+});
+
 test('the camera is continuous across every level boundary', () => {
   const { c, m, probe } = playedMachine();
   const canvas = { width: 1440, height: 900, getContext: () => ({}) };

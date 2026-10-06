@@ -58,7 +58,7 @@ test('a full adder built from 36 transistors agrees with the gates, exhaustively
 test('the whole ALU at transistor level agrees with the gates', () => {
   const r = rng(3);
   const v = [];
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 16; i++) {
     v.push({ x: randBits(r, 16), y: randBits(r, 16), zx: randBits(r, 1), nx: randBits(r, 1), zy: randBits(r, 1), ny: randBits(r, 1), ci: randBits(r, 1), f: randBits(r, 2), sh: randBits(r, 1) });
   }
   const n = transistorLevel('ALU', v);

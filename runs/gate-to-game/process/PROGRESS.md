@@ -101,3 +101,79 @@ Decisions made before writing code:
   one of 40,785 memory writes in order**. Three test failures on the way were
   my tests' timing assumptions (start-up takes 44 frames; a key held for one
   frame can fall in a frame the game spends redrawing the score).
+
+## 4. The zoom (22:22 to 22:40)
+
+- Design: every level a 1600 × 1000 frame inside a 16:10 anchor of the level
+  above; every chip box 16:10 too, so a child's schematic fits its box exactly
+  and its port pins meet the wires drawn to the box. The camera is one number,
+  the log of the magnification; between levels it scales about the fixed
+  point of the frame-to-anchor map. Drawing recurses inward from one level
+  above the camera, culled by size and visibility, so the whole hierarchy
+  appears wherever it is big enough, not just the path.
+- `src/trace.js`: pixel log entry, then probe snapshots of both cycles, then
+  a walk back through flipped gates. The first rule (deepest gate on the
+  chain) **always landed in a one-gate NOT wrapper** inside the ALU's operand
+  conditioning, which makes a dull last step. Changed to: the first gate in a
+  full adder if the chain passes through one, else the deepest. On a played
+  screen, 2,618 of 2,772 drawn pixels now trace through the adder.
+- `src/layout.js`: explicit placement for the CPU, grids (snaked for carry
+  chains) for 16-wide arrays, columns by longest path otherwise. Wires grouped
+  by (source port, target port).
+- First look in Chromium (my screenshots of this were overwritten by the next
+  run of the script): every level rendered, no errors, the CPU at 122 kHz.
+  **Wrong:** the title, stats and caption panels covered the frames' edges;
+  the source listing overflowed into the assembly column; the instruction's
+  field breakdown sat under the CPU card; the CMOS cell's wiring was a tangle,
+  and each transistor's cross-section showed through its symbol too early.
+- Fixes: a sidebar on wide screens, a top bar and bottom sheet on phones, and
+  a measured safe area that every frame is fitted into (snapshot 02); columns
+  clipped; the card moved; the CMOS cell redrawn as the textbook vertical
+  schematic; cross-sections only appear past 380 px. CPU parts got names
+  ("A register" rather than ResetRegister16). Snapshot 03 shows the
+  in-between frames: continuous at every boundary.
+- `tests/07-view.test.js`: every layout inside its frame, 16:10, no overlaps;
+  every input bit of every chip wired exactly once; for every seventh pixel
+  the traced cycle really writes that pixel's value to its address and the
+  chosen gate really flipped and its transistor conducts; the camera's
+  transform at the end of each level equals the next level's at its start.
+- `verify.mjs`: the real browser. Two failures were timing in my test (a
+  fixed 900 ms wait for an eased camera; a tour slower than I assumed);
+  replaced every sleep with a wait for the condition, and made the camera snap
+  once within 0.003 of its target. Snapshot 04: clicking the program counter
+  re-aims the path through PC > Inc16 > HalfAdder.
+
+## 5. Slow motion, the whole computer in NAND, the film (22:40 to 22:52)
+
+- Unit-delay replay of the chosen cycle (`trace.replay`): start from the
+  previous cycle's settled state, hand each master's value to its slave,
+  apply the new instruction, update all gates at once per step. **All 554
+  replays tried settle on exactly the state of the two-phase simulator**, in
+  at most 28 gate delays, with a median of 86 nets glitching on the way.
+  Snapshot 05 is the adder mid-wave. Now a test.
+- RAM512 and RAM4K at gate level, interpreted (1.13M gates are too many to
+  compile): 7 s. That made a stronger claim cheap: a `Computer` chip, CPU plus
+  RAM4K plus address decoding, 1,136,320 NANDs, runs a compiled Fibonacci and
+  sieve program in lockstep with the reference for all 2,049 cycles.
+- Phones (snapshot 06): portrait and landscape both keep every panel on
+  screen, no horizontal scroll. The frames are 16:10, so a portrait phone has
+  spare height.
+- Clock: 2,000 cycles a frame costs about 8 ms here, which a slow phone may
+  not afford, so the page lowers it (to no less than 500, above the game's
+  99th-percentile need) and shows the clock it achieves.
+- `tools/film.mjs`: `?film` replaces the page's clock with a virtual one, and
+  the script screenshots one frame per 1/30 s of virtual time into FFmpeg.
+  51.1 s, 1,534 frames, 85 s to render (snapshot 07). Built and checked again
+  with the `imageio-ffmpeg` wheel's encoder, as the Run assets workflow will.
+- The selected-pixel highlight was a heavy cyan square once the pixel was big
+  (snapshot 08); it now fades out as the pixel grows.
+
+## 6. Collection plumbing and docs (22:52 to 23:00)
+
+- `npm test`, `npm run verify:browser` and the Validate Runs workflow now
+  include this run (the workflow uses the runner's preinstalled Node; nothing
+  new is downloaded). README and AGENTS.md count seven verifiers.
+- Not done here: the film is declared as a release asset but not published;
+  that is the Run assets workflow's job after merge. The verifier ran against
+  the preinstalled Chromium 1194 build via `CHROMIUM_PATH`, because the locked
+  Playwright wants a newer build than this container has.

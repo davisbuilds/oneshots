@@ -4,7 +4,19 @@
   const $ = id => document.getElementById(id);
   const { MAP } = G.isa;
   const { hex4, commas } = G.scene;
-  const PER_TICK = 2000;          // CPU cycles per 60 Hz video frame: a 120 kHz clock
+  // CPU cycles per 60 Hz video frame: 2,000 is a 120 kHz clock. A slow device
+  // gets fewer (the game needs a few hundred in a typical frame); the page
+  // shows the clock it actually achieves.
+  const MAX_PER_TICK = 2000, MIN_PER_TICK = 500, SIM_BUDGET_MS = 7;
+
+  // ?clean hides the panels; ?film also replaces the clock, so a headless
+  // script can render the tour frame by frame (tools/film.mjs).
+  const params = new URLSearchParams(location.search);
+  const FILM = params.has('film'), CLEAN = FILM || params.has('clean');
+  let filmNow = 0;
+  const clock = () => FILM ? filmNow : performance.now();
+  if (FILM) document.body.classList.add('film');
+  else if (CLEAN) document.body.classList.add('clean');
 
   // ---- Build the computer -------------------------------------------------
   const t0 = performance.now();
@@ -32,13 +44,14 @@
   }
 
   const canvas = $('view');
-  const env = { machine, compiled, nl, screenCanvas, sourceLines: G.gameSource.split('\n'), asmLines: compiled.program.lines };
+  const env = { machine, compiled, nl, screenCanvas, sourceLines: G.gameSource.split('\n'), asmLines: compiled.program.lines,
+    still: matchMedia('(prefers-reduced-motion: reduce)').matches };
   const scene = new G.scene.Scene(canvas, env);
 
   // ---- State ---------------------------------------------------------------
   const st = {
     paused: false, follow: true, selPixel: -1, targetZ: 0, tour: null, keys: 0, touchKeys: 0,
-    ticks: 0, tickStart: performance.now(), cyclesWindow: [], lastLevel: -1, blend: null, renderMs: 0,
+    ticks: 0, tickStart: clock(), cyclesWindow: [], blend: null, renderMs: 0, perTick: MAX_PER_TICK,
   };
 
   function ballPixel() {
@@ -65,7 +78,7 @@
     st.slow = on && !!(sel && sel.record && sel.record.before);
     if (st.slow) {
       if (!sel.replay) sel.replay = G.trace.replay(nl, sel.before, sel.now);
-      scene.replay = Object.assign(sel.replay, { t0: performance.now(), stepMs: 70, hold: 1400 });
+      scene.replay = Object.assign(sel.replay, { t0: clock(), stepMs: 70, hold: 1400 });
     } else scene.replay = null;
     $('slow').setAttribute('aria-pressed', String(st.slow));
     $('slow').textContent = st.slow ? 'Stop slow motion' : 'Slow motion';
@@ -96,7 +109,7 @@
     sel.gate = leaf.gate;
     scene.transistor = transistor || G.trace.pickTransistor(nl, leaf.gate, sel.before, sel.now);
     scene.setSelection(sel, true);
-    st.blend = { k, from: before, t0: performance.now() };
+    st.blend = { k, from: before, t0: clock() };
     buildRuler();
   }
 
@@ -170,7 +183,7 @@
   // ---- Tour ----------------------------------------------------------------------
   function startTour() {
     if (st.follow) { const b = ballPixel(); if (b >= 0) select(b); }
-    st.tour = { i: scene.z < 0.05 ? 1 : 0, phase: 'go', t0: performance.now(), from: scene.z };
+    st.tour = { i: scene.z < 0.05 ? 1 : 0, phase: 'go', t0: clock(), from: scene.z };
     $('tour').textContent = 'Stop the tour';
   }
   function stopTour() {
@@ -204,7 +217,7 @@
   const KEYMAP = { ArrowLeft: 1, a: 1, A: 1, ArrowRight: 2, d: 2, D: 2, ' ': 4, ArrowUp: 4, w: 4, W: 4 };
   addEventListener('keydown', e => {
     if (e.target.closest && e.target.closest('input, textarea')) return;
-    if (KEYMAP[e.key]) { st.keys |= KEYMAP[e.key]; if (scene.z > 0.05 && e.key === ' ') {} e.preventDefault(); return; }
+    if (KEYMAP[e.key]) { st.keys |= KEYMAP[e.key]; e.preventDefault(); return; }
     if (e.key === '+' || e.key === '=' || e.key === 'PageDown') { stopTour(); zoomStep(1); e.preventDefault(); }
     if (e.key === '-' || e.key === '_' || e.key === 'PageUp') { stopTour(); zoomStep(-1); e.preventDefault(); }
     if (e.key === 'Home' || e.key === 'Escape') { stopTour(); st.targetZ = 0; }
@@ -280,9 +293,8 @@
       st.targetZ = scene.levels[h.level].z;
     } else if (h.kind === 'inst' && scene.sel.path) {
       retarget(h.inst);
-      const idx = scene.sel.path.indexOf(h.inst);
       const L = scene.levels.findIndex(l => l.inst === h.inst);
-      if (idx >= 0 && L >= 0) st.targetZ = scene.levels[L].z;
+      if (L >= 0) st.targetZ = scene.levels[L].z;
     } else if (h.kind === 'transistor' && scene.sel.path) {
       retarget(h.inst, h.name);
       st.targetZ = scene.levels[scene.levels.length - 1].z;
@@ -320,7 +332,9 @@
     canvas.height = Math.round(innerHeight * dpr);
     const W = innerWidth, ruler = $('ruler').getBoundingClientRect();
     let x0 = 8, y0 = 8, x1 = W - 8, y1 = ruler.top - 8;
-    if (getComputedStyle($('side')).display !== 'contents') x0 = $('side').getBoundingClientRect().right + 12;
+    if (FILM) { x0 = 0; y0 = 0; x1 = W; }
+    else if (CLEAN) { x0 = 0; y0 = 0; x1 = W; y1 = innerHeight; }
+    else if (getComputedStyle($('side')).display !== 'contents') x0 = $('side').getBoundingClientRect().right + 12;
     else {
       y0 = Math.max(document.querySelector('header').getBoundingClientRect().bottom, $('stats').getBoundingClientRect().bottom) + 6;
       const b = $('bottom').getBoundingClientRect();
@@ -342,12 +356,20 @@
     else {
       let n = Math.min(4, due - st.ticks);
       if (n > 3) { st.tickStart = now - due * (1000 / 60); }
+      let spent = 0;
       for (let i = 0; i < Math.min(n, 3); i++) {
         board.keys = st.keys | st.touchKeys;
         const t = performance.now();
-        machine.run(PER_TICK);
-        st.cyclesWindow.push([now, PER_TICK, performance.now() - t]);
+        machine.run(st.perTick);
+        const dt = performance.now() - t;
+        spent += dt;
+        st.cyclesWindow.push([now, st.perTick, dt]);
         board.tick++;
+      }
+      if (n > 0 && !FILM) {
+        const perTickMs = spent / Math.min(n, 3);
+        if (perTickMs > SIM_BUDGET_MS) st.perTick = Math.max(MIN_PER_TICK, Math.round(st.perTick * 0.85));
+        else if (perTickMs < SIM_BUDGET_MS * 0.5) st.perTick = Math.min(MAX_PER_TICK, Math.round(st.perTick * 1.05));
       }
       st.ticks = due;
       if (st.follow) {
@@ -393,12 +415,12 @@
     $('stat-cycle').textContent = commas(machine.cycle);
     $('stat-load').textContent = cyc ? `${(ms / cyc * 1e6 / 1000).toFixed(1)} µs` : '—';
     document.body.classList.toggle('deep', k > 0 || scene.z > 0.3);
-    requestAnimationFrame(frame);
+    if (!FILM) requestAnimationFrame(frame);
   }
 
   $('stat-gates').textContent = commas(nl.nGates);
   $('stat-rom').textContent = commas(compiled.rom.length);
-  requestAnimationFrame(frame);
+  if (!FILM) requestAnimationFrame(frame);
 
   // A small interface for the headless verifier.
   G.app = {
@@ -421,5 +443,7 @@
     level: i => { stopTour(); st.targetZ = scene.z = scene.levels[i].z; },
     select: p => { st.follow = false; select(p); },
     startTour, stopTour, click, setSlow,
+    // Film mode: advance the virtual clock to t milliseconds and draw.
+    filmFrame: t => { filmNow = t; frame(t); return { level: scene.cur.k, z: scene.z, tour: !!st.tour }; },
   };
 })(globalThis.G2G || (globalThis.G2G = {}));

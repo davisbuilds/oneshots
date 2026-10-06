@@ -1,0 +1,35 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "gate-to-game"
+title = "From Gate to Game"
+summary = "A CPU of 1,753 NAND gates, an assembler, a compiler and a breakout game it plays in the browser; scroll from one pixel down through the instruction that drew it and the gate that flipped to a single transistor."
+date = 2026-10-06
+kind = "long-horizon"
+medium = ["web", "canvas", "hardware", "compiler", "game", "interactive", "simulation"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 1
+wall_clock_minutes = 60          # 22:00 to 23:00 UTC
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+# Renders the guided tour in headless Chromium from the committed page, one
+# frame of virtual time at a time, and encodes it with the wheel's FFmpeg.
+command = "(cd ../.. && npm ci && npx playwright install --with-deps chromium) && FFMPEG=\"$(python3 -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')\" node tools/film.mjs"
+verify = "node tools/embed.js --check && node --test tests/*.test.js && python3 tools/check_film.py"
+timeout_minutes = 20
+
+[[assets]]
+file = "gate_to_game_tour.mp4"
+description = "The guided tour, game to transistor and back: about 51 s, 1280 x 800, 30 fps, H.264 CRF 20"
