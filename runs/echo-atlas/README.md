@@ -4,6 +4,8 @@
 watch the room draw itself in returning sound. Then change the room and discover
 what it wants to become.
 
+![The Nave, drawn in returning sound](preview/hero.webp)
+
 **Model:** GPT-5.6 Sol
 
 One HTML file. No dependencies, network requests, external assets, or build

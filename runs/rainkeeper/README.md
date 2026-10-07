@@ -4,6 +4,8 @@
 carve a river, bring a shower, and give a seed somewhere to grow. There is no
 score, deadline, or winning state. There are a few things buried in the earth.
 
+![The opening landscape: a pond, layered soil and three plants](preview/hero.webp)
+
 **Model:** GPT-6 Astra (Codex)
 
 One HTML file. No dependencies, external assets, network requests, or build step.

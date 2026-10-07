@@ -3,6 +3,8 @@
 **An instrument for possible futures.** Move a sun. Disturb an orbit. Listen to
 the dust. Rewind, change your mind, and let a different future unfold.
 
+![Solitude: one sun and its orbiting dust](preview/hero.webp)
+
 **Model:** GPT-6 Astra (Codex)
 
 One HTML file. No dependencies, network requests, assets, or build step.

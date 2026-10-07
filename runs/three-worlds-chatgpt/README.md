@@ -13,7 +13,7 @@ replaces the other.
 | | |
 | :-- | :-- |
 | Run date | 26 September 2026 |
-| Model | GPT 6 Astra, medium reasoning; exact API identifier unrecorded |
+| Model | GPT-6 Astra, medium reasoning; exact API identifier unrecorded |
 | Harness | ChatGPT Work, cloud session |
 | Human turns | 2: initial brief, then repository import; no mid-artwork intervention |
 | Brief | [Verbatim requests](brief.md) |
@@ -121,7 +121,7 @@ closing connector or physically seamless loop is claimed.
   from the repository's MIT license. Unrelated Debian packaging/AppStream
   notices were omitted from the font-specific extracts.
 - The historical progress log is a concise self-report, not a timestamped
-  transcript. Wall-clock time is unrecorded. The owner later confirmed GPT 6 Astra with
+  transcript. Wall-clock time is unrecorded. The owner later confirmed GPT-6 Astra with
   medium reasoning; the exact API identifier remains unrecorded. The
   curator's verdict is intentionally empty.
 - One archived intermediate (`03-ink-2.png`) was truncated and could not be

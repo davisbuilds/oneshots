@@ -5,6 +5,8 @@
 people behind them — arrange themselves along a timeline from the 1943 artificial
 neuron to the agentic era, wired together by the ideas that connect them.
 
+![The constellation of AI history, from the 1940s to today](preview/hero.webp)
+
 **Model:** Claude Sonnet 5 (high reasoning)
 
 Built by Claude as a capabilities demo — an information-design piece rather than

@@ -72,3 +72,11 @@ checksums and the complete run verifier, including 672 decoded video frames.
 Trace, Energy, CSV, and NPZ retain their original hashes; Matter, the scene,
 triptych, and film differ. The separately recovered original film matches
 `ORIGINAL-SHA256SUMS`. Original previews and recovery files remain preserved.
+
+## Display-name normalization — 7 October 2026
+
+At the owner's request, the manifest and current README now spell the model
+**GPT-6 Astra**, the form the rainkeeper and stillroom runs use for the same
+model. This is a formatting change only; it does not change the 4 October
+attribution, and the exact API model identifier remains unrecorded. The
+confirmation entry above keeps its original spelling as a dated record.

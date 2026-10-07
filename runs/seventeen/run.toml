@@ -6,6 +6,7 @@ summary = "A realtime ray-marched flythrough of an infinite Apollonian gasket, b
 date = 2026-06-15          # date first published here; the run itself is unrecorded
 kind = "single-file"
 medium = ["web", "webgl", "audio"]
+hero = "preview/hero.webp"
 entry = "index.html"
 curator_note = ""
 
