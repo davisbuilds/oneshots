@@ -4,6 +4,8 @@
 dependencies, zero build step — `open index.html` and every pixel on screen is
 Monte Carlo light transport, converging live at millions of samples per second.
 
+![The Cornell box at about 200 samples per pixel](preview/hero.webp)
+
 **Model:** Fable 5 (xhigh reasoning)
 
 Built by Claude as an unconstrained capabilities demo (the sequel to the

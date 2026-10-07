@@ -6,6 +6,8 @@ Claude in the final 7 minutes before a weekly usage reset; originally lived in
 
 **One HTML file. Zero dependencies. `open index.html` to play.**
 
+![Mid-game: the ship firing into the swarm](preview/hero.webp)
+
 **Model:** Fable 5 (xhigh reasoning)
 
 ## The game

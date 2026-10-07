@@ -6,6 +6,8 @@ capabilities demo.
 
 **One HTML file. Zero dependencies. Open `index.html` in any browser.**
 
+![The autopilot flythrough of the Apollonian gasket](preview/hero.webp)
+
 **Model:** Fable 5 (xhigh reasoning)
 
 ## What's inside the single file

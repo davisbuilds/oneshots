@@ -6,6 +6,7 @@ summary = "A living cutaway garden: carve rivers, bring rain, and grow roots thr
 date = 2026-09-10          # date first published here; the run itself is unrecorded
 kind = "single-file"
 medium = ["web", "simulation", "interactive"]
+hero = "preview/hero.webp"
 entry = "index.html"
 curator_note = ""
 

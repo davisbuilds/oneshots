@@ -6,6 +6,7 @@ summary = "An interactive, force-directed map of eight decades of AI history."
 date = 2026-07-01          # date first published here; the run itself is unrecorded
 kind = "single-file"
 medium = ["web", "data-visualization"]
+hero = "preview/hero.webp"
 entry = "index.html"
 curator_note = ""
 

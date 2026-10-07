@@ -6,6 +6,7 @@ summary = "A gravitational music box with a rewindable, branching past."
 date = 2026-09-10          # date first published here; the run itself is unrecorded
 kind = "single-file"
 medium = ["web", "simulation", "audio"]
+hero = "preview/hero.webp"
 entry = "index.html"
 curator_note = ""
 

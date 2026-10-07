@@ -6,6 +6,7 @@ summary = "Invisible rooms discovered and redrawn through reflected sound."
 date = 2026-09-14          # date first published here; the run itself is unrecorded
 kind = "single-file"
 medium = ["web", "audio", "interactive"]
+hero = "preview/hero.webp"
 entry = "index.html"
 curator_note = ""
 
