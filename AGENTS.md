@@ -25,10 +25,12 @@ python3 scripts/validate_runs.py
 python3 scripts/check_publication_hygiene.py
 python3 runs/three-worlds/src/test_build.py
 python3 runs/artemis-ii/src/test_build_all.py
+node --test runs/gate-to-game/tests/*.test.js
 ```
 
 Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser
-verification uses Node 22+ and the locked npm tooling:
+verification uses Node 24 (`.nvmrc`; CI installs it with `actions/setup-node`)
+and the locked npm tooling:
 
 ```bash
 npm ci
@@ -65,7 +67,7 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
 - Run the collection checks above for metadata/tooling changes. Publication
   hygiene scans the Git index: stage the intended files before the final check.
 - Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
-  six runs; do not claim they cover the whole collection. Screenshots are local
+  seven runs; do not claim they cover the whole collection. Screenshots are local
   evidence, not portable visual baselines.
 - For rendering changes, use the run's build/verify commands. A manifest check
   does not prove a render works; state when a costly full build was not rerun.

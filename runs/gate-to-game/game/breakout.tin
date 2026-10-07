@@ -1,0 +1,260 @@
+// BRICKFALL: a breakout game in Tin, for the G16.
+//
+// The screen is 64 x 48 words at SCREEN, one word per pixel, holding a
+// colour from 0 to 15. The game keeps no map of the bricks: the screen is the
+// map. The ball looks at the colour of the pixel it is about to enter.
+
+const SCREEN = 16384;          // 0x4000
+const KEYS = 24576;            // 0x6000: bit 0 left, bit 1 right, bit 2 launch
+const TICK = 24577;            // counts video frames (60 a second)
+
+const W = 64;
+const H = 48;
+const WALL = 1;                // colours 2..13 are bricks
+const PADDLE = 14;
+const BALL = 15;
+const HUD = 14;
+
+const TOP = 6;                 // the top wall's row
+const BRICK_Y = 9;             // first brick row
+const ROWS = 6;
+const COLS = 15;
+const BRICK_X = 2;
+const PADDLE_Y = 44;
+const PADDLE_W = 8;
+
+var row[48];                   // address of each screen row
+var font[] = {0x7B6F, 0x749A, 0x73E7, 0x79E7, 0x49ED, 0x79CF, 0x7BCF, 0x24A7, 0x7BEF, 0x79EF};
+var english[] = {-14, -10, -6, -3, 3, 6, 10, 14};   // ball vx by where it hits the paddle
+
+var px = 28;                   // paddle, left end
+var bx = 0; var by = 0;        // ball, in pixels
+var bx16 = 0; var by16 = 0;    // ball, in sixteenths of a pixel
+var vx = 0; var vy = 0;        // sixteenths of a pixel per frame
+var speed = 10;
+var held = 1;                  // ball resting on the paddle
+var hold_time = 0;
+var score = 0; var lives = 3; var level = 1;
+var bricks = 0;
+var idle = 0;                  // frames since a key was pressed
+var frame = 0;
+var rnd = 0x5EED;
+var over = 0;
+
+func random() {
+  // A 16-bit Galois LFSR, shifted left: x^16 + x^5 + x^3 + x^2 + 1.
+  if (rnd < 0) rnd = (rnd + rnd) ^ 0x2D; else rnd = rnd + rnd;
+  return rnd;
+}
+
+func pixel(x, y) { return mem[row[y] + x]; }
+
+func fill(x, y, w, h, c) {
+  var y1 = y + h;
+  while (y < y1) {
+    var a = row[y] + x;
+    var a1 = a + w;
+    while (a < a1) { mem[a] = c; a++; }
+    y++;
+  }
+}
+
+func draw_digit(d, x, y) {
+  var g = font[d];
+  var m = 1;
+  var a = row[y] + x;
+  for (var r = 0; r < 5; r++) {
+    for (var c = 0; c < 3; c++) {
+      if (g & m) mem[a + c] = HUD; else mem[a + c] = 0;
+      m += m;
+    }
+    a += W;
+  }
+}
+
+func draw_number(n, x, y) {
+  var unit = 1000;
+  while (unit) {
+    var d = 0;
+    while (n >= unit) { n -= unit; d++; }
+    draw_digit(d, x, y);
+    x += 4;
+    if (unit == 1000) unit = 100; else if (unit == 100) unit = 10; else if (unit == 10) unit = 1; else unit = 0;
+  }
+}
+
+func draw_hud() {
+  draw_number(score, 1, 0);
+  for (var i = 0; i < 3; i++) {
+    var c = 0;
+    if (i < lives) c = PADDLE;
+    fill(44 + i * 4, 2, 3, 1, c);
+  }
+  draw_digit(level % 10, 60, 0);
+}
+
+func draw_bricks() {
+  bricks = 0;
+  for (var r = 0; r < ROWS; r++) {
+    for (var c = 0; c < COLS; c++) {
+      fill(BRICK_X + c * 4, BRICK_Y + r * 2, 4, 2, 2 + r * 2 + (c & 1));
+      bricks++;
+    }
+  }
+}
+
+func draw_walls() {
+  fill(0, TOP, W, 1, WALL);
+  fill(0, TOP + 1, 1, H - TOP - 1, WALL);
+  fill(W - 1, TOP + 1, 1, H - TOP - 1, WALL);
+}
+
+func serve() {
+  // Put the ball on the paddle and wait for a launch.
+  held = 1;
+  hold_time = 0;
+  bx = px + 3 + (random() & 1);
+  by = PADDLE_Y - 1;
+  bx16 = (bx << 4) + 8;
+  by16 = (by << 4) + 8;
+  mem[row[by] + bx] = BALL;
+}
+
+func launch() {
+  held = 0;
+  vy = -speed;
+  vx = english[2 + (random() & 3)];
+}
+
+func new_game() {
+  fill(1, TOP + 1, W - 2, H - TOP - 1, 0);
+  score = 0; lives = 3; level = 1; speed = 10; over = 0;
+  draw_bricks();
+  draw_hud();
+  fill(px, PADDLE_Y, PADDLE_W, 1, PADDLE);
+  serve();
+}
+
+func break_brick(x, y) {
+  var c = (x - BRICK_X) >> 2;
+  var r = (y - BRICK_Y) >> 1;
+  fill(BRICK_X + (c << 2), BRICK_Y + (r << 1), 4, 2, 0);
+  score += ROWS - r;
+  bricks--;
+  draw_number(score, 1, 0);
+}
+
+// The ball is about to enter a pixel of colour c at (x, y).
+func hit(x, y, c, vertical) {
+  if (c >= 2 && c <= 13) break_brick(x, y);
+  if (vertical) {
+    if (c == PADDLE && vy > 0) {
+      vx = english[x - px];
+      vy = -speed;
+    } else vy = -vy;
+  } else vx = -vx;
+}
+
+func lose_ball() {
+  mem[row[by] + bx] = 0;
+  lives--;
+  draw_hud();
+  if (lives == 0) { over = 1; hold_time = 0; return; }
+  serve();
+}
+
+func move_ball() {
+  if (held) {
+    // Ride on the paddle.
+    var hx = px + 3;
+    if (hx != bx) {
+      mem[row[by] + bx] = 0;
+      bx = hx;
+      bx16 = (bx << 4) + 8;
+      mem[row[by] + bx] = BALL;
+    }
+    hold_time++;
+    return;
+  }
+  var nx16 = bx16 + vx;
+  var ny16 = by16 + vy;
+  var nx = nx16 >> 4;
+  var ny = ny16 >> 4;
+  if (ny >= H) { lose_ball(); return; }
+  if (nx == bx && ny == by) { bx16 = nx16; by16 = ny16; return; }
+  var bounced = 0;
+  if (nx != bx) {
+    var c = pixel(nx, by);
+    if (c) { hit(nx, by, c, 0); bounced = 1; }
+  }
+  if (ny != by) {
+    var c2 = pixel(bx, ny);
+    if (c2) { hit(bx, ny, c2, 1); bounced = 1; }
+  }
+  if (!bounced && nx != bx && ny != by) {
+    var c3 = pixel(nx, ny);
+    if (c3) { hit(nx, ny, c3, 1); vx = -vx; bounced = 1; }
+  }
+  if (bounced) return;
+  if (pixel(bx, by) == BALL) mem[row[by] + bx] = 0;
+  mem[row[ny] + nx] = BALL;
+  bx = nx; by = ny; bx16 = nx16; by16 = ny16;
+}
+
+func move_paddle() {
+  var k = mem[KEYS];
+  var dir = 0;
+  if (k) idle = 0; else idle++;
+  if (k & 1) dir = -1;
+  if (k & 2) dir = 1;
+  if (idle > 180) {
+    // Nobody is playing: follow the ball, aiming a little off-centre.
+    var aim = bx - 3 - ((frame >> 7) & 3) + 1;
+    if (held) aim = 28 + ((frame >> 5) & 15) - 8;
+    if (aim < px) dir = -1;
+    if (aim > px) dir = 1;
+    if (held && hold_time > 60) launch();
+  }
+  if (k & 4) { if (held) launch(); }
+  if (dir < 0 && px > 1) {
+    mem[row[PADDLE_Y] + px + PADDLE_W - 1] = 0;
+    px--;
+    mem[row[PADDLE_Y] + px] = PADDLE;
+  }
+  if (dir > 0 && px + PADDLE_W < W - 1) {
+    mem[row[PADDLE_Y] + px] = 0;
+    px++;
+    mem[row[PADDLE_Y] + px + PADDLE_W - 1] = PADDLE;
+  }
+}
+
+func wait_frame() {
+  var t = mem[TICK];
+  while (mem[TICK] == t) { }
+}
+
+func main() {
+  for (var y = 0; y < H; y++) row[y] = SCREEN + (y << 6);
+  draw_walls();
+  new_game();
+  while (1) {
+    wait_frame();
+    frame++;
+    random();
+    if (over) {
+      hold_time++;
+      if (hold_time > 150 || (hold_time > 30 && mem[KEYS])) new_game();
+      continue;
+    }
+    move_paddle();
+    move_ball();
+    if (bricks == 0) {
+      level++;
+      if (speed < 14) speed += 1;
+      mem[row[by] + bx] = 0;
+      draw_bricks();
+      draw_hud();
+      serve();
+    }
+  }
+}

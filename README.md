@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**From Gate to Game**](runs/gate-to-game/) | A CPU of 1,753 NAND gates, an assembler, a compiler and a breakout game it plays in the browser; scroll from one pixel down through the instruction that drew it and the gate that flipped to a single transistor. | Claude Opus 5.5 | 1 | [brief](runs/gate-to-game/brief.md) · [log](runs/gate-to-game/process/PROGRESS.md) · [snapshots](runs/gate-to-game/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-gate-to-game) |
 | [**Borrowed Seconds**](runs/borrowed-seconds/) | A midnight museum heist: record your past selves, coordinate two locks, distract security, and steal three treasures in sixty seconds. | GPT-6.1 Sol (xhigh) | 3 | [brief](runs/borrowed-seconds/brief.md) · [log](runs/borrowed-seconds/process/PROGRESS.md) · [snapshots](runs/borrowed-seconds/process/snapshots) |
 | [**The Antikythera Engine**](runs/antikythera-engine/) | A brass orrery whose gear trains were found by search; every wheel turns at its true ratio, and the planets are checked against JPL ephemerides from 3000 BC to AD 3000 (the Moon, AD 1800 to 2200). | Claude Opus 5.5 (high) | 2 | [brief](runs/antikythera-engine/brief.md) · [log](runs/antikythera-engine/process/PROGRESS.md) · [snapshots](runs/antikythera-engine/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-antikythera-engine) |
 | [**One Equation, Three Worlds — ChatGPT Work**](runs/three-worlds-chatgpt/) | A single Lorenz trajectory becomes copper, ink, and moving light in a matched triptych and a 28-second silent film. | GPT 6 Astra (medium) | 2 | [brief](runs/three-worlds-chatgpt/brief.md) · [log](runs/three-worlds-chatgpt/process/PROGRESS.md) · [snapshots](runs/three-worlds-chatgpt/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-three-worlds-chatgpt) |
@@ -78,9 +79,9 @@ is not required.
   reproduction and the dependencies it was run with.
 
 Several runs include a headless `verify.mjs` smoke test that uses
-`@playwright/test` from this repository's `node_modules`. With Node 22+ and npm,
+`@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and npm,
 run `npm ci` and `npx playwright install chromium`, then
-`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all six existing
+`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all seven existing
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
 The locked tooling is optional; the HTML runs still open without it.
 Screenshots from the verifiers stay in their run directories and are ignored.
@@ -92,7 +93,8 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 ## Checks
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
-`scripts/validate_runs.py`, and the fast renderer build-recovery tests.
+`scripts/validate_runs.py`, the fast renderer build-recovery tests, and the
+`gate-to-game` stack tests (Node's built-in test runner, no dependencies).
 The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above
 is current. Workflow changes also run a pinned, offline zizmor security audit.
@@ -101,7 +103,7 @@ Actions and the optional browser dependency receive weekly Dependabot updates.
 ```bash
 python3 scripts/build_index.py        # after changing run metadata
 npm run check                        # manifests and publication hygiene
-npm test                             # fast build-recovery regression tests
+npm test                             # build-recovery and gate-to-game regression tests
 ```
 
 Publication hygiene reads staged/tracked Git blobs; stage intended edits before
