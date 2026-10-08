@@ -12,6 +12,7 @@ date with the manifests. Exits non-zero with a list of problems.
 from __future__ import annotations
 
 import datetime as dt
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +29,45 @@ def tracked_files() -> list[Path]:
     out = subprocess.check_output(["git", "ls-files", "-z", "--cached", "--others",
                                    "--exclude-standard", "runs"], cwd=R.ROOT)
     return [R.ROOT / p for p in out.decode().split("\0") if p]
+
+
+DELIVERY_MARKER = "<!-- after delivery -->"
+
+
+FENCE = re.compile(r" {0,3}(`{3,}|~{3,})")
+
+
+def prose_lines(text: str) -> list[str]:
+    """The brief's lines outside fenced code blocks, where a marker counts. A
+    prompt that shows the marker in a code sample is quoting it."""
+    out, fence = [], None
+    for line in text.splitlines():
+        m = FENCE.match(line)
+        if fence:
+            # A closer is the fence character alone, at least as long, then
+            # only whitespace; anything else on the line is still code.
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not line[m.end():].strip():
+                fence = None
+        elif m:
+            fence = m.group(1)
+        else:
+            out.append(line)
+    return out
+
+
+def check_delivery_marker(where: str, text: str, errs: list[str]):
+    """The marker (RUNS.md) must be a line of its own, at most once; a near miss
+    would leave post-delivery messages on display without any error."""
+    lines = prose_lines(text)
+    exact = sum(line == DELIVERY_MARKER for line in lines)
+    # Only a line that is itself a comment (indented under 4 spaces, so not
+    # code): a prompt quoting the marker inline is fine.
+    near = [line for line in lines if line != DELIVERY_MARKER and re.match(r" {0,3}<!--", line)
+            and re.search(r"after\s*delivery", line, re.IGNORECASE)]
+    if exact > 1:
+        errs.append(f"{where}: brief has {exact} `{DELIVERY_MARKER}` lines; use one")
+    for line in near:
+        errs.append(f"{where}: brief line {line.strip()!r} looks like the delivery marker; write it exactly as `{DELIVERY_MARKER}`")
 
 
 def check_run(d: Path, m: dict, errs: list[str]):
@@ -76,6 +116,8 @@ def check_run(d: Path, m: dict, errs: list[str]):
     need("harness", str, "agent")
     brief = need("brief", str, "run")
     path_or_unrecorded(brief, "run.brief")
+    if isinstance(brief, str) and brief != R.UNRECORDED and (d / brief).is_file():
+        check_delivery_marker(where, (d / brief).read_text(encoding="utf-8"), errs)
     turns = m.get("run", {}).get("human_turns")
     if not (turns == R.UNRECORDED or (isinstance(turns, int) and not isinstance(turns, bool) and turns >= 1)):
         errs.append(f"{where}: `run.human_turns` must be an integer >= 1 or \"unrecorded\"")

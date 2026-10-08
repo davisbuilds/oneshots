@@ -21,6 +21,8 @@ were not recorded. Work on the selected run began on 2026-09-30 at 04:10 UTC.
 
 > borrowed seconds sounds fun, let’s see what you got!
 
+<!-- after delivery -->
+
 ## Human, message 3 — after delivery, 2026-09-30
 
 > you are GPT 6.1 Sol (xhigh) update the model mention accordingly and go ahead and open a PR
