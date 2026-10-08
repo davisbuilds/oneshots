@@ -12,6 +12,7 @@ date with the manifests. Exits non-zero with a list of problems.
 from __future__ import annotations
 
 import datetime as dt
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -40,7 +41,7 @@ def check_delivery_marker(where: str, text: str, errs: list[str]):
     exact = sum(line == DELIVERY_MARKER for line in lines)
     # Only a line that is itself a comment: a prompt quoting the marker is fine.
     near = [line for line in lines if line != DELIVERY_MARKER and line.lstrip().startswith("<!--")
-            and "after delivery" in line.lower()]
+            and re.search(r"after\s*delivery", line, re.IGNORECASE)]
     if exact > 1:
         errs.append(f"{where}: brief has {exact} `{DELIVERY_MARKER}` lines; use one")
     for line in near:
