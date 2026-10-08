@@ -30,6 +30,21 @@ def tracked_files() -> list[Path]:
     return [R.ROOT / p for p in out.decode().split("\0") if p]
 
 
+DELIVERY_MARKER = "<!-- after delivery -->"
+
+
+def check_delivery_marker(where: str, text: str, errs: list[str]):
+    """The marker (RUNS.md) must be a line of its own, at most once; a near miss
+    would leave post-delivery messages on display without any error."""
+    lines = text.splitlines()
+    exact = sum(line == DELIVERY_MARKER for line in lines)
+    near = [line for line in lines if line != DELIVERY_MARKER and "after delivery" in line and "<!--" in line]
+    if exact > 1:
+        errs.append(f"{where}: brief has {exact} `{DELIVERY_MARKER}` lines; use one")
+    for line in near:
+        errs.append(f"{where}: brief line {line.strip()!r} looks like the delivery marker; write it exactly as `{DELIVERY_MARKER}`")
+
+
 def check_run(d: Path, m: dict, errs: list[str]):
     where = f"runs/{d.name}"
 
@@ -76,6 +91,8 @@ def check_run(d: Path, m: dict, errs: list[str]):
     need("harness", str, "agent")
     brief = need("brief", str, "run")
     path_or_unrecorded(brief, "run.brief")
+    if isinstance(brief, str) and brief != R.UNRECORDED and (d / brief).is_file():
+        check_delivery_marker(where, (d / brief).read_text(encoding="utf-8"), errs)
     turns = m.get("run", {}).get("human_turns")
     if not (turns == R.UNRECORDED or (isinstance(turns, int) and not isinstance(turns, bool) and turns >= 1)):
         errs.append(f"{where}: `run.human_turns` must be an integer >= 1 or \"unrecorded\"")
