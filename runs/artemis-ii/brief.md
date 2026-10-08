@@ -80,6 +80,8 @@ earlier water effect (its auto-mode safety check had blocked deleting them):
 
 > Approved
 
+<!-- after delivery -->
+
 **2026-09-27 20:33 UTC** — after delivery; changed only the repository layout:
 
 > Can you rebase the branch or pull in changes from main, and implement the structural outline recently set up by other one shots branches for this effort?

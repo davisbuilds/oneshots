@@ -67,6 +67,8 @@ human turns and are not reproduced.
 >
 > Save the finished outputs and source bundle persistently and provide downloadable links. Lead your final response with the artwork.
 
+<!-- after delivery -->
+
 ## Later human messages
 
 **About 22:13 UTC, 2026-09-26** — after the artwork was finished. It changed the

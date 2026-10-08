@@ -64,6 +64,8 @@
 >
 > Save the finished outputs and source bundle persistently and provide downloadable links. Lead your final response with the artwork.
 
+<!-- after delivery -->
+
 ## 2026-09-30 — repository import request
 
 > can you checkout my oneshots @GitHub repo and commit this work as a PR there? read the conventions and adopt the structure required
