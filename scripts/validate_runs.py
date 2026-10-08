@@ -38,7 +38,9 @@ def check_delivery_marker(where: str, text: str, errs: list[str]):
     would leave post-delivery messages on display without any error."""
     lines = text.splitlines()
     exact = sum(line == DELIVERY_MARKER for line in lines)
-    near = [line for line in lines if line != DELIVERY_MARKER and "after delivery" in line and "<!--" in line]
+    # Only a line that is itself a comment: a prompt quoting the marker is fine.
+    near = [line for line in lines if line != DELIVERY_MARKER and line.lstrip().startswith("<!--")
+            and "after delivery" in line.lower()]
     if exact > 1:
         errs.append(f"{where}: brief has {exact} `{DELIVERY_MARKER}` lines; use one")
     for line in near:
