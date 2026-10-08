@@ -44,7 +44,9 @@ def prose_lines(text: str) -> list[str]:
     for line in text.splitlines():
         m = FENCE.match(line)
         if fence:
-            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence):
+            # A closer is the fence character alone, at least as long, then
+            # only whitespace; anything else on the line is still code.
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not line[m.end():].strip():
                 fence = None
         elif m:
             fence = m.group(1)
