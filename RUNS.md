@@ -25,9 +25,10 @@ A single-file run can be just `README.md`, `run.toml` and `index.html`.
 
 Messages sent after the work was delivered, such as a request to move the run
 into this repository or open a PR, still go in `brief.md`. Put a line reading
-exactly `<!-- after delivery -->` before the first of them, once per brief. It
-doesn't render on GitHub; pages that show the run, such as davisbuilds.net,
-show the brief up to that line and link to the full file.
+exactly `<!-- after delivery -->` before the first of them, once per brief and
+outside any code block. It doesn't render on GitHub; pages that show the run,
+such as davisbuilds.net, show the brief up to that line and link to the full
+file.
 
 ## What goes in git and what doesn't
 

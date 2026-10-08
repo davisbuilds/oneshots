@@ -34,13 +34,33 @@ def tracked_files() -> list[Path]:
 DELIVERY_MARKER = "<!-- after delivery -->"
 
 
+FENCE = re.compile(r" {0,3}(`{3,}|~{3,})")
+
+
+def prose_lines(text: str) -> list[str]:
+    """The brief's lines outside fenced code blocks, where a marker counts. A
+    prompt that shows the marker in a code sample is quoting it."""
+    out, fence = [], None
+    for line in text.splitlines():
+        m = FENCE.match(line)
+        if fence:
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence):
+                fence = None
+        elif m:
+            fence = m.group(1)
+        else:
+            out.append(line)
+    return out
+
+
 def check_delivery_marker(where: str, text: str, errs: list[str]):
     """The marker (RUNS.md) must be a line of its own, at most once; a near miss
     would leave post-delivery messages on display without any error."""
-    lines = text.splitlines()
+    lines = prose_lines(text)
     exact = sum(line == DELIVERY_MARKER for line in lines)
-    # Only a line that is itself a comment: a prompt quoting the marker is fine.
-    near = [line for line in lines if line != DELIVERY_MARKER and line.lstrip().startswith("<!--")
+    # Only a line that is itself a comment (indented under 4 spaces, so not
+    # code): a prompt quoting the marker inline is fine.
+    near = [line for line in lines if line != DELIVERY_MARKER and re.match(r" {0,3}<!--", line)
             and re.search(r"after\s*delivery", line, re.IGNORECASE)]
     if exact > 1:
         errs.append(f"{where}: brief has {exact} `{DELIVERY_MARKER}` lines; use one")
