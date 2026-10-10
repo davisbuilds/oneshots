@@ -1,0 +1,107 @@
+A WORLD IN A DROP — editable production package
+
+START HERE
+delivery/A_World_in_a_Drop.mp4       Finished 62-second film, 1280 x 544, 24 fps.
+stills/                            Six selected 1920 x 816 PNG stills.
+projects/A_World_in_a_Drop_EDIT.blend
+                                   Native Blender edit: six scene strips,
+                                   transitions, titles, and packed sound.
+projects/A_World_in_a_Drop.blend     All six procedural worlds and their cameras.
+source/                            Full construction, animation, audio and edit code.
+ART_AND_SCIENCE.txt                 Artistic intent and scientific distinctions.
+checkpoints/                       Saved Blender revisions and rough animatic.
+audio/original_score.wav            Original stereo 48 kHz synthesized score.
+
+OPEN AND EDIT
+Use Blender 4.3.2 or a compatible later version. The source project contains six
+independent scenes, named 01_The_Atlantic through 06_The_Witness. Switch scenes
+using Blender's scene selector. Each scene has its own animated camera, local
+frame range, lights, materials, and editable meshes/curves. The geometry is not
+a flattened movie or an image backdrop. The ocean retains its Ocean modifier.
+
+The EDIT project contains those same source scenes plus 00_EDIT. This is a native
+scene-strip assembly, so geometry changes are reflected when rendering the edit.
+It opens on the editable strip timeline. Press Home to frame all strips if needed;
+switch to a source scene with the scene selector to work on its geometry.
+The title font, sound and ocean reflection are packed. The native scene edit
+provides the editable cut; the delivered MP4 uses the finishing operations in
+assemble.py, including the lens vignette and temporal interpolation.
+
+RENDERING CHOICES
+The delivered picture is rendered at 1280 x 544 in Cycles, 12 maximum samples
+(24 for the revised eye) with adaptive sampling and OpenImageDenoise. Odd frames of a 24 fps animation
+are rendered (12 rendered images per second), then reconstructed to 24 fps with
+FFmpeg's motion-compensated interpolation. This is an explicit production
+choice, not additional simulated physical motion. The stills are independently
+rendered at 1920 x 816, 64 maximum samples. All source animation is continuous
+and supports rendering every frame at any desired resolution and sample count.
+
+The supplied shell reproduction script defaults to a higher temporal sampling
+version: every frame at 24 fps, 16 Cycles samples (24 for the eye), with no optical-flow step.
+For the exact delivered rendering cadence, use the commands below instead.
+Pixel-identical output across hardware or Blender versions is not guaranteed.
+
+REQUIREMENTS
+- Official Blender 4.3.2 distribution, including Cycles and OpenImageDenoise.
+- FFmpeg with libx264, AAC, drawtext, xfade and minterpolate.
+- Python 3.11 or 3.12 with numpy, scipy and pillow for audio and assembly.
+- DejaVu Serif and Sans are bundled in source/fonts/ with their license.
+- Several GB of working disk space for the PNG sequences.
+
+Official Blender download:
+https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.tar.xz
+https://www.blender.org/download/
+
+The production workspace's installed official executable is:
+/workspace/tools/blender-4.3.2-linux-x64/blender
+The separately installed official bpy module is in:
+/workspace/bpy-env/bin/python
+source/bpy_cli.py is a small convenience CLI around that official Python module;
+it is project code, not a separate official Blender application.
+
+To install that optional module yourself:
+  python3.11 -m venv bpy-env
+  bpy-env/bin/python -m pip install bpy==4.3.0 'numpy<2'
+Blender's embedded bpy is sufficient for all production commands below.
+The shell reproduction script automatically selects the downloaded official
+Blender build in this workspace. Set BLENDER_BIN to choose another executable.
+For the manual commands below in this workspace, use the official executable
+path shown above in place of the bare blender command.
+
+BUILD FROM SOURCE (run from the project root)
+  python3 -m pip install numpy scipy pillow
+  blender -b -t 5 --python source/build_world.py
+
+Render the opening image, then pack it into the eye:
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/render.py -- --scene 01 --frames 1 --samples 12
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/finish_eye.py
+
+Render the delivered cadence (resumable; existing PNGs are skipped):
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/render.py -- --step 2 --samples 12
+  python3 source/score.py
+  python3 source/assemble.py --fps 12
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/stills.py
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/editable_timeline.py
+
+For a fresh geometry, quality, or cadence change, use a fresh output directory; otherwise the
+resumable renderer will retain existing images. The still renderer also skips
+existing PNGs; move an old still aside before regenerating it after an edit.
+Example for a native 24 fps pass:
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/render.py -- --samples 64 --outdir frames_64
+  python3 source/assemble.py --source frames_64 --fps 24 --output A_World_in_a_Drop_64.mp4
+
+QUICK ANIMATIC
+  blender -b projects/A_World_in_a_Drop.blend -t 5 --python source/render.py -- --step 12 --scale 25 --samples 8 --outdir checkpoints/animatic_frames
+  python3 source/assemble.py --animatic
+  python3 source/inspect_frames.py
+
+The original development animatic is preserved; use a fresh directory to avoid
+overwriting it if experimenting. The final source already incorporates the
+ocean and camera corrections, so the patch scripts revise_ocean.py and
+stabilize_cameras.py are kept as production history and need not be rerun.
+
+CHECKPOINTS AND DELIVERY
+The complete working directory retains intermediate renders and logs. The
+portable delivery archive includes the finished film, six stills, both Blender
+projects, saved Blender revision checkpoints, source, score, notes, and the rough animatic. Frame caches and the
+downloaded Blender application are deliberately kept outside that archive.

@@ -1,0 +1,85 @@
+A WORLD IN A DROP
+Production and interpretation notes
+
+A glint becomes a lens; a lens becomes a world; a world becomes a gaze.
+
+This is a poetic, science-inspired film. It is not scientific microscopy,
+a scale-accurate journey, or a claim that miniature oceans inhabit human eyes.
+Its connective tissue is visual: curved water, branching veins, porous silica,
+folded boundaries, radial fibres, and the dark aperture of a pupil.
+
+THE JOURNEY (the shots overlap during 1.5-second dissolves)
+00:00–00:10   The Atlantic. Rain approaches a wind-driven sea.
+00:08.5–00:19.5   One Drop. The camera accompanies a drop to a leaf.
+00:18–00:30   Silica Garden. Perforated forms drift in a suspended world.
+00:28.5–00:38.5   Inner Tides. Folded membranes become a living passage.
+00:37–00:47   The Weave. The passage resolves into a field of fine strands.
+00:45.5–00:58.5   The Witness. Those strands resolve into an iris.
+00:58.5–01:02   Closing title; the sound of the sea subsides.
+
+WHAT COMES FROM NATURE
+- The ocean uses Blender's spectral Ocean modifier: an approximate wind-driven
+  surface with choppiness, generated foam, and a second scale of wind texture.
+  This is a visual wave model, not a weather forecast or validated fluid study.
+- Surface tension, a leaf's branching venation, and wet specular highlights
+  informed the drop and leaf. The water material uses an IOR of 1.333.
+- Diatoms really do build intricate silica frustules. The open pores and
+  radial organization are inspired by these structures. The film's model is
+  not a reconstruction of an identified species.
+- Biological membranes fold and separate environments; iris tissue has a
+  complex radial organization. These broad observations motivated the forms.
+
+WHAT IS INVENTED
+- The apparent continuous descent crosses imaginary thresholds. Object units
+  are local artistic units; there is no common physical scale across scenes.
+- The falling drop, impact crown, settling motion, and drift are keyframed.
+  They are not fluid, molecular, or Brownian simulations.
+- The diatoms' glowing central beads, their scale relationships, and their
+  choreography are invented. The glow does not represent a measured nucleus.
+- The membrane tunnel and gold/teal filament field are abstract constructions,
+  not organelle reconstructions, atomic orbitals, or quantum visualizations.
+- The palette, emissive edges, lighting, and depth of field are expressive.
+  They should not be interpreted as natural microscopic colors.
+- The procedural eye simplifies anatomy. Its layered fibres and crypts are
+  an artistic approximation, not a scan of a person's iris. A transparent,
+  curved corneal shell reflects an off-camera card carrying the opening ocean.
+  The reflection is ray-traced, but the staging and anatomy are simplified for
+  the film and are not a validated optical model of the human eye.
+- The ending's nested world is a metaphor about observation and resemblance.
+
+SOUND
+All audio is original synthesis. Filtered noise forms the sea, rain, breath,
+and distant thunder. Slowly detuned sine partials and inharmonic glass tones
+carry an understated D-centered harmonic field. No sampled recordings,
+commercial music, external sound libraries, or generative audio services were
+used. The score's source is source/score.py; the original stereo WAV is included.
+
+VISUAL PROVENANCE
+All scene geometry, materials, lighting, and animation were built in code and
+rendered conventionally in Blender Cycles. No image-generation or video-
+generation models were used. The ocean reflection is rendered from this very
+project. FFmpeg supplies temporal interpolation, dissolves, a vignette, titles,
+encoding, and the final audio mix.
+
+ITERATION
+The preserved rough animatic is a 2 fps timing study. It intentionally records
+an earlier ocean model and the camera roll that review caught near the ending.
+Subsequent revisions darkened the lighting, refined the leaf's veins, added
+actual holes to the silica surfaces, replaced the ocean with a wave spectrum,
+aligned the circular transitions, and stabilized the final gaze. Following
+review, the eye was rebuilt with irregular stroma, quieter crypts, overlapping
+lids, longer curved lashes, and a reflected ocean on a transparent cornea. Earlier
+images in studies/ are development material, not alternate final deliverables.
+A small corneal pole shading defect was repaired with localized Blender renders
+composited into the early eye frames and selected eye still. The editable
+geometry incorporates that correction; fresh full renders need no such patch.
+
+TOOLS
+Blender 4.3.2 official Linux distribution, Cycles CPU rendering, OpenImageDenoise,
+Python, NumPy, SciPy, Pillow for review sheets, and FFmpeg 7.1.5.
+The official bpy 4.3.0 Python module was also installed in a Python 3.11
+environment; production renders use the official Blender background CLI.
+
+Titles use DejaVu Serif and DejaVu Sans. DejaVu is a freely licensed font family.
+The native edit packs its title font, along with the original audio and ocean
+reflection. See LICENSES.txt for the font license and tool references.
