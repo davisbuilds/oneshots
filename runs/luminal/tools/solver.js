@@ -25,7 +25,9 @@ function keyOf(lv, s) {
 function solve(lv, start, goalX, opts = {}) {
   const every = opts.every || 2;
   const cap = opts.cap || 600;
-  let frontier = [{ s: L.cloneState(start), node: -1 }];
+  // Among states that merge, keep the one reached with the fewest button
+  // changes: the route comes out the way a person would play it.
+  let frontier = [{ s: L.cloneState(start), node: -1, edges: 0 }];
   const parent = [], held = [];
   const goal = goalX === undefined ? lv.endX : goalX;
   for (let layer = 0; layer < 1e6; layer++) {
@@ -47,9 +49,14 @@ function solve(lv, start, goalX, opts = {}) {
           return { inputs, end: s, layers: layer + 1 };
         }
         const key = keyOf(lv, s);
-        if (seen.has(key)) continue;
-        seen.set(key, true);
-        next.push({ s, node: id });
+        const edges = f.edges + (h !== f.s.held ? 1 : 0);
+        const prev = seen.get(key);
+        if (prev !== undefined) {
+          if (next[prev].edges > edges) next[prev] = { s, node: id, edges };
+          continue;
+        }
+        seen.set(key, next.length);
+        next.push({ s, node: id, edges });
       }
     }
     if (!next.length) {

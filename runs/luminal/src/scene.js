@@ -18,8 +18,8 @@
     inversion: { sky: ['#05060b', '#141826', '#2f3850'], sun: '#dfe8ff', acc: '#cfe0ff', acc2: '#8fa8ff', fill: '#0c1020', edge: '#e6eeff', ground: '#080a14', star: 0.6, celestial: 'mirror' },
     supernova: { sky: ['#030108', '#120526', '#2a0b4a'], sun: '#ffd25a', acc: '#ffc840', acc2: '#3d7cff', fill: '#0e0620', edge: '#ffd86a', ground: '#07030f', star: 1, celestial: 'nova' },
     echo: { sky: ['#01030a', '#050d24', '#0d1f45'], sun: '#9fc4ff', acc: '#6aa8ff', acc2: '#a5b8ff', fill: '#060c22', edge: '#8ab8ff', ground: '#030716', star: 1.4, celestial: 'moon' },
-    ascension: { sky: ['#0d0420', '#3a1450', '#c3613a'], sun: '#ffe08a', acc: '#ffd45a', acc2: '#52e8ff', fill: '#1a0a2c', edge: '#ffe28c', ground: '#12061e', star: 0.4, celestial: 'rise' },
-    afterglow: { sky: ['#140726', '#4a1d5e', '#ff9a6b'], sun: '#fff0c8', acc: '#ffe6a8', acc2: '#ff9de2', fill: '#1d0b2e', edge: '#fff0c8', ground: '#160822', star: 0.5, celestial: 'rise' },
+    ascension: { sky: ['#0b0420', '#2b0f45', '#8a3f3c'], sun: '#ffe08a', acc: '#ffd45a', acc2: '#52e8ff', fill: '#1a0a2c', edge: '#ffe28c', ground: '#12061e', star: 0.4, celestial: 'rise' },
+    afterglow: { sky: ['#120624', '#3a1650', '#b5605a'], sun: '#fff0c8', acc: '#ffe6a8', acc2: '#ff9de2', fill: '#1d0b2e', edge: '#fff0c8', ground: '#160822', star: 0.5, celestial: 'rise' },
   };
   for (const k in T) {
     const t = T[k];
@@ -59,57 +59,12 @@
     const R = L.rng(7);
     const stars = [];
     for (let i = 0; i < 260; i++) stars.push({ x: R() * 400, y: R() * 1, s: 0.3 + R() * R() * 1.6, tw: R() * 6.28 });
-    const ridges = [0, 1, 2].map(d => {
-      const pts = [];
-      let x = -40;
-      const R2 = L.rng(100 + d);
-      while (x < 900) {
-        pts.push([x, 0.25 + R2() * 0.75]);
-        x += 3 + R2() * (6 + d * 4);
-      }
-      return pts;
-    });
-    const polys = [];
-    for (let i = 0; i < 70; i++) {
-      polys.push({ x: R() * 1500, y: 1 + R() * 14, z: 2 + R() * 7, size: 0.6 + R() * 1.8, kind: Math.floor(R() * 3), rot: R() * 6.28, spin: (R() - 0.5) * 1.2, axis: [R() - 0.5, R() - 0.5, R() - 0.5] });
-    }
-    return { stars, ridges, polys };
-  }
-
-  // Solids of 3D polyhedra (unit size): vertices and edges.
-  const PHI = (1 + Math.sqrt(5)) / 2;
-  const SOLIDS = [
-    { v: [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], e: [[0, 2], [0, 3], [0, 4], [0, 5], [1, 2], [1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 4], [3, 5]] },
-    { v: [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]].map(p => p.map(c => c * 0.8)), e: [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]] },
-    (() => {
-      const v = [];
-      for (const a of [-1, 1]) for (const b of [-1, 1]) { v.push([0, a, b * PHI]); v.push([a, b * PHI, 0]); v.push([b * PHI, 0, a]); }
-      const s = 1 / Math.hypot(1, PHI);
-      const vv = v.map(p => p.map(c => c * s));
-      const e = [];
-      for (let i = 0; i < vv.length; i++) for (let j = i + 1; j < vv.length; j++) {
-        const d = Math.hypot(vv[i][0] - vv[j][0], vv[i][1] - vv[j][1], vv[i][2] - vv[j][2]);
-        if (Math.abs(d - 2 * s) < 1e-3) e.push([i, j]);
-      }
-      return { v: vv, e };
-    })(),
-  ];
-
-  function rotate(p, axis, ang) {
-    const [ux, uy, uz] = axis;
-    const c = Math.cos(ang), s = Math.sin(ang), t = 1 - c;
-    const [x, y, z] = p;
-    return [
-      (t * ux * ux + c) * x + (t * ux * uy - s * uz) * y + (t * ux * uz + s * uy) * z,
-      (t * ux * uy + s * uz) * x + (t * uy * uy + c) * y + (t * uy * uz - s * ux) * z,
-      (t * ux * uz - s * uy) * x + (t * uy * uz + s * ux) * y + (t * uz * uz + c) * z,
-    ];
+    return { stars };
   }
 
   L.Scene = function (renderer, lv) {
     const r = renderer;
     const props = makeProps(lv);
-    for (const p of props.polys) { const l = Math.hypot(...p.axis) || 1; p.axis = p.axis.map(c => c / l); }
     // Objects sorted for culling.
     const byX = (arr, f) => arr.map((o, i) => ({ o, x: f(o), i })).sort((a, b) => a.x - b.x);
     const spikes = byX(lv.spikes, o => o.cx - 0.6);
@@ -165,10 +120,11 @@
         const pulse = 1 + sig.kick * 0.035 * (0.4 + sig.energy);
         r.blend('add');
         if (kind === 'sun' || kind === 'rise') {
-          const rise = kind === 'rise' ? 0.25 + 0.15 * Math.sin(t * 0.1) : 0;
+          const rise = kind === 'rise' ? 0.1 : 0;
           const cy = base - R0 * (0.25 + rise);
-          r.glow(cx, cy, R0 * 3.2 * pulse, A(th.sun, 0.22 * alpha));
-          r.disk(cx, cy, R0 * pulse, A(th.sun, 0.55 * alpha));
+          const k = kind === 'rise' ? 0.55 : 1;
+          r.glow(cx, cy, R0 * 3.2 * pulse, A(th.sun, 0.13 * alpha * k));
+          r.disk(cx, cy, R0 * pulse, A(th.sun, 0.34 * alpha * k));
           // horizontal slits through the disc
           r.blend('alpha');
           for (let i = 0; i < 7; i++) {
@@ -184,13 +140,13 @@
           }
         } else if (kind === 'rings') {
           const cy = base - R0 * 0.6;
-          r.glow(cx, cy, R0 * 2.6, A(th.sun, 0.18 * alpha));
+          r.glow(cx, cy, R0 * 2.6, A(th.sun, 0.1 * alpha));
           for (let i = 0; i < 6; i++) {
             const ph = ((sig.beat * 0.5 + i / 6) % 1);
             const rad = R0 * (0.3 + ph * 1.8);
             r.ring(cx, cy, rad, rad - 2.5 * r.scale, A(th.acc2, alpha * 0.5 * (1 - ph)));
           }
-          r.disk(cx, cy, R0 * 0.32 * pulse, A(th.sun, 0.6 * alpha));
+          r.disk(cx, cy, R0 * 0.32 * pulse, A(th.sun, 0.42 * alpha));
         } else if (kind === 'aurora') {
           for (let k = 0; k < 3; k++) {
             const col = k === 1 ? th.acc2 : th.acc;
@@ -206,27 +162,27 @@
             }
           }
         } else if (kind === 'mirror') {
-          const cy = base - R0 * 0.3;
-          r.glow(cx, cy, R0 * 2.2, A(th.sun, 0.12 * alpha));
-          r.ring(cx, cy, R0 * pulse, R0 * 0.94, A(th.sun, 0.6 * alpha));
-          r.ring(cx, H - cy, R0 * pulse, R0 * 0.94, A(th.sun, 0.25 * alpha));
+          const cy = base - R0 * 1.1;
+          r.glow(cx, cy, R0 * 2.2, A(th.sun, 0.08 * alpha));
+          r.ring(cx, cy, R0 * 0.6 * pulse, R0 * 0.57, A(th.sun, 0.35 * alpha));
+          r.ring(cx, cy, R0 * 0.75, R0 * 0.74, A(th.sun, 0.15 * alpha));
           r.line(0, horizonY * 0.5, W, horizonY * 0.5, 1.5 * r.scale, A(th.acc, 0.15 * alpha));
         } else if (kind === 'nova') {
           const cy = base - R0 * 0.55;
-          r.glow(cx, cy, R0 * 4 * pulse, A(th.sun, 0.25 * alpha));
+          r.glow(cx, cy, R0 * 4 * pulse, A(th.sun, 0.12 * alpha));
           const rays = 24;
           for (let i = 0; i < rays; i++) {
             const a = i / rays * Math.PI * 2 + t * 0.15;
             const len = R0 * (2.5 + 1.5 * Math.sin(i * 7.3 + t * 2)) * (1 + sig.kick * 0.3);
             r.tri(cx, cy, cx + Math.cos(a - 0.03) * len, cy + Math.sin(a - 0.03) * len, cx + Math.cos(a + 0.03) * len, cy + Math.sin(a + 0.03) * len,
-              A(th.sun, 0.28 * alpha), A(th.acc2, 0), A(th.acc2, 0));
+              A(th.sun, 0.14 * alpha), A(th.acc2, 0), A(th.acc2, 0));
           }
           for (let i = 0; i < 4; i++) {
             const ph = (sig.beat + i / 4) % 1;
             const rad = R0 * (0.2 + ph * 3);
             r.ring(cx, cy, rad, rad - 3 * r.scale, A(i % 2 ? th.acc2 : th.sun, alpha * 0.4 * (1 - ph)));
           }
-          r.disk(cx, cy, R0 * 0.45 * pulse, [1, 1, 1, 0.85 * alpha]);
+          r.disk(cx, cy, R0 * 0.4 * pulse, A(th.sun, 0.5 * alpha));
         } else if (kind === 'moon') {
           const cy = H * 0.24;
           r.glow(cx, cy, R0 * 1.8, A(th.sun, 0.1 * alpha));
@@ -237,60 +193,6 @@
       };
       const ka = w.a.celestial, kb = w.b.celestial;
       if (ka === kb) draw(kb, 1); else { draw(ka, 1 - w.k); draw(kb, w.k); }
-    }
-
-    function drawRidges(th, cam, W, H, horizonY, sig) {
-      // Three layers of crystalline ridges, far to near.
-      for (let d = 0; d < 3; d++) {
-        const par = [0.08, 0.16, 0.3][d];
-        const scaleY = H * [0.2, 0.13, 0.07][d];
-        const pts = props.ridges[d];
-        const span = 940;
-        const off = ((cam.x * par * 8) % span + span) % span;
-        const fill = mix(th.sky[2], th.ground, 0.35 + d * 0.25);
-        const edge = A(mix(th.acc, th.sky[2], 0.5 - d * 0.12), 0.25 + d * 0.15 + sig.kick * 0.1 * sig.energy);
-        const px = x => (x - off) / 60 * W;
-        let prev = null;
-        for (let k = 0; k < 2; k++) {
-          for (let i = 0; i < pts.length; i++) {
-            const x = px(pts[i][0] + k * span), y = horizonY - pts[i][1] * scaleY;
-            if (prev && x > -50 && prev[0] < W + 50) {
-              r.quad(prev[0], prev[1], x, y, x, horizonY + 2, prev[0], horizonY + 2, fill);
-              r.blend('add');
-              r.line(prev[0], prev[1], x, y, (1 + d * 0.5) * r.scale, edge);
-              r.blend('alpha');
-            }
-            prev = [x, y];
-          }
-          prev = null;
-        }
-      }
-    }
-
-    function drawPolys(th, cam, view, t, sig) {
-      // Wireframe polyhedra drifting in depth behind the play plane.
-      r.blend('add');
-      for (const p of props.polys) {
-        const par = 1 / (1 + p.z);
-        const span = 1500 * par + 40;
-        let wx = p.x * par - cam.x * par;
-        wx = ((wx % span) + span) % span - 20;
-        const sx = view.left + wx * (view.zoomPx / view.zoomPx);
-        const x = cam.x - view.halfW + wx * 1.0;
-        const y = cam.y * (1 - par) + p.y * par + 1;
-        const size = p.size * par * 2.2 * (1 + sig.kick * 0.06);
-        const S = SOLIDS[p.kind];
-        const ang = p.rot + t * p.spin;
-        const pts = S.v.map(v => rotate(v, p.axis, ang));
-        const col = A(p.kind === 1 ? th.acc2 : th.acc, (0.12 + 0.18 * par * 2) * (0.6 + 0.4 * sig.energy));
-        for (const [a, b] of S.e) {
-          const pa = pts[a], pb = pts[b];
-          const fa = 1 / (1 + pa[2] * 0.25), fb = 1 / (1 + pb[2] * 0.25);
-          r.line(x + pa[0] * size * fa, y + pa[1] * size * fa, x + pb[0] * size * fb, y + pb[1] * size * fb, 0.035 * par * 3, col);
-        }
-        void sx;
-      }
-      r.blend('alpha');
     }
 
     // ── Ground, ceiling, corridor ────────────────────────────────────────
@@ -332,17 +234,28 @@
     function drawBlock(o, th, sig, t) {
       const { x0, x1, y0, y1 } = o;
       const top = Math.min(y1, 60), bot = Math.max(y0, -10);
-      const fill = o.style === 'pillar' ? mix(th.fill, th.acc2, 0.08) : th.fill;
-      r.rectV(x0, bot, x1, top, mul(fill, 0.75), mix(fill, th.edge, 0.12));
-      // inner lattice
+      const pillar = o.style === 'pillar';
+      const fill = pillar ? mix(th.fill, th.acc2, 0.1) : th.fill;
       const e = th.edge;
+      // glassy body: darker at the base, a lit band under the top edge
+      r.rectV(x0, bot, x1, top, mul(fill, 0.7), mix(fill, e, 0.16));
       r.blend('add');
-      const inset = 0.16;
-      if (x1 - x0 > 0.5 && top - bot > 0.5) {
-        r.polyline([[x0 + inset, bot + inset], [x1 - inset, bot + inset], [x1 - inset, top - inset], [x0 + inset, top - inset]], 0.025, A(e, 0.18), true);
+      const w = x1 - x0, h = top - bot;
+      // diagonal light lines inside, clipped to the block
+      if (w > 0.6 && h > 0.6) {
+        const gap = 0.9;
+        const a = A(e, 0.07);
+        for (let d = -h; d < w; d += gap) {
+          const ax = Math.max(x0, x0 + d), ay = bot + (ax - (x0 + d));
+          const bx = Math.min(x1, x0 + d + h), by = bot + (bx - (x0 + d));
+          if (bx - ax > 0.05) r.line(ax, ay, bx, by, 0.03, a);
+        }
       }
-      const pulse = 0.65 + 0.35 * sig.kick;
-      r.polyline([[x0, bot], [x1, bot], [x1, top], [x0, top]], 0.06, A(e, 0.75 * pulse), true);
+      const pulse = 0.6 + 0.4 * sig.kick;
+      r.polyline([[x0, bot], [x1, bot], [x1, top], [x0, top]], 0.055, A(e, 0.6 * pulse), true);
+      // the surfaces you can land on are the brightest
+      if (y1 < 60) { r.line(x0, top, x1, top, 0.09, A(mix(e, [1, 1, 1, 1], 0.4), 0.9 * pulse)); r.glow((x0 + x1) / 2, top, Math.max(0.8, w * 0.6), A(e, 0.12), 0.35); }
+      if (y0 > -5) r.line(x0, bot, x1, bot, 0.07, A(e, 0.6 * pulse));
       r.blend('alpha');
     }
 
@@ -481,12 +394,15 @@
       r.glow(s.x, s.y, 2.2, A(col, 0.4 + 0.15 * sig.kick));
       r.blend('alpha');
       const x = s.x, y = s.y;
+      // a dark rim keeps the player readable against bright skies
+      const rim = [0.02, 0.02, 0.08, 0.85];
       if (s.mode === 'cube') {
         const a = vis.rot;
         const c = Math.cos(a), sn = Math.sin(a);
         const P = (u, v) => [x + u * c - v * sn, y + u * sn + v * c];
         const sq = (k) => [P(-hw * k, -hh * k), P(hw * k, -hh * k), P(hw * k, hh * k), P(-hw * k, hh * k)];
-        const o = sq(1), m = sq(0.62), i = sq(0.3);
+        const o = sq(1), m = sq(0.62), i = sq(0.3), rr = sq(1.16);
+        r.quad(...rr[0], ...rr[1], ...rr[2], ...rr[3], rim);
         r.quad(...o[0], ...o[1], ...o[2], ...o[3], [1, 1, 1, 1]);
         r.quad(...sq(0.86)[0], ...sq(0.86)[1], ...sq(0.86)[2], ...sq(0.86)[3], mix(col, [0.05, 0.08, 0.2, 1], 0.55));
         r.quad(...m[0], ...m[1], ...m[2], ...m[3], col);
@@ -495,6 +411,7 @@
         const a = Math.atan2(s.vy * 0.55, s.speed);
         const c = Math.cos(a), sn = Math.sin(a);
         const P = (u, v) => [x + u * c - v * sn, y + u * sn + v * c];
+        r.poly([P(0.95, 0), P(-0.7, 0.55), P(-0.45, 0), P(-0.7, -0.55)], rim);
         const hull = [P(0.75, 0), P(-0.55, 0.4), P(-0.35, 0), P(-0.55, -0.4)];
         r.poly(hull, [1, 1, 1, 1]);
         const inner = [P(0.45, 0), P(-0.35, 0.22), P(-0.22, 0), P(-0.35, -0.22)];
@@ -509,6 +426,7 @@
         const a = Math.atan2(s.vy, s.speed);
         const c = Math.cos(a), sn = Math.sin(a);
         const P = (u, v) => [x + u * c - v * sn, y + u * sn + v * c];
+        r.poly([P(0.62, 0), P(-0.48, 0.42), P(-0.25, 0), P(-0.48, -0.42)], rim);
         r.poly([P(0.45, 0), P(-0.35, 0.3), P(-0.18, 0), P(-0.35, -0.3)], [1, 1, 1, 1]);
         r.poly([P(0.25, 0), P(-0.2, 0.15), P(-0.1, 0), P(-0.2, -0.15)], col);
         void up;
@@ -534,27 +452,43 @@
     }
 
     // ── Frame ────────────────────────────────────────────────────────────
+    const world = L.World(r, lv);
+    let ceilW = 0;
+
     sc.draw = function (f) {
       const { s, cam, t, sig, vis, parts, W, H, debug } = f;
       const w = themeAt(lv, t);
       const th = blendTheme(w);
       sc.theme = th; sc.themeKey = w.b.name;
+      const weights = {};
+      weights[w.a.name] = (weights[w.a.name] || 0) + (1 - w.k);
+      weights[w.b.name] = (weights[w.b.name] || 0) + w.k;
       const zoom = cam.zoom;
-      const view = {
-        halfW: W / 2 / zoom, halfH: H / 2 / zoom, zoomPx: zoom,
-      };
+      const view = { halfW: W / 2 / zoom, halfH: H / 2 / zoom, zoomPx: zoom };
       view.left = cam.x - view.halfW; view.right = cam.x + view.halfW;
       view.bottom = cam.y - view.halfH; view.top = cam.y + view.halfH;
-      const horizonY = H / 2 - (0 - cam.y) * zoom - zoom * 0.0;
+      const horizonPx = H * L.HORIZON;
+      const ceil = isFinite(cam.ceilVis) && cam.ceilVis < 100 ? cam.ceilVis : Infinity;
+      ceilW += ((isFinite(ceil) ? 1 : 0) - ceilW) * 0.08;
       r.begin(mul(th.sky[0], 1));
-      drawSky(th, W, H, Math.min(H, Math.max(H * 0.35, horizonY)), sig, w);
+      drawSky(th, W, H, horizonPx, sig, w);
       drawStars(th, cam, W, H, t);
-      drawCelestial(w, th, W, H, Math.min(H, Math.max(H * 0.35, horizonY)), t, sig);
-      drawRidges(th, cam, W, H, Math.min(H, Math.max(H * 0.35, horizonY)), sig);
+      drawCelestial(w, th, W, H, horizonPx, t, sig);
       r.view(cam.x, cam.y, zoom, cam.rot);
-      drawPolys(th, cam, view, t, sig);
-      const ceil = s ? s.ceil : Infinity;
-      drawGround(th, view, cam, sig, cam.ceilVis);
+      world.draw({ cam, view, t, sig, th, weights, ceilW, ceil: isFinite(ceil) ? ceil : sc.lastCeil || 9 });
+      if (isFinite(ceil)) sc.lastCeil = ceil;
+      drawGround(th, view, cam, sig, ceil);
+      // Reflections in the glass floor: the player and nearby blocks, flipped.
+      if (s && !s.dead && s.y < 8) {
+        r.view(cam.x, cam.y, zoom, cam.rot, true);
+        r.alpha = 0.3;
+        drawPlayer(s, Object.assign({}, vis, { trail: [] }), t, sig);
+        visible(solids, view.left, view.right, maxW.solids, o => { if (o.y0 < 0.01) drawBlock(o, th, sig, t); });
+        visible(spikes, view.left, view.right, 1, o => { if (o.by < 0.01 && o.dir > 0) drawSpike(o, sig); });
+        r.alpha = 1;
+        r.view(cam.x, cam.y, zoom, cam.rot);
+        r.rectV(view.left - 1, view.bottom - 1, view.right + 1, 0, A(th.ground, 0.95), A(th.ground, 0.25));
+      }
       visible(walls, view.left, view.right, maxW.walls, o => drawWall(o, th, sig));
       visible(solids, view.left, view.right, maxW.solids, o => drawBlock(o, th, sig, t));
       visible(spikes, view.left, view.right, 1, o => drawSpike(o, sig));

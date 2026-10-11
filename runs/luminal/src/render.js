@@ -87,7 +87,7 @@
   }
 
   L.Renderer = function (canvas) {
-    const gl = canvas.getContext('webgl2', { antialias: true, alpha: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+    const gl = canvas.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
     if (!gl) throw new Error('WebGL2 is not available');
     const prog = compile(gl, VS, FS);
     const bright = compile(gl, QUAD_VS, BRIGHT_FS);
@@ -113,7 +113,7 @@
 
     let n = 0, blendMode = 'alpha', viewM = new Float32Array(9);
     let W = 0, H = 0, T = null;
-    const r = { gl, canvas, post: { bloom: 1.1, aberr: 0, flash: [1, 1, 1, 0], vignette: 0.8, grain: 0.03, threshold: 0.55 }, scale: 1 };
+    const r = { gl, canvas, alpha: 1, post: { bloom: 0.9, aberr: 0, flash: [1, 1, 1, 0], vignette: 0.8, grain: 0.03, threshold: 0.62 }, scale: 1 };
 
     r.resize = function (w, h) {
       if (w === W && h === H) return;
@@ -159,7 +159,7 @@
     };
 
     // World view: cx, cy at screen centre, `zoom` pixels per unit, rotation.
-    r.view = function (cx, cy, zoom, rot = 0) {
+    r.view = function (cx, cy, zoom, rot = 0, mirror = false) {
       flush();
       const sx = 2 * zoom / W, sy = 2 * zoom / H;
       const c = Math.cos(rot), s = Math.sin(rot);
@@ -167,6 +167,7 @@
       viewM[0] = c * sx; viewM[1] = s * sy; viewM[2] = 0;
       viewM[3] = -s * sx; viewM[4] = c * sy; viewM[5] = 0;
       viewM[6] = -(c * cx - s * cy) * sx; viewM[7] = -(s * cx + c * cy) * sy; viewM[8] = 1;
+      if (mirror) { viewM[3] = -viewM[3]; viewM[4] = -viewM[4]; }   // draw (x, y) at (x, -y)
     };
     // Screen view: pixels, origin top-left.
     r.screen = function () {
@@ -178,7 +179,7 @@
       if (n >= MAXV) flush();
       const o = n * FLOATS;
       data[o] = x; data[o + 1] = y; data[o + 2] = u; data[o + 3] = w;
-      data[o + 4] = c[0]; data[o + 5] = c[1]; data[o + 6] = c[2]; data[o + 7] = c[3] === undefined ? 1 : c[3];
+      data[o + 4] = c[0]; data[o + 5] = c[1]; data[o + 6] = c[2]; data[o + 7] = (c[3] === undefined ? 1 : c[3]) * r.alpha;
       data[o + 8] = k;
       n++;
     }

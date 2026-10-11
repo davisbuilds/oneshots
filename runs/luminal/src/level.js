@@ -12,13 +12,18 @@
     b.section(0, 'Dawn', 'dawn');
     b.spikes(8.5);
     b.spikes(10.5);
-    b.spikes(12.5); b.spikes(13.5);
+    b.spikes(12.5); b.spikes(13.5);          // hold through both
     b.blockB(15.6, 18, 0, 1);
     b.spikes(17.5, 1, { y: 1 });
-    b.spikes(20.5, 2);
-    b.spikes(22.5);
-    // Hold through four beats and the cube bounces on every one.
-    b.spikes(24.5); b.spikes(25.5); b.spikes(26.5); b.spikes(27.5, 2);
+    // A ceiling of hanging spikes: the first moment not to jump.
+    b.blockB(19.2, 21.3, 2.45, 2.95, 'slab');
+    b.spikes(20.25, 4, { y: 2.45, down: true });
+    b.spikes(21.75);
+    // Syncopation: the second jump is on the "and", so holding fails.
+    b.spikes(23.5);
+    b.spikes(25.0);
+    b.spikes(26.5, 2);
+    b.spikes(28.0);
     b.pad(29);
     b.blockB(29.7, 32, 2.5, 3, 'slab');
     b.spikes(31, 1, { y: 3 });

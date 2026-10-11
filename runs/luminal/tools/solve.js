@@ -33,11 +33,20 @@ let st = L.initState(lv);
 const all = [];
 const t0 = Date.now();
 for (let i = 0; i + 1 < bounds.length; i++) {
-  const goal = L.xAt(lv, bounds[i + 1] * L.BEAT);
-  const r = S.solve(lv, st, goal);
+  // Search three beats past the boundary so the state carried into the next
+  // section is not already doomed, then keep the route up to the boundary.
+  const goal = L.xAt(lv, Math.min(lv.endBeat, bounds[i + 1] + 3) * L.BEAT);
+  const keepUntil = bounds[i + 1] * L.BEAT;
+  // Coarse input first (a change at most every 50 ms) for a human-looking
+  // route; finer only if a section needs it.
+  let r = null;
+  for (const every of [12, 6, 2]) { r = S.solve(lv, st, goal, { every }); if (r && !r.failed) break; }
   if (!r || r.failed) { console.error(`no route through beats ${bounds[i]}-${bounds[i + 1]}; stuck near beat ${(r.t / L.BEAT).toFixed(2)}`); process.exit(1); }
-  st = S.replay(lv, st, r.inputs);
-  for (const v of r.inputs) all.push(v);
+  let keep = 0;
+  { const p = L.cloneState(st); while (keep < r.inputs.length && p.t < keepUntil) { L.step(lv, p, !!r.inputs[keep]); keep++; } }
+  const part = r.inputs.slice(0, keep);
+  st = S.replay(lv, st, part);
+  for (const v of part) all.push(v);
   console.log(`beats ${bounds[i]}-${bounds[i + 1]}: ${((Date.now() - t0) / 1000).toFixed(1)} s`);
 }
 // Coast to the end with the button released.

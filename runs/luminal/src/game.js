@@ -420,7 +420,7 @@
         cam.x = 10 + tt * 4; cam.y = H / 2 / G.cam.zoom - 2.4;
       }
       const P = renderer.post;
-      P.bloom = 1.0 + sig.kick * 0.25 * sig.energy;
+      P.bloom = 0.85 + sig.kick * 0.2 * sig.energy;
       P.aberr = (0.0015 + sig.crash * 0.006 * (save.settings.flash ? 1 : 0.2) + G.cam.punch * 0.004) * (sig.energy);
       const fl = G.flash + (save.settings.flash ? sig.crash * 0.12 : 0);
       P.flash = [G.flashColor[0], G.flashColor[1], G.flashColor[2], Math.min(0.6, fl)];
@@ -563,22 +563,31 @@
     $('playBtn').disabled = true; $('practiceBtn').disabled = true;
     const loadEl = $('loadState');
     const t0 = performance.now();
-    L.renderSong(p => { loadEl.textContent = `Synthesizing the soundtrack… ${Math.round(p * 100)}%`; })
-      .then(buf => {
-        audio.buffer = buf;
+    let firstChunk = true;
+    G.audioDone = false;
+    const enable = () => {
+      G.state = 'title';
+      $('playBtn').disabled = false; $('practiceBtn').disabled = false;
+      $('playBtn').focus({ preventScroll: true });
+      document.body.classList.add('ready');
+    };
+    L.renderSong(chunk => {
+      audio.addChunk(chunk);
+      if (firstChunk) {
+        firstChunk = false;
         G.renderMs = performance.now() - t0;
         loadEl.textContent = '';
-        G.state = 'title';
-        $('playBtn').disabled = false; $('practiceBtn').disabled = false;
-        $('playBtn').focus({ preventScroll: true });
-        document.body.classList.add('ready');
-      })
-      .catch(err => {
-        console.warn(err);
-        loadEl.textContent = 'Audio is unavailable here, so the game will run silently.';
-        G.state = 'title';
-        $('playBtn').disabled = false; $('practiceBtn').disabled = false;
-      });
+        enable();
+      }
+    }).then(chunks => {
+      G.audioDone = true;
+      G.renderAllMs = performance.now() - t0;
+      G.chunks = chunks;
+    }).catch(err => {
+      console.warn(err);
+      loadEl.textContent = 'Audio is unavailable here, so the game will run silently.';
+      enable();
+    });
 
     // ── Test interface ───────────────────────────────────────────────────
     // Drives the production update with explicit per-step inputs.
@@ -607,12 +616,7 @@
       },
       draw: () => draw(1 / 60),
       pause, resume, toTitle, placeCheckpoint, removeCheckpoint, respawn,
-      audioPeak() {
-        const b = audio.buffer; if (!b) return 0;
-        const d = b.getChannelData(0); let m = 0;
-        for (let i = 0; i < d.length; i += 7) m = Math.max(m, Math.abs(d[i]));
-        return m;
-      },
+      audioReady: () => audio.chunks.length,
     };
     requestAnimationFrame(frame);
   };
