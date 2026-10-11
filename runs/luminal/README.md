@@ -191,3 +191,11 @@ full log.
   Bluetooth headphones often report less than they add, which is what the
   audio offset setting is for.
 - Safari and Firefox were not tested.
+
+## Delivery verification — 11 October 2026
+
+The merge preparation fixed two accessibility findings: disabling screen flashes
+now suppresses death and transition flashes completely, including any pending
+flash; reduced-motion startup tolerates blocked browser storage. Browser
+regressions exercise both cases from a directly opened file and replay the full
+level with flashes disabled. The original production account remains unchanged.

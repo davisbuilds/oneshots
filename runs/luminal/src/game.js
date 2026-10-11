@@ -9,13 +9,16 @@
   const TEST = params.has('test');
 
   // ── Saved progress ─────────────────────────────────────────────────────
+  let hasSavedProgress = false;
   function loadSave() {
     const blank = { attempts: 0, jumps: 0, best: 0, practiceBest: 0, completions: 0, practiceCompletions: 0, firstClear: 0, deaths: new Array(100).fill(0), settings: { volume: 0.8, flash: true, shake: true, autoCheckpoints: true, offsetMs: 0 } };
     try {
       const raw = localStorage.getItem(STORE);
       if (!raw) return blank;
       const s = JSON.parse(raw);
-      return Object.assign(blank, s, { settings: Object.assign(blank.settings, s.settings || {}), deaths: (s.deaths && s.deaths.length === 100) ? s.deaths : blank.deaths });
+      const loaded = Object.assign(blank, s, { settings: Object.assign(blank.settings, s.settings || {}), deaths: (s.deaths && s.deaths.length === 100) ? s.deaths : blank.deaths });
+      hasSavedProgress = true;
+      return loaded;
     } catch (e) { return blank; }
   }
   function writeSave(save) { try { localStorage.setItem(STORE, JSON.stringify(save)); } catch (e) { /* private mode */ } }
@@ -32,7 +35,7 @@
     const audio = L.Audio();
     const save = loadSave();
     const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion && !localStorage.getItem(STORE)) { save.settings.flash = false; save.settings.shake = false; }
+    if (reduceMotion && !hasSavedProgress) { save.settings.flash = false; save.settings.shake = false; }
 
     const G = {
       lv, save, audio,
@@ -290,7 +293,7 @@
     }
 
     // ── Feedback helpers ─────────────────────────────────────────────────
-    function flash(c, a) { if (!save.settings.flash) a *= 0.25; G.flash = Math.max(G.flash, a); G.flashColor = c; }
+    function flash(c, a) { if (!save.settings.flash) return; G.flash = Math.max(G.flash, a); G.flashColor = c; }
     function shake(a) { if (save.settings.shake) G.cam.shake = Math.max(G.cam.shake, a); }
 
     function onEvent(e) {
@@ -437,7 +440,7 @@
       const P = renderer.post;
       P.bloom = 0.85 + sig.kick * 0.2 * sig.energy;
       P.aberr = (0.0015 + sig.crash * 0.006 * (save.settings.flash ? 1 : 0.2) + G.cam.punch * 0.004) * (sig.energy);
-      const fl = G.flash + (save.settings.flash ? sig.crash * 0.12 : 0);
+      const fl = save.settings.flash ? G.flash + sig.crash * 0.12 : 0;
       P.flash = [G.flashColor[0], G.flashColor[1], G.flashColor[2], Math.min(0.6, fl)];
       const bestPct = G.practice ? save.practiceBest : save.best;
       const view = scene.draw({ s: G.state === 'title' || G.state === 'loading' ? null : s, cam, t, sig, vis: G.vis, parts: G.parts, W, H, debug: G.debug, bestX: bestPct > 0 && bestPct < 100 ? bestPct / 100 * lv.endX : null });
@@ -598,7 +601,7 @@
     $('cpDel').onclick = e => { e.currentTarget.blur(); removeCheckpoint(); };
     for (const b of document.querySelectorAll('.hudbtn')) b.addEventListener('pointerdown', e => e.stopPropagation());
     $('vol').oninput = e => { save.settings.volume = e.target.value / 100; save.settings.muted = false; applySettings(); writeSave(save); };
-    $('optFlash').onchange = e => { save.settings.flash = e.target.checked; writeSave(save); };
+    $('optFlash').onchange = e => { save.settings.flash = e.target.checked; if (!save.settings.flash) G.flash = 0; writeSave(save); };
     $('optShake').onchange = e => { save.settings.shake = e.target.checked; writeSave(save); };
     $('optAuto').onchange = e => { save.settings.autoCheckpoints = e.target.checked; writeSave(save); };
     $('offset').oninput = e => { save.settings.offsetMs = +e.target.value; applySettings(); writeSave(save); };

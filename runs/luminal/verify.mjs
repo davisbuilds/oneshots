@@ -153,6 +153,39 @@ try {
   if (live.audio !== null) assert.ok(Math.abs(live.audio - live.clock) < 0.03, `the game clock follows the audio clock (${(live.audio - live.clock).toFixed(3)} s apart)`);
   assert.ok(live.clock - live.t < live.frame + 0.05, 'the simulation is at most a frame behind the clock');
   assert.equal((await snap(page)).save.attempts, before, 'watching the demo records no attempt');
+  // Reduced motion must still load when persistence is unavailable.
+  const reduced = await browser.newContext({ reducedMotion: 'reduce' });
+  await reduced.addInitScript(() => {
+    Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('Storage blocked', 'SecurityError'); } });
+  });
+  const rp = await reduced.newPage();
+  watch(rp);
+  await rp.goto(url + '?test');
+  await rp.waitForFunction(() => window.LUMINAL && LUMINAL.game && LUMINAL.game.api.ready(), null, { timeout: 60000 });
+  assert.equal((await snap(rp)).save.settings.flash, false);
+  assert.equal((await snap(rp)).save.settings.shake, false);
+  await rp.click('#playBtn');
+  let rs = await snap(rp);
+  while (rs.state === 'playing') rs = await step(rp, 60);
+  assert.equal(rs.state, 'dead');
+  assert.equal(await rp.evaluate(() => LUMINAL.game.flash), 0, 'reduced motion suppresses death flashes');
+  await reduced.close();
+
+  // An explicit opt-out suppresses death and transition flashes immediately.
+  await page.evaluate(() => { LUMINAL.game.liveInTest = false; LUMINAL.game.api.toTitle(); });
+  await page.locator('#settings summary').click();
+  await page.locator('#optFlash').uncheck();
+  await page.click('#playBtn');
+  s = await snap(page);
+  while (s.state === 'playing') s = await step(page, 60);
+  assert.equal(s.state, 'dead');
+  assert.equal(await page.evaluate(() => LUMINAL.game.flash), 0, 'the unchecked option suppresses death flashes');
+  await page.evaluate(() => LUMINAL.game.api.begin(false, false));
+  while ((await snap(page)).state === 'playing') {
+    await step(page, 60, true);
+    assert.equal(await page.evaluate(() => LUMINAL.game.flash), 0, 'the unchecked option suppresses transition flashes');
+  }
+
   await context.close();
 
   // ── Touch on a phone ─────────────────────────────────────────────────
