@@ -25,6 +25,7 @@ python3 scripts/validate_runs.py
 python3 scripts/check_publication_hygiene.py
 python3 runs/three-worlds/src/test_build.py
 python3 runs/artemis-ii/src/test_build_all.py
+python3 runs/a-world-in-a-drop/src/test_checksums.py
 node --test runs/gate-to-game/tests/*.test.js
 node --test runs/luminal/tests/*.test.js
 ```
