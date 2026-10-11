@@ -12,11 +12,16 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 out = ROOT / 'output'
 manifest = tomllib.loads((ROOT / 'run.toml').read_text())
-checks = dict(line.split('  ', 1)[::-1] for line in (out / 'SHA256SUMS').read_text().splitlines() if line)
+import argparse
+from checksums import verify_checksums
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--rebuilt', action='store_true', help='Verify fresh rebuild checksums instead of requiring the original delivery hashes')
+args = parser.parse_args()
+verify_checksums(out, [a['file'] for a in manifest['assets']],
+                 None if args.rebuilt else ROOT / 'process/ORIGINAL-SHA256SUMS')
 for asset in manifest['assets']:
     path = out / asset['file']
-    assert path.is_file(), path
-    assert hashlib.sha256(path.read_bytes()).hexdigest() == checks[path.name], path.name
     if path.suffix == '.blend':
         with path.open('rb') as f: assert f.read(7) == b'BLENDER', path.name
     if path.suffix == '.zip':

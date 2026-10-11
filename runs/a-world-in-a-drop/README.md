@@ -39,7 +39,7 @@ pip install -r requirements.txt
 # Set BLENDER_BIN to your Blender executable if it is not on PATH.
 python src/build.py --smoke
 python src/build.py
-python src/verify.py
+python src/verify.py --rebuilt
 ```
 
 [Official Blender 4.3.2 Linux download](https://download.blender.org/release/Blender4.3/blender-4.3.2-linux-x64.tar.xz).
@@ -129,7 +129,9 @@ After merge, when publication is authorized, upload all six declared assets and
 `SHA256SUMS` to `run-a-world-in-a-drop`. Release notes should identify them as
 original outputs from 10 October 2026, with the source commit, rather than a CI
 rebuild. Fetch with `python3 scripts/fetch_assets.py a-world-in-a-drop` from the
-repository root, then run the verifier. Keep the original delivery and recovery
+repository root, also download `SHA256SUMS`, then run `python src/verify.py`
+from the run directory. The default mode checks both release checksums and the
+committed original hashes; `--rebuilt` explicitly selects fresh-build verification. Keep the original delivery and recovery
 copies until downloaded files have been verified. This PR neither publishes a
 release nor removes the preserved working directory or delivery archive.
 

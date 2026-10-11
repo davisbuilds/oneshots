@@ -98,7 +98,7 @@ def main():
     manifest = tomllib.loads((ROOT / 'run.toml').read_text())
     lines = [hashlib.sha256((output / a['file']).read_bytes()).hexdigest() + '  ' + a['file'] + '\n' for a in manifest['assets']]
     (output / 'SHA256SUMS').write_text(''.join(lines))
-    run([sys.executable, ROOT / 'src/verify.py'], ROOT)
+    run([sys.executable, ROOT / 'src/verify.py', '--rebuilt'], ROOT)
 
 
 if __name__ == '__main__':
