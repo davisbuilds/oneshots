@@ -17,7 +17,7 @@ More views: [title](preview/title.webp) · [phone](preview/phone.webp) ·
 | **Play it** | open [`index.html`](index.html): no install, no server, no network, about 160 KiB of code |
 | **Share it** | `node tools/bundle.mjs` writes `output/luminal.html`, the whole game in one file |
 | **Model** | Claude Opus 5.5 (Claude Code, cloud session) |
-| **Brief** | [`brief.md`](brief.md): one human turn |
+| **Brief** | [`brief.md`](brief.md): one human turn during the run, and one after delivery asking for the pull request |
 | **Full-size outputs** | release `run-luminal`: the single-file game and the soundtrack as WAV, built by the Run assets workflow ([below](#reproduce)) |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 

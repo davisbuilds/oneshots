@@ -1,6 +1,6 @@
 # Brief
 
-The prompt that started this run, verbatim. It was the only human message;
+The prompt that started this run, verbatim. It was the only human message during the run;
 the session opened at about 02:20 UTC on 2026-10-11.
 
 > Build an epic, browser-playable Geometry Dash–inspired rhythm platformer with an original visual identity, soundtrack, and level design.
@@ -16,3 +16,12 @@ the session opened at about 02:20 UTC on 2026-10-11.
 > I’m comfortable with hours of autonomous iteration. Build a playable prototype early, then playtest the actual game, inspect screenshots, and refine the controls, level, sound, and presentation. Verify that every section is beatable under the real game physics and that the complete level can be finished. Prioritize a remarkable, polished experience over sheer feature count.
 >
 > Deliver the working browser game, editable source, and straightforward instructions to run it. Make it easy to share and quick to load. Save checkpoints as you work. Don’t stop at a plan or a visual mockup—build it, play it, improve it, and deliver it.
+
+<!-- after delivery -->
+
+## Later human messages
+
+**About 04:29 UTC, 2026-10-11**: after the game was delivered. It asked for the
+pull request only; the game was not changed.
+
+> open PR
