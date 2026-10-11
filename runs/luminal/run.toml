@@ -1,0 +1,38 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "luminal"
+title = "Luminal"
+summary = "A one-button rhythm platformer in luminous geometry: one level, Heliotrope, built on an original synthesized soundtrack, with cube, ship, wave and gravity sections, practice checkpoints and saved bests, and a solver that proves every section can be cleared."
+date = 2026-10-11
+kind = "long-horizon"
+medium = ["web", "webgl", "game", "audio", "procedural", "music", "interactive"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 2
+wall_clock_minutes = 120          # 02:20 to 04:20 UTC
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+# The single-file build is plain Node; the soundtrack WAV is rendered by the
+# page itself in headless Chromium.
+command = "(cd ../.. && npm ci && npx playwright install --with-deps chromium) && node tools/bundle.mjs && node tools/audio.mjs"
+verify = "node tools/bundle.mjs --check && node tools/solve.js --check && node --test tests/*.test.js"
+timeout_minutes = 20
+
+[[assets]]
+file = "luminal.html"
+description = "The whole game as one self-contained HTML file (about 160 KiB) for sharing"
+
+[[assets]]
+file = "heliotrope.wav"
+description = "The soundtrack, Heliotrope, as rendered by the game: about 124 s, 44.1 kHz stereo, 16-bit"

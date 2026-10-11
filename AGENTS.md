@@ -27,6 +27,7 @@ python3 runs/three-worlds/src/test_build.py
 python3 runs/artemis-ii/src/test_build_all.py
 python3 runs/a-world-in-a-drop/src/test_checksums.py
 node --test runs/gate-to-game/tests/*.test.js
+node --test runs/luminal/tests/*.test.js
 ```
 
 Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser
@@ -68,7 +69,7 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
 - Run the collection checks above for metadata/tooling changes. Publication
   hygiene scans the Git index: stage the intended files before the final check.
 - Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
-  seven runs; do not claim they cover the whole collection. Screenshots are local
+  eight runs; do not claim they cover the whole collection. Screenshots are local
   evidence, not portable visual baselines.
 - For rendering changes, use the run's build/verify commands. A manifest check
   does not prove a render works; state when a costly full build was not rerun.

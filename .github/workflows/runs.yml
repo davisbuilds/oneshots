@@ -42,3 +42,8 @@ jobs:
         run: |
           node --version
           node --test runs/gate-to-game/tests/*.test.js
+
+      - name: Test Luminal's physics, level and song
+        run: |
+          node --test runs/luminal/tests/*.test.js
+          node runs/luminal/tools/solve.js --check

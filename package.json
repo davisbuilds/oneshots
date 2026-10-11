@@ -8,8 +8,8 @@
   "packageManager": "npm@11.6.2",
   "scripts": {
     "check": "python3 scripts/validate_runs.py && python3 scripts/check_publication_hygiene.py",
-    "test": "python3 runs/three-worlds-chatgpt/src/test_build.py && python3 runs/three-worlds/src/test_build.py && python3 runs/artemis-ii/src/test_build_all.py && python3 runs/a-world-in-a-drop/src/test_checksums.py && node --test runs/gate-to-game/tests/*.test.js",
-    "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs && node runs/antikythera-engine/verify.mjs && node runs/borrowed-seconds/verify.mjs && node runs/gate-to-game/verify.mjs"
+    "test": "python3 runs/three-worlds-chatgpt/src/test_build.py && python3 runs/three-worlds/src/test_build.py && python3 runs/artemis-ii/src/test_build_all.py && python3 runs/a-world-in-a-drop/src/test_checksums.py && node --test runs/gate-to-game/tests/*.test.js && node --test runs/luminal/tests/*.test.js",
+    "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs && node runs/antikythera-engine/verify.mjs && node runs/borrowed-seconds/verify.mjs && node runs/gate-to-game/verify.mjs && node runs/luminal/verify.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0"
