@@ -68,3 +68,89 @@ Decisions made before writing code:
 - First screenshots (headless Chromium, SwiftShader): everything draws, no
   console errors. **Wrong:** the parallax ridges were several screens tall
   and covered the sky objects; fixed by normalising their heights.
+
+## 4. The soundtrack, measured (02:55 to 03:15)
+
+- `tools/audio.mjs` renders the song in headless Chromium, writes a WAV and
+  prints loudness per four bars. **Wrong:** the first render took **30 s**
+  before Play could enable, and every section sat on the limiter (-11 dBFS
+  RMS from the first bar to the last: no arc).
+- Profiling with single instruments showed a fixed cost per chunk (the
+  convolution reverb) plus the notes. Restructured: each eight-bar chunk now
+  renders a dry mix and a reverb send as four channels; reverb and limiting
+  run live, and chunks play as scheduled buffer sources, so playback starts
+  after the first chunk (**0.55 s** here) while the rest render in order.
+  Chunks are linear sums, so overlapping their tails is exact. Panners per
+  oscillator became one channel merger per voice.
+- **Wrong:** still -10 dBFS everywhere. The synthetic reverb impulse was not
+  normalised: its energy made the send about 15 dB louder than the dry
+  signal. Normalised it to unit energy.
+- Balanced by stem measurement (each instrument solo, RMS per section): the
+  kick was 10 dB too loud, pads, stabs, leads and plucks 6 to 9 dB too quiet.
+  Final arc: opening -21 dBFS, Pulse -12.5, drop -11.3, bridge -17, peak
+  below full scale (snapshot of the spectrogram not kept; the verifier
+  asserts the arc).
+- A real-time autoplay run (the real loop, audio clock and renderer, 13 to
+  17 fps under SwiftShader) finished the level with the simulation within a
+  frame of the audio clock.
+
+## 5. Fairness (03:15 to 03:30)
+
+- First timing-window measurement (shift one press, keep the rest of the
+  route) was dominated by the solver's jittery taps. Changes: the solver
+  keeps, among merged states, the one with the fewest button changes, and
+  searches with input changes at most every 50 ms (finer only if needed).
+  The route came out human-looking: 24 presses for the whole Ascent instead
+  of 359.
+- **Wrong:** the Dawn section could be cleared by holding the button
+  throughout: every spike was on a half beat, exactly where holding bounces.
+  Added hanging spikes over a stretch you must walk under and a syncopated
+  jump on an "and".
+- Every section is solvable with inputs on a 50 ms grid (now a test).
+- The gravity-ring chain in Inversion had 13 to 25 ms windows. Rather than
+  guess heights, computed the path a press on each eighth note produces and
+  put each ring on it; the drop's and finale's ship tunnels were widened.
+
+## 6. Art direction (03:30 to 03:45)
+
+- `world.js`: a perspective world behind the play plane. Props live at a
+  depth and project toward a horizon at 62% of the screen; the far ground
+  plane's lines converge on it. Each section brings its own architecture,
+  rising in as its theme fades up: crystal spires (Dawn), a corridor of
+  arches with a wave of light running down it on every beat (Pulse), floating
+  crystals under an aurora (Ascent), spires mirrored on floor and ceiling
+  (Inversion), a tunnel of rings rushing at the camera (Supernova), lanterns
+  in loose constellations (Echo), beams of light (Ascension).
+- **Wrong:** the first pass dropped the level's foreground (only its
+  reflections drew), and the bloom blew out the drop and the finale
+  (snapshot 03). Restored the draw calls; halved the sky objects, raised the
+  bloom threshold, removed the beams' base glows.
+- Reflections in a glass floor (the player, blocks and spikes mirrored about
+  y = 0), blocks with lit landing surfaces and diagonal light lines, and a
+  dark rim around the player so it reads against the brightest skies.
+
+## 7. Tests, verifier, polish (03:45 to 04:00)
+
+- `tests/physics.test.js` caught two real errors: the jump peaked at 2.24
+  rather than 2.2 blocks, and held bounces drifted 0.05 beat after four
+  bounces. The position update used the end-of-step velocity; it now uses
+  the average of the start and end velocities, which is exact under constant
+  gravity. The level was re-solved.
+- `tests/level.test.js` caught a musical error: the drop's harmony line was a
+  fixed fourth under the hook, producing B naturals in D minor. It is now a
+  diatonic third.
+- `verify.mjs`. **Wrong:** in stepped tests a mouse press was timestamped on
+  the real clock, seconds ahead of the simulation, so it never applied; in
+  test mode inputs now apply at the next step. Synthetic touch events threw
+  in `setPointerCapture`; guarded. The completion screen was a flat grey: the
+  camera kept going into a white wall past the finish (snapshot 04). The
+  camera now stops at a gate of light and the player flies into it.
+- Teaching signs before each new mechanic (until the first clear), section
+  cards, a gold line marking your best, an audio offset setting, adaptive
+  resolution, and a single-file bundle (155 KiB, 46 KiB gzipped).
+- Honest timing windows (`tools/fairness.js`): a press counts as movable by
+  d steps if any continuation survives the next 1.5 s. Minimum windows:
+  Dawn 154 ms, Pulse 146 ms, Ascent 154 ms, Inversion 79 ms (the ring
+  chain), Supernova 129 ms, Echo 221 ms. One Ascension press read 0 ms; probed
+  directly, it can move 17 ms earlier but not later: the solver's route
+  presses at the last possible moment there, so only the late side is tight.

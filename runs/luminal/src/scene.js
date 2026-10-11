@@ -122,7 +122,7 @@
         if (kind === 'sun' || kind === 'rise') {
           const rise = kind === 'rise' ? 0.1 : 0;
           const cy = base - R0 * (0.25 + rise);
-          const k = kind === 'rise' ? 0.55 : 1;
+          const k = kind === 'rise' ? 0.55 : 0.78;
           r.glow(cx, cy, R0 * 3.2 * pulse, A(th.sun, 0.13 * alpha * k));
           r.disk(cx, cy, R0 * pulse, A(th.sun, 0.34 * alpha * k));
           // horizontal slits through the disc
