@@ -155,7 +155,7 @@ Decisions made before writing code:
   directly, it can move 17 ms earlier but not later: the solver's route
   presses at the last possible moment there, so only the late side is tight.
 
-## 8. Delivery and refinement (04:00 to 04:30)
+## 8. Delivery and refinement (04:00 to 04:20)
 
 - Hero montage and full-resolution previews from the stored route; README,
   manifest (the single-file game and the soundtrack WAV as release assets,

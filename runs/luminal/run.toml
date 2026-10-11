@@ -18,6 +18,7 @@ harness = "Claude Code (cloud session)"
 [run]
 brief = "brief.md"
 human_turns = 1
+wall_clock_minutes = 120          # 02:20 to 04:20 UTC
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 
