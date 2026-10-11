@@ -10,7 +10,7 @@
 
   // ── Saved progress ─────────────────────────────────────────────────────
   function loadSave() {
-    const blank = { attempts: 0, jumps: 0, best: 0, practiceBest: 0, completions: 0, practiceCompletions: 0, firstClear: 0, deaths: new Array(100).fill(0), settings: { volume: 0.8, flash: true, shake: true, autoCheckpoints: true } };
+    const blank = { attempts: 0, jumps: 0, best: 0, practiceBest: 0, completions: 0, practiceCompletions: 0, firstClear: 0, deaths: new Array(100).fill(0), settings: { volume: 0.8, flash: true, shake: true, autoCheckpoints: true, offsetMs: 0 } };
     try {
       const raw = localStorage.getItem(STORE);
       if (!raw) return blank;
@@ -82,7 +82,8 @@
       const c = G.clock;
       if (!c.running) return c.t;
       const est = c.base + (performance.now() - c.perf0) / 1000;
-      const at = audio.songTime();
+      let at = audio.songTime();
+      if (at !== null) at -= (save.settings.offsetMs || 0) / 1000;
       if (at !== null) {
         const err = at - est;
         if (Math.abs(err) > 0.06) { c.base += err; }
@@ -95,6 +96,8 @@
     // ── Input ────────────────────────────────────────────────────────────
     const JUMP_KEYS = new Set(['Space', 'ArrowUp', 'KeyW', 'Enter', 'NumpadEnter']);
     function evTime(e) {
+      // Stepped tests have no real clock: an input applies at the next step.
+      if (TEST && !G.liveInTest) return G.s ? G.s.t : 0;
       const now = performance.now();
       const ago = e && e.timeStamp && e.timeStamp <= now && now - e.timeStamp < 100 ? (now - e.timeStamp) / 1000 : 0;
       return songNow() - ago;
@@ -138,7 +141,7 @@
     canvas.addEventListener('pointerdown', e => {
       if (e.button !== undefined && e.button > 0) return;
       e.preventDefault();
-      canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+      try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* synthetic or already released */ }
       G.input.pointers.add(e.pointerId); press(e);
     });
     const up = e => { if (G.input.pointers.delete(e.pointerId)) release(e); };
@@ -176,6 +179,7 @@
       G.vis.trail = []; G.vis.rot = 0;
       G.pendingCp = [];
       G.newBest = false;
+      G.sectionIdx = undefined;
       G.state = 'playing';
       G.cam.x = s.x + camLead(); G.cam.y = camTargetY(s, true); G.cam.ceilVis = s.ceil;
       G.attemptLabel = { x: s.x + 6, y: Math.min(s.ceil < 100 ? s.ceil - 2 : 6.2, 6.2), n: G.attempt };
@@ -355,6 +359,11 @@
       const dtf = Math.min(0.1, (now - G.lastFrame) / 1000);
       G.lastFrame = now;
       G.frameTimes.push(dtf); if (G.frameTimes.length > 60) G.frameTimes.shift();
+      // A device that cannot hold ~45 fps drops to one pixel per CSS pixel.
+      if (!G.lowRes && !TEST && G.state === 'playing' && dpr > 1 && G.frameTimes.length === 60) {
+        const avg = G.frameTimes.reduce((a, b) => a + b, 0) / 60;
+        if (avg > 1 / 45) { G.lowRes = true; resize(); }
+      }
       if (!TEST || G.liveInTest) tick(dtf);
       draw(dtf);
     }
@@ -377,7 +386,8 @@
       const zoom = Math.min(H / 12.2, W / 18);
       G.cam.zoom = zoom;
       if (s) {
-        const tx = s.x + camLead();
+        // after the finish the camera stops and the player flies into the gate
+        const tx = Math.min(s.x, lv.endX - 2) + camLead();
         G.cam.x = tx;
         const ty = camTargetY(s);
         const k = 1 - Math.exp(-dtf * (s.ceil < 100 ? 5 : 4));
@@ -424,7 +434,8 @@
       P.aberr = (0.0015 + sig.crash * 0.006 * (save.settings.flash ? 1 : 0.2) + G.cam.punch * 0.004) * (sig.energy);
       const fl = G.flash + (save.settings.flash ? sig.crash * 0.12 : 0);
       P.flash = [G.flashColor[0], G.flashColor[1], G.flashColor[2], Math.min(0.6, fl)];
-      const view = scene.draw({ s: G.state === 'title' || G.state === 'loading' ? null : s, cam, t, sig, vis: G.vis, parts: G.parts, W, H, debug: G.debug });
+      const bestPct = G.practice ? save.practiceBest : save.best;
+      const view = scene.draw({ s: G.state === 'title' || G.state === 'loading' ? null : s, cam, t, sig, vis: G.vis, parts: G.parts, W, H, debug: G.debug, bestX: bestPct > 0 && bestPct < 100 ? bestPct / 100 * lv.endX : null });
       renderer.end(performance.now() / 1000);
       G.view = view;
       // Attempt label rides in the world like a sign.
@@ -436,6 +447,33 @@
         lab.textContent = (G.practice ? 'Practice · ' : '') + 'Attempt ' + G.attemptLabel.n;
         lab.style.opacity = sx < -200 ? 0 : 1;
       } else lab.style.opacity = 0;
+      // Teaching signs, until the first clear.
+      const signs = $('signs');
+      if (!signs.children.length) for (const m of lv.marks) { const d = document.createElement('div'); d.textContent = m.label; signs.appendChild(d); }
+      const showSigns = s && !save.completions && G.state !== 'title' && G.state !== 'loading';
+      lv.marks.forEach((m, i) => {
+        const el = signs.children[i];
+        const sx = (m.x - cam.x) * cam.zoom / dpr + innerWidth / 2;
+        const sy = innerHeight / 2 - (m.y - cam.y) * cam.zoom / dpr;
+        const on = showSigns && sx > -400 && sx < innerWidth + 400;
+        el.style.opacity = on ? 1 : 0;
+        if (on) el.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) translate(-50%, -50%)`;
+      });
+      // Section cards: the name of each part of the journey as it begins.
+      if (s && G.state === 'playing') {
+        let si = 0;
+        while (si + 1 < lv.sections.length && lv.sections[si + 1].t <= s.t) si++;
+        if (si !== G.sectionIdx) {
+          const fresh = G.sectionIdx !== undefined && si > G.sectionIdx && s.t - lv.sections[si].t < 0.5;
+          G.sectionIdx = si;
+          if (fresh || (si === 0 && s.t < 0.1)) {
+            const el = $('sectionCard');
+            const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][si];
+            el.innerHTML = `<span>${roman}</span>${lv.sections[si].name}`;
+            el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+          }
+        }
+      }
       if (s && (G.state === 'playing' || G.state === 'dead')) {
         const pct = progressOf(s);
         $('progFill').style.width = pct.toFixed(2) + '%';
@@ -527,6 +565,8 @@
       $('optFlash').checked = save.settings.flash;
       $('optShake').checked = save.settings.shake;
       $('optAuto').checked = save.settings.autoCheckpoints;
+      $('offset').value = save.settings.offsetMs || 0;
+      $('offsetVal').textContent = (save.settings.offsetMs > 0 ? '+' : '') + (save.settings.offsetMs || 0) + ' ms';
       $('muteBtn').setAttribute('aria-pressed', save.settings.muted ? 'true' : 'false');
       $('muteBtn').textContent = save.settings.muted ? 'Sound off' : 'Sound on';
     }
@@ -548,6 +588,7 @@
     $('optFlash').onchange = e => { save.settings.flash = e.target.checked; writeSave(save); };
     $('optShake').onchange = e => { save.settings.shake = e.target.checked; writeSave(save); };
     $('optAuto').onchange = e => { save.settings.autoCheckpoints = e.target.checked; writeSave(save); };
+    $('offset').oninput = e => { save.settings.offsetMs = +e.target.value; applySettings(); writeSave(save); };
     $('muteBtn').onclick = () => { save.settings.muted = !save.settings.muted; applySettings(); writeSave(save); };
     $('resetBtn').onclick = () => {
       if (!confirm('Erase your attempts, bests and clears?')) return;
@@ -617,6 +658,7 @@
       draw: () => draw(1 / 60),
       pause, resume, toTitle, placeCheckpoint, removeCheckpoint, respawn,
       audioReady: () => audio.chunks.length,
+      clock: () => songNow(),
     };
     requestAnimationFrame(frame);
   };

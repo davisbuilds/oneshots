@@ -10,8 +10,10 @@
 
     // ── 1. DAWN (bars 0-7): run, jump, read the beat ───────────────────────
     b.section(0, 'Dawn', 'dawn');
+    b.mark(5.5, 6.6, 'Space · click · tap to jump');
     b.spikes(8.5);
     b.spikes(10.5);
+    b.mark(11.5, 6.6, 'Hold to keep jumping');
     b.spikes(12.5); b.spikes(13.5);          // hold through both
     b.blockB(15.6, 18, 0, 1);
     b.spikes(17.5, 1, { y: 1 });
@@ -30,6 +32,7 @@
 
     // ── 2. PULSE (bars 8-15): orbs, pads, platforms ───────────────────────
     b.section(32, 'Pulse', 'pulse');
+    b.mark(33, 4.6, 'Tap in mid-air on a ring');
     b.orb(34.5, 2.7);                       // free orb: try it, nothing to lose
     b.orb(36.5, 2.7);
     b.spikes(37.1, 3);
@@ -54,6 +57,7 @@
     // ── 3. ASCENT (bars 16-23): the ship, then the wave ───────────────────
     b.section(64, 'Ascent', 'ascent');
     b.mode(64, 'ship', { ceil: CEIL });
+    b.mark(65.5, 6.8, 'Hold to rise · release to fall');
     // Four open bars to feel the ship, then walls to steer around.
     b.blockB(68, 68.5, 0, 3.2);
     b.blockB(70, 70.5, 5.6, CEIL);
@@ -66,6 +70,7 @@
       b.blockB(bb, bb + 0.6, c + 2.1, CEIL, 'pillar');
     });
     b.mode(80, 'wave', { ceil: CEIL });
+    b.mark(81.3, 7.4, 'Hold to climb · release to dive');
     // Wave: hold to climb, release to dive. One beat per stroke.
     {
       const pts = [[80, 4.5, 4.4], [81.5, 4.5], [83.5, 4.5], [84, 7], [85, 2], [86, 7], [87, 2], [88, 7], [88.5, 4.5],
@@ -77,10 +82,12 @@
     b.section(96, 'Inversion', 'inversion');
     b.mode(96, 'cube', { ceil: CEIL });
     b.gravity(98.5, -1);
+    b.mark(99.6, 4.5, 'Gravity flips · jumps go down');
     b.spikes(100.5, 1, { y: CEIL, down: true });
     b.spikes(102.5, 2, { y: CEIL, down: true });
     b.gravity(104, 1);
     b.spikes(105.5);
+    b.mark(105.6, 5.6, 'Blue rings flip gravity');
     b.orb(106.5, 2.7, 'gravorb');
     b.spikes(107.6, 6);
     b.spikes(109.5, 1, { y: CEIL, down: true });
@@ -94,9 +101,11 @@
     b.pad(116, { kind: 'gravpad' });
     b.spikes(116.8, 4);
     b.spikes(118.5, 1, { y: CEIL, down: true });
-    b.gravity(119.5, 1);
+    b.gravity(119, 1);
     // Eighth notes: blue orbs zig-zag through a field of spikes.
-    for (let i = 0; i < 6; i++) b.orb(121 + i * 0.5, i % 2 ? 6 : 3, 'gravorb');
+    // Heights come from the path a press on each eighth note produces
+    // (jumping on 120.5), so a player on the beat meets every orb dead centre.
+    for (let i = 0; i < 6; i++) b.orb(121 + i * 0.5, i % 2 ? 5.6 : 2.7, 'gravorb');
     b.spikes(122.5, 15);
     b.spikes(122.5, 15, { y: CEIL, down: true });
     b.gravity(124.5, 1);
@@ -119,11 +128,11 @@
     b.gravity(150, 1);
     b.blockB(151, 151.5, 0, 5);
     b.blockB(152.5, 153, 4, CEIL);
-    const dropShip = [5, 6, 7, 6, 4, 3, 2.8, 4, 5.5, 6.5, 5, 4];
+    const dropShip = [5, 5.8, 6.4, 5.8, 4.6, 3.6, 3.2, 4, 5.2, 6, 5.2, 4.5];
     dropShip.forEach((c, i) => {
       const bb = 154 + i * 0.5;
-      b.blockB(bb, bb + 0.5, 0, c - 1.9, 'pillar');
-      b.blockB(bb, bb + 0.5, c + 1.9, CEIL, 'pillar');
+      b.blockB(bb, bb + 0.5, 0, c - 2.2, 'pillar');
+      b.blockB(bb, bb + 0.5, c + 2.2, CEIL, 'pillar');
     });
     b.mode(160, 'cube', { ceil: CEIL });
     b.spikes(161.5, 3);
@@ -163,10 +172,10 @@
     b.orb(212.5, 2.7);
     b.spikes(213.1, 4);
     b.mode(214, 'ship', { ceil: CEIL });
-    [5, 3, 6, 4].forEach((c, i) => {
+    [5, 3.6, 5.6, 4.2].forEach((c, i) => {
       const bb = 215 + i;
-      b.blockB(bb, bb + 0.5, 0, c - 2.1, 'pillar');
-      b.blockB(bb, bb + 0.5, c + 2.1, CEIL, 'pillar');
+      b.blockB(bb, bb + 0.5, 0, c - 2.4, 'pillar');
+      b.blockB(bb, bb + 0.5, c + 2.4, CEIL, 'pillar');
     });
     b.mode(220, 'wave', { ceil: CEIL });
     channel(b, [[220, 4.5, 4.4], [221, 4.5], [221.5, 7.5], [222, 4.5], [222.5, 7.5], [223.5, 1.5], [224, 4.5],

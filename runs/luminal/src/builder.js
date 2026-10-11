@@ -122,7 +122,8 @@
       }
     };
 
-    b.mark = (beat, label) => lv.marks.push({ beat, x: b.at(beat), label });
+    // A sign in the world, shown to players who have not cleared the level.
+    b.mark = (beat, y, label) => lv.marks.push({ beat, x: b.at(beat), y, label });
 
     b.finish = function (beat) {
       lv.endBeat = beat;

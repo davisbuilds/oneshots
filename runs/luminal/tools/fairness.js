@@ -1,6 +1,8 @@
 // fairness.js: replay the stored route and measure, for every press, how
-// early or late it could have been and still survived the next 1.2 s.
-//   node tools/fairness.js [--all]
+// early or late it could have been while some way of playing on from there
+// still survives the next 1.5 s (the player adapts what follows).
+//   node tools/fairness.js [--all] [--fixed]
+// --fixed keeps every later press where it was (much stricter).
 'use strict';
 const L = require('../src/node.js');
 require('../src/route.js');
@@ -32,7 +34,8 @@ const human = taps(L.route);
   L.simulate(lv, s, human, human.length + 600);
   console.log(`tap route: ${s.finished ? 'finishes' : 'FAILS at beat ' + (s.t / L.BEAT).toFixed(2) + ' (' + s.cause + ')'}`);
 }
-const w = S.windows(lv, start, human, { horizon: 1.2, maxShift: 40 });
+const adaptive = !process.argv.includes('--fixed');
+const w = adaptive ? S.adaptiveWindows(lv, start, human, { horizon: 1.5, maxShift: 36 }) : S.windows(lv, start, human, { horizon: 1.2, maxShift: 40 });
 const all = process.argv.includes('--all');
 for (let i = 0; i < lv.sections.length; i++) {
   const sec = lv.sections[i], nxt = lv.sections[i + 1];

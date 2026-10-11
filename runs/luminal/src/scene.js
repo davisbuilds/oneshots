@@ -15,11 +15,11 @@
     dawn: { sky: ['#070a24', '#1b1a4f', '#7a4a7e'], sun: '#ffb38a', acc: '#53f2dc', acc2: '#8d7bff', fill: '#0d1338', edge: '#6ff6e6', ground: '#0a0e2c', star: 0.5, celestial: 'sun' },
     pulse: { sky: ['#07031a', '#1d0846', '#4b1a86'], sun: '#a88bff', acc: '#2fe3ff', acc2: '#b77bff', fill: '#120a35', edge: '#61e8ff', ground: '#0b0626', star: 0.7, celestial: 'rings' },
     ascent: { sky: ['#010913', '#04213a', '#0b4a5c'], sun: '#7dffd2', acc: '#4dff9a', acc2: '#3ac8ff', fill: '#04192a', edge: '#5dffb4', ground: '#03121f', star: 1, celestial: 'aurora' },
-    inversion: { sky: ['#05060b', '#141826', '#2f3850'], sun: '#dfe8ff', acc: '#cfe0ff', acc2: '#8fa8ff', fill: '#0c1020', edge: '#e6eeff', ground: '#080a14', star: 0.6, celestial: 'mirror' },
+    inversion: { sky: ['#03040e', '#0f1430', '#2a2f66'], sun: '#cfe6ff', acc: '#9fe8ff', acc2: '#a98bff', fill: '#0a0e26', edge: '#d8f4ff', ground: '#080a14', star: 0.6, celestial: 'mirror' },
     supernova: { sky: ['#030108', '#120526', '#2a0b4a'], sun: '#ffd25a', acc: '#ffc840', acc2: '#3d7cff', fill: '#0e0620', edge: '#ffd86a', ground: '#07030f', star: 1, celestial: 'nova' },
     echo: { sky: ['#01030a', '#050d24', '#0d1f45'], sun: '#9fc4ff', acc: '#6aa8ff', acc2: '#a5b8ff', fill: '#060c22', edge: '#8ab8ff', ground: '#030716', star: 1.4, celestial: 'moon' },
     ascension: { sky: ['#0b0420', '#2b0f45', '#8a3f3c'], sun: '#ffe08a', acc: '#ffd45a', acc2: '#52e8ff', fill: '#1a0a2c', edge: '#ffe28c', ground: '#12061e', star: 0.4, celestial: 'rise' },
-    afterglow: { sky: ['#120624', '#3a1650', '#b5605a'], sun: '#fff0c8', acc: '#ffe6a8', acc2: '#ff9de2', fill: '#1d0b2e', edge: '#fff0c8', ground: '#160822', star: 0.5, celestial: 'rise' },
+    afterglow: { sky: ['#120624', '#3a1650', '#a5585a'], sun: '#ffd9a0', acc: '#ffe6a8', acc2: '#ff9de2', fill: '#1d0b2e', edge: '#fff0c8', ground: '#160822', star: 0.5, celestial: 'rise' },
   };
   for (const k in T) {
     const t = T[k];
@@ -115,7 +115,7 @@
       // Each theme brings its own sky object; during a crossfade both show.
       const draw = (kind, alpha) => {
         if (alpha <= 0.01) return;
-        const cx = W * 0.62, base = horizonY;
+        const cx = W * (kind === 'nova' ? 0.72 : 0.62), base = horizonY;
         const R0 = Math.min(W, H) * 0.24;
         const pulse = 1 + sig.kick * 0.035 * (0.4 + sig.energy);
         r.blend('add');
@@ -135,7 +135,7 @@
           if (kind === 'rise') {
             for (let i = 0; i < 16; i++) {
               const a = i / 16 * Math.PI * 2 + t * 0.05;
-              r.line(cx, cy, cx + Math.cos(a) * R0 * 4, cy + Math.sin(a) * R0 * 4, R0 * 0.08, A(th.sun, 0.06 * alpha), A(th.sun, 0));
+              r.line(cx, cy, cx + Math.cos(a) * R0 * 4, cy + Math.sin(a) * R0 * 4, R0 * 0.05, A(th.sun, 0.025 * alpha), A(th.sun, 0));
             }
           }
         } else if (kind === 'rings') {
@@ -168,7 +168,7 @@
           r.ring(cx, cy, R0 * 0.75, R0 * 0.74, A(th.sun, 0.15 * alpha));
           r.line(0, horizonY * 0.5, W, horizonY * 0.5, 1.5 * r.scale, A(th.acc, 0.15 * alpha));
         } else if (kind === 'nova') {
-          const cy = base - R0 * 0.55;
+          const cy = base - R0 * 0.75;
           r.glow(cx, cy, R0 * 4 * pulse, A(th.sun, 0.12 * alpha));
           const rays = 24;
           for (let i = 0; i < rays; i++) {
@@ -495,14 +495,34 @@
       visible(saws, view.left, view.right, 3, o => drawSaw(o, t));
       visible(trigs, view.left, view.right, 2, (o, i) => drawTrigger(o, i, s, t, sig));
       visible(portals, view.left, view.right, 2, o => drawPortal(o, view, t, s));
-      // finish gate
-      if (lv.endX < view.right + 4) {
+      // your best so far, a thin gold line across the world
+      if (f.bestX !== null && f.bestX !== undefined && f.bestX > view.left - 1 && f.bestX < view.right + 1 && s) {
         r.blend('add');
-        r.quad(lv.endX - 3, view.bottom - 1, lv.endX, view.bottom - 1, lv.endX, view.top + 1, lv.endX - 3, view.top + 1, [1, 1, 1, 0], [1, 1, 1, 0.5]);
-        r.rect(lv.endX, view.bottom - 1, lv.endX + 40, view.top + 1, [1, 1, 1, 0.9]);
+        r.line(f.bestX, view.bottom - 1, f.bestX, view.top + 1, 0.06, [1, 0.85, 0.3, 0.55]);
+        r.quad(f.bestX - 1.2, view.bottom - 1, f.bestX, view.bottom - 1, f.bestX, view.top + 1, f.bestX - 1.2, view.top + 1, [1, 0.85, 0.3, 0], [1, 0.85, 0.3, 0.08]);
+        const yy = Math.min(view.top - 1, 10);
+        r.poly([[f.bestX, yy + 0.3], [f.bestX + 0.3, yy], [f.bestX, yy - 0.3], [f.bestX - 0.3, yy]], [1, 0.85, 0.3, 0.9]);
         r.blend('alpha');
       }
-      if (s) drawPlayer(s, vis, t, sig);
+      // finish gate
+      if (lv.endX < view.right + 4) {
+        // the gate of light at the end: a bright seam, a sheet of glow
+        // behind it, and rings breathing with the music
+        const X = lv.endX, y0 = view.bottom - 1, y1 = view.top + 1, cy = (view.bottom + view.top) / 2;
+        const c = th.sun;
+        r.blend('add');
+        r.quad(X - 4, y0, X, y0, X, y1, X - 4, y1, A(c, 0), A(c, 0.35));
+        r.quad(X, y0, X + 10, y0, X + 10, y1, X, y1, A(c, 0.25), A(c, 0));
+        r.line(X, y0, X, y1, 0.3, A(c, 0.6));
+        r.line(X, y0, X, y1, 0.1, [1, 1, 1, 1]);
+        for (let i = 0; i < 4; i++) {
+          const ph = (sig.beat * 0.5 + i / 4) % 1;
+          const rad = 0.6 + ph * 7;
+          r.ring(X, cy, rad, rad - 0.12, A(i % 2 ? th.acc2 : c, 0.5 * (1 - ph)));
+        }
+        r.blend('alpha');
+      }
+      if (s && s.x < lv.endX + 0.3) drawPlayer(s, vis, t, sig);
       drawParticles(parts);
       if (debug && s) {
         r.blend('alpha');

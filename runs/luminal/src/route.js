@@ -2,7 +2,7 @@
 // as run lengths (base 36) of released and held steps, alternating.
 'use strict';
 (function (L) {
-  const runs = 'mc,vc,co,9o,5o,c,30,9o,k1,9o,2c,c,2o,c,50,no,jo,d0,fo,o,c,1c,10,3o,c,c,1o,c,o,10,c,10,o,c,c,o,10,c,20,o,1o,30,c,o,40,c,20,10,1o,1c,c,10,3c,c,c,1o,4c,2c,20,10,10,k0,e0,3o,20,o,cn,j0,o,c0,c,wc,20,c,o,c,1c,c,1c,c,1c,c,1c,fo,1o,10,1c,1o,1o,1o,1o,1c,1c,1o,1o,1o,1o,1c,1o,1o,1c,1o,1o,1o,1o,20,1o,10,10,20,30,2c,1c,1c,2c,1o,c,o,1o,1o,c,c,o,c,10,o,c,10,3c,o,c,c,20,1c,1c,c,3c,10,c,o,c,2o,10,1o,20,1o,1c,3c,c,30,1c,10,4o,6o,20,3o,1c,90,10,hc,8c,9o,3o,o,c,20,3c,c,1c,c,20,1o,10,10,o,o,1c,c,o,2c,c,10,10,c,o,c,10,o,io,po,id,9o,o,80,1o,c,c,2c,o,10,4c,2c,o,o,3c,4o,7o,3o,20,10,10,1o,30,2o,1c,1c,1c,o,6o,3c,1c,5c,oi';
+  const runs = 'mo,v0,ao,bo,5o,c,30,9o,jd,co,20,c,50,8o,4c,cc,j0,co,fc,1c,c,10,10,10,1c,c,20,o,o,o,30,o,c,o,c,o,3c,1o,1c,o,c,c,30,10,o,c,2c,c,o,1o,o,1c,1o,10,2c,c,1o,40,2o,1o,1o,kc,e0,3o,20,o,cz,jc,c,cc,o,v0,1o,c,1c,c,o,c,1c,c,1o,1o,c,fo,1o,10,1c,1o,1o,1o,1o,1c,1c,1o,1o,1o,1o,1c,1o,1o,1c,1o,1o,1o,1o,20,1o,10,10,20,30,20,10,1c,c,c,c,2c,1c,c,20,o,1o,o,c,1c,o,c,10,o,1c,c,20,c,c,o,o,c,1c,o,o,10,30,30,2c,o,c,2c,30,c,c,2o,o,10,3o,c,3o,c,1c,6c,2c,3o,1o,8o,o,ho,9c,6o,c,20,1o,c,1o,o,c,2c,20,c,1c,o,o,30,4c,c,3o,1c,1o,c,10,c,j0,pc,g1,co,10,5c,10,1c,2o,c,10,2c,20,3o,10,10,40,4c,7o,3o,20,10,10,1o,30,2o,1c,1c,1c,o,40,6o,c,60,o6';
   const out = [];
   let v = 0;
   for (const r of runs.split(',')) { const n = parseInt(r, 36); for (let i = 0; i < n; i++) out.push(v); v ^= 1; }

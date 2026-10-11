@@ -144,40 +144,37 @@
     let hw = box[0], hh = box[1];
     const wasGrounded = s.grounded;
 
-    // 1. Velocity from input.
-    let orbUsed = false;
+    // 1. Velocity from input: impulses first (orb, jump), then the
+    // mode's acceleration. y integrates with the average of the velocities at
+    // the start and end of the step, which is exact under constant gravity.
     if (s.buffer > 0) {
       const i = touchingTrigger(lv, s, hw, hh, o => o.orb);
-      if (i >= 0) { useOrb(lv, s, i, ev); orbUsed = true; }
+      if (i >= 0) useOrb(lv, s, i, ev);
     }
     const g = s.grav;
-    if (!orbUsed) {
-      if (s.mode === 'cube') {
-        if ((s.grounded || s.coyote > 0) && (held || s.buffer > 0)) {
-          s.vy = P.jump * g;
-          s.grounded = false; s.coyote = 0; s.buffer = 0; s.jumps++;
-          if (ev) ev.push({ type: 'jump', x: s.x, y: s.y, t: s.t });
-        } else {
-          // Gravity applies even at rest; the surface check below puts the
-          // cube back on its floor each step, which keeps contact stable.
-          s.vy -= P.gravity * g * dt;
-          if (s.vy * g < -P.fallMax) s.vy = -P.fallMax * g;
-        }
-      } else if (s.mode === 'ship') {
-        s.vy += (held ? P.shipUp : -P.shipDown) * g * dt;
-        s.vy = L.clamp(s.vy, -P.shipMax, P.shipMax);
-      } else {
-        s.vy = (held ? 1 : -1) * g * s.speed * P.waveSlope;
-      }
-    } else if (s.mode === 'wave') {
-      s.vy = (held ? 1 : -1) * s.grav * s.speed * P.waveSlope;
+    if (s.mode === 'cube' && (s.grounded || s.coyote > 0) && (held || s.buffer > 0)) {
+      s.vy = P.jump * g;
+      s.grounded = false; s.coyote = 0; s.buffer = 0; s.jumps++;
+      if (ev) ev.push({ type: 'jump', x: s.x, y: s.y, t: s.t });
+    }
+    const v0 = s.vy;
+    if (s.mode === 'cube') {
+      // Gravity applies even at rest; the surface check below puts the cube
+      // back on its floor each step, which keeps contact stable.
+      s.vy -= P.gravity * g * dt;
+      if (s.vy * g < -P.fallMax) s.vy = -P.fallMax * g;
+    } else if (s.mode === 'ship') {
+      s.vy += (held ? P.shipUp : -P.shipDown) * g * dt;
+      s.vy = L.clamp(s.vy, -P.shipMax, P.shipMax);
+    } else {
+      s.vy = (held ? 1 : -1) * g * s.speed * P.waveSlope;
     }
 
     // 2. Move. x comes from the clock, y from the velocity.
     s.t += dt; s.n++;
     s.x = L.xAt(lv, s.t);
     s.speed = L.speedAt(lv, s.t);
-    s.y += s.vy * dt;
+    s.y += (s.mode === 'wave' ? s.vy : (v0 + s.vy) / 2) * dt;
     s.coyote = Math.max(0, s.coyote - dt);
 
     // 3. Portals are full-height gates: crossing one always applies it.

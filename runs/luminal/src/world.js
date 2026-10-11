@@ -14,7 +14,7 @@
       const x0 = sec.x, x1 = nxt ? nxt.x : lv.endX + 60;
       const R = L.rng(1000 + i * 17);
       const kind = { dawn: 'spire', pulse: 'arch', ascent: 'crystal', inversion: 'mirror', supernova: 'shard', echo: 'lantern', ascension: 'column', afterglow: 'column' }[sec.theme];
-      const count = { spire: 90, mirror: 80, arch: 26, crystal: 70, monolith: 60, shard: 40, lantern: 50, column: 50 }[kind];
+      const count = { spire: 90, mirror: 80, arch: 26, crystal: 70, monolith: 60, shard: 40, lantern: 90, column: 50 }[kind];
       for (let j = 0; j < count; j++) {
         let Z = kind === 'arch' ? 14 + j * 7 + R() * 3 : 13 + Math.pow(R(), 1.3) * 130;
         const k = Z0 / Z;
@@ -33,6 +33,9 @@
       }
     });
     props.sort((a, b) => b.Z - a.Z);
+    // link lanterns into loose constellations
+    const lan = props.filter(p => p.kind === 'lantern').sort((a, b) => a.X / a.Z - b.X / b.Z);
+    for (let i = 1; i < lan.length; i++) if (Math.abs(lan[i].Z - lan[i - 1].Z) < 30 && lan[i].seed > 0.25) lan[i].prev = lan[i - 1];
     return props;
   }
 
@@ -86,7 +89,7 @@
       const novaW = weights.supernova || 0;
       if (novaW > 0.01) {
         r.blend('add');
-        const cx = cam.x + view.halfW * 0.24, cy = eye + 2.5;
+        const cx = cam.x + view.halfW * 0.44, cy = eye + 3.2;
         for (let i = 0; i < 16; i++) {
           const z = ((i * 11 - t * 38) % 176 + 176) % 176 + 3;
           const k = Z0 / z;
@@ -181,6 +184,11 @@
         } else if (p.kind === 'lantern') {
           const c = P(p.X, p.Y + Math.sin(t * 0.5 + p.seed * 7) * 0.4, p.Z);
           r.blend('add');
+          // constellation: a faint thread to the previous lantern at similar depth
+          if (p.prev) {
+            const q = P(p.prev.X, p.prev.Y + Math.sin(t * 0.5 + p.prev.seed * 7) * 0.4, p.prev.Z);
+            r.line(c[0], c[1], q[0], q[1], 0.02 + 0.02 * k, A(th.acc, 0.12 * w * depthFade));
+          }
           r.glow(c[0], c[1], p.s * 6 * k + 0.2, A(th.acc, 0.3 * w * depthFade));
           r.disk(c[0], c[1], p.s * k + 0.02, A(th.sun, 0.8 * w * depthFade));
           r.blend('alpha');
@@ -189,9 +197,8 @@
           const b0 = P(p.X - hw, 0, p.Z), b1 = P(p.X + hw, 0, p.Z);
           const top = eye + (40 - eye) * k;
           r.blend('add');
-          const a = (0.04 + 0.12 * k) * w * depthFade * (0.7 + 0.5 * pulse);
+          const a = (0.03 + 0.09 * k) * w * depthFade * (0.7 + 0.5 * pulse);
           r.quad(b0[0], b0[1], b1[0], b1[1], b1[0], top, b0[0], top, A(th.sun, a), A(th.acc, 0));
-          r.glow((b0[0] + b1[0]) / 2, b0[1], p.w * k * 3 + 0.3, A(th.sun, a * 0.8), 0.3 + 0.4 * k);
           // motes rising inside the beam
           for (let m = 0; m < 3; m++) {
             const ph = ((t * (0.15 + p.seed * 0.1) + m / 3 + p.seed) % 1);

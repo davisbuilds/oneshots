@@ -140,6 +140,40 @@ function windows(lv, start, inputs, opts = {}) {
   return res;
 }
 
+// The honest window: a press may move by d steps if *some* way of playing
+// on from there survives the next `horizon` seconds (the player adapts the
+// presses that follow). Scans outward in 2-step increments.
+function adaptiveWindows(lv, start, inputs, opts = {}) {
+  const horizon = opts.horizon || 1.5, maxShift = opts.maxShift || 36;
+  const marks = edges(inputs).filter(m => m.kind === 'press');
+  const states = [];
+  { const s = L.cloneState(start); for (let n = 0; n <= inputs.length; n++) { states.push(n % 6 === 0 ? L.cloneState(s) : null); if (n < inputs.length) L.step(lv, s, !!inputs[n]); } }
+  const stateAt = n => { const k = Math.floor(n / 6) * 6; const s = L.cloneState(states[k]); for (let i = k; i < n; i++) L.step(lv, s, !!inputs[i]); return s; };
+  const out = [];
+  for (const m of marks) {
+    if (opts.from !== undefined && (m.n * L.DT + start.t) < opts.from) continue;
+    if (opts.to !== undefined && (m.n * L.DT + start.t) >= opts.to) continue;
+    let rel = m.n; while (rel < inputs.length && inputs[rel]) rel++;
+    const len = Math.min(rel - m.n, 6);
+    const ok = d => {
+      const a = m.n + d;
+      if (a < 1) return false;
+      const s = stateAt(Math.min(a, m.n));
+      // released until the shifted press, then pressed for len steps
+      for (let i = Math.min(a, m.n); i < a; i++) { L.step(lv, s, false); if (s.dead) return false; }
+      for (let i = 0; i < len; i++) { L.step(lv, s, true); if (s.dead) return false; }
+      const goal = L.xAt(lv, s.t + horizon);
+      const r = solve(lv, s, Math.min(goal, lv.endX), { every: 6, cap: 300 });
+      return !!(r && !r.failed);
+    };
+    let early = 0, late = 0;
+    for (let d = 2; d <= maxShift && ok(-d); d += 2) early = d;
+    for (let d = 2; d <= maxShift && ok(d); d += 2) late = d;
+    out.push({ n: m.n, t: start.t + m.n * L.DT, early, late, width: (early + late + 1) * L.DT });
+  }
+  return out;
+}
+
 function shifted(inputs, n, len, d) {
   const a = n + d, b = n + len + d;
   if (a < 0 || b > inputs.length) return null;
@@ -151,4 +185,4 @@ function shifted(inputs, n, len, d) {
   return seq;
 }
 
-module.exports = { solve, replay, edges, windows, keyOf };
+module.exports = { solve, replay, edges, windows, adaptiveWindows, keyOf };

@@ -12,6 +12,15 @@
   };
   L.noteNum = N;
 
+  // The note `steps` scale degrees below n in D natural minor (shift moves
+  // the key, e.g. 2 for E minor).
+  const DM = [2, 4, 5, 7, 9, 10, 0];
+  function below(n, steps, shift = 0) {
+    let m = n;
+    for (let k = 0; k < steps; k++) { do { m--; } while (!DM.includes(((m - shift) % 12 + 12) % 12)); }
+    return m;
+  }
+
   // Chords as root (bass octave) + intervals.
   const CH = {
     Dm: [N('D2'), [0, 3, 7]], Bb: [N('Bb1'), [0, 4, 7]], F: [N('F2'), [0, 4, 7]], C: [N('C2'), [0, 4, 7]],
@@ -151,7 +160,7 @@
       if (bar >= 40) for (let k = 0; k < 16; k++) add(b + k * 0.25, 0.25, 'pluck', [c[0], c[1], c[2], c[0] + 12][(k * 3) % 4] + 12, 0.16, { cut: 0.8 });
     });
     HOOK.forEach(([o, d, n]) => { add(128 + o, d, 'lead', n + 12, 0.8); add(128 + o, d, 'lead', n, 0.45); });
-    HOOK.forEach(([o, d, n]) => { add(160 + o, d, 'lead', n + 12, 0.85); add(160 + o, d, 'lead', n + 12 - 5, 0.4); });
+    HOOK.forEach(([o, d, n]) => { add(160 + o, d, 'lead', n + 12, 0.85); add(160 + o, d, 'lead', below(n + 12, 2), 0.4); });
     for (let k = 0; k < 8; k++) add(190 + k * 0.25, 0.25, 'snare', 0, 0.35 + k * 0.08);
     add(190, 2, 'swell', 0, 0.7);
 

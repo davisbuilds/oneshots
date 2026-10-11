@@ -29,7 +29,7 @@
     fallMax: 26,
     padJump: G * AIR / 2 * 1.38,          // yellow pad: about 4.2 blocks
     orbJump: G * AIR / 2 * 0.98,          // yellow orb
-    gravOrbPush: 6,                       // blue orb: small shove toward the new floor
+    gravOrbPush: 3,                       // blue orb: small shove toward the new floor
     coyote: 0.05,                         // seconds after leaving an edge that a jump still counts
     buffer: 0.09,                         // a press this long before an orb or landing still counts
     shipUp: 62,
