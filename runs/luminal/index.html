@@ -40,6 +40,8 @@
   .btn:disabled { opacity: 0.4; cursor: progress; }
   .hint { color: var(--dim); font-size: 13px; letter-spacing: 0.06em; line-height: 1.7; }
   .hint kbd { font: inherit; font-size: 12px; padding: 1px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: rgba(255, 255, 255, 0.05); }
+  .hint.touch { display: none; }
+  @media (pointer: coarse) { .hint.keys { display: none; } .hint.touch { display: block; } }
   #loadState { min-height: 1.4em; color: var(--acc); font-size: 13px; letter-spacing: 0.08em; }
 
   #stats { display: grid; grid-template-columns: repeat(4, auto); gap: 6px 26px; align-items: end; justify-content: center; }
@@ -142,10 +144,11 @@
     <button id="watchBtn" class="btn" title="Watch the route the solver found">Watch</button>
   </div>
   <div id="loadState" role="status">Synthesizing the soundtrack…</div>
-  <div class="hint">
+  <div class="hint keys">
     <kbd>Space</kbd> <kbd>↑</kbd> click or tap to jump · hold to keep jumping<br>
     <kbd>Esc</kbd> pause · <kbd>R</kbd> restart · in practice <kbd>Z</kbd> checkpoint, <kbd>X</kbd> remove
   </div>
+  <div class="hint touch">Tap anywhere to jump · hold to keep jumping · ❚❚ to pause</div>
   <div id="rotateHint">Turn your phone sideways for the best view.</div>
   <div id="stats"></div>
   <details class="settings" id="settings">

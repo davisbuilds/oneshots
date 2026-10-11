@@ -128,7 +128,7 @@
         return;
       }
       if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); togglePause(); }
-      else if (e.code === 'KeyR' && (G.state === 'playing' || G.state === 'dead' || G.state === 'paused')) restartRun(true);
+      else if (e.code === 'KeyR' && (G.state === 'playing' || G.state === 'dead' || G.state === 'paused')) { showScreen(null); restartRun(true); }
       else if (e.code === 'KeyZ' && G.practice && G.state === 'playing') placeCheckpoint();
       else if (e.code === 'KeyX' && G.practice) removeCheckpoint();
       else if (e.code === 'KeyM') { save.settings.muted = !save.settings.muted; applySettings(); writeSave(save); }
@@ -208,7 +208,7 @@
         save.deaths[Math.min(99, Math.floor(pct))]++;
         if (pct > save.best + 0.001) { save.best = pct; G.newBest = true; }
       } else if (pct > save.practiceBest) save.practiceBest = pct;
-      save.jumps += G.runJumps;
+      if (!G.demo) save.jumps += G.runJumps;
       writeSave(save);
       // feedback: shards, rings, flash and shake
       const col = L.MODE_COLOR[s.mode];
@@ -471,6 +471,13 @@
         if (si !== G.sectionIdx) {
           const fresh = G.sectionIdx !== undefined && si > G.sectionIdx && s.t - lv.sections[si].t < 0.5;
           G.sectionIdx = si;
+          const sec = lv.sections[si];
+          if (fresh && (sec.drop || sec.finale)) {
+            // the drop and the last chord: the world bursts outward from the player
+            for (let k = 0; k < 4; k++) G.parts.push({ kind: 'ring', x: s.x, y: s.y, life: 0.7 + k * 0.25, max: 0.7 + k * 0.25, size: 0.5, grow: 16 + k * 8, w: 0.5, c: k % 2 ? [1, 0.85, 0.4, 1] : [1, 1, 1, 1], alpha: 0.9 });
+            for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2; G.parts.push({ kind: 'dot', x: s.x, y: s.y, vx: Math.cos(a) * 18, vy: Math.sin(a) * 18, life: 0.8, max: 0.8, size: 0.12, c: [1, 0.95, 0.8, 1], g: 0 }); }
+            flash([1, 0.95, 0.85], 0.35); shake(0.35); G.cam.punch = 1;
+          }
           if (fresh || (si === 0 && s.t < 0.1)) {
             const el = $('sectionCard');
             const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][si];

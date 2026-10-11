@@ -222,7 +222,7 @@
       spread(ctx, saws.slice(0, 2), lp);
       saws[2].connect(lp);
       const sq = osc(ctx, 'square', f / 2, t, end); const sg = ctx.createGain(); sg.gain.value = 0.35; sq.connect(sg); sg.connect(lp);
-      const g = ctx.createGain(); env(ctx, g, t, 0.012, 0.105 * e.v, 0.25, 0.75, t + d - 0.02, 0.08);
+      const g = ctx.createGain(); env(ctx, g, t, 0.012, 0.125 * e.v, 0.25, 0.75, t + d - 0.02, 0.08);
       lp.connect(g); g.connect(B.main); g.connect(B.delay); g.connect(B.verb);
     },
     bell(ctx, B, t, d, e) {

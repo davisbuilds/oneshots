@@ -154,3 +154,23 @@ Decisions made before writing code:
   chain), Supernova 129 ms, Echo 221 ms. One Ascension press read 0 ms; probed
   directly, it can move 17 ms earlier but not later: the solver's route
   presses at the last possible moment there, so only the late side is tight.
+
+## 8. Delivery and refinement (04:00 to 04:30)
+
+- Hero montage and full-resolution previews from the stored route; README,
+  manifest (the single-file game and the soundtrack WAV as release assets,
+  built by the Run assets workflow after merge, not run from this session),
+  and the run's tests wired into CI and the npm scripts.
+- **Watch** on the title plays the solver's route as a demo and records
+  nothing (verified). Touch devices get touch hints on the title.
+- A burst of light rings when the drop and the final chord land.
+- Re-measured stems after balancing: in the drop the kick sits at -16 dBFS
+  RMS, sub -18, bass -20, lead -20 (nudged up 1.5 dB), clap -24, stabs -25,
+  pads -27.
+- JavaScript cost of building a frame is 1 to 2 ms at 1280 x 720, so the
+  renderer has headroom on real GPUs; the 12 to 17 fps seen here is software
+  rasterization.
+- Fixed: R while paused restarted behind the still-visible pause screen.
+- Final checks: `node --test tests/*.test.js` (18 pass), `tools/solve.js
+  --check`, `verify.mjs` (ok: first music chunk after about 1.1 s; opening
+  -21.2 dB, drop -11.5 dB, peak 0.93), `tools/bundle.mjs --check` (162 KiB).
