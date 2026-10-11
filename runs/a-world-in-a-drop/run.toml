@@ -1,0 +1,46 @@
+schema = 1
+slug = "a-world-in-a-drop"
+title = "A World in a Drop"
+summary = "A 62-second procedural Blender film follows rain from a stormy ocean through imagined microscopic worlds and into the iris of an eye watching the sea."
+date = 2026-10-10
+kind = "long-horizon"
+medium = ["film", "blender", "python", "procedural", "sound"]
+hero = "preview/hero.webp"
+entry = "src/build.py"
+curator_note = ""
+
+[agent]
+model = "GPT-6"
+model_id = "unrecorded"
+harness = "Codex (cloud session)"
+
+[run]
+brief = "brief.md"
+human_turns = 3
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+command = "python3 src/build.py"
+verify = "python3 src/verify.py"
+timeout_minutes = 360
+
+[[assets]]
+file = "A_World_in_a_Drop.mp4"
+description = "Finished 62-second film, 1280 x 544, 24 fps, H.264 with original stereo score"
+[[assets]]
+file = "A_World_in_a_Drop_Stills.zip"
+description = "Six selected 1920 x 816 PNG stills and interpretation notes"
+[[assets]]
+file = "A_World_in_a_Drop.blend"
+description = "Six editable procedural Blender scenes and animated cameras"
+[[assets]]
+file = "A_World_in_a_Drop_EDIT.blend"
+description = "Native Blender scene-strip timeline with packed fonts, sound and ocean reflection"
+[[assets]]
+file = "original_score.wav"
+description = "Original synthesized 62-second stereo 48 kHz, 32-bit PCM score"
+[[assets]]
+file = "A_World_in_a_Drop_Complete.zip"
+description = "Original delivery archive: film, stills, source, notes, two projects, rough animatic and eight Blender checkpoints; a fresh rebuild contains current outputs instead of historical revisions"

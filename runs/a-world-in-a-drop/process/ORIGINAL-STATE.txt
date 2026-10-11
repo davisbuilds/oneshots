@@ -1,0 +1,84 @@
+Production state, 2026-10-10 ~13:16 UTC
+Task: complete 62-second Blender film, six high-res stills, editable projects, sources, notes. Do not finalize until actual master and package exist and reviewed.
+Root /workspace/A_World_in_a_Drop. Official Blender /workspace/tools/blender-4.3.2-linux-x64/blender, official bpy 4.3.0 venv /workspace/bpy-env (NumPy1.26.4).
+Active final rendering: session8204 scene01 odd frames1..239 samples12; session75506 sequential scene02..06 odd frames. Scene06 gets24samples via render.py override. Full width1280 height544. 792 renders total -> FFmpeg motion interpolation24fps. Do not change cadence or silently stop work.
+Active finishing watcher session22356: source/finish_production.py polls frames, then runs assemble.py --fps12 and regenerates native EDIT. Log logs/finishing.log.
+Active still process PID5526 (session64068 parent refresh_reflection_and_stills.py): renders first five stills1920x81664samples, but has old eye loaded. DO NOT USE its eye.
+Active eye still watcher session85160: loaded older source/refresh_eye_still.py with pid5526. Waits for still05, kills old still worker, moves old06 if any, runs stills.py from current main project, skipping existing first5. Log logs/eye_still.log. Source was subsequently made portable --worker-pid required; running process still holds original authorized PID.
+User feedback: eye unnatural, lashes too short, iris needs work. COMPLETELY rebuilt eye via eye_world.py. New iris polar shader +fine branches/crypts, overlapping continuous lids, long tapered curved irregular lashes, real transparent cornea and off-camera ocean reflection card. User was shown final revised study at studies/eye_final/06_The_Witness/0265.png. Last response links that study and says replacing eye in film/stills. Current main project has this approved-by-assistant revision. No user approval is required. If user provides more feedback, apply it while preserving original full delivery goal.
+Main project projects/A_World_in_a_Drop.blend has all six scenes and latest eye. Source build_world.witness delegates eye_world.build_eye. Original eye retained as witness_v1 source history. Native EDIT currently stale; finishing watcher regenerates it when all filmframes ready. source/finish_eye.py robustly binds fresh opening image to actual current eye card, supports original eye as fallback.
+Latest reflection audited: packed image SHA matches actual final frames/01_The_Atlantic/0001.png (7c0a...bed79). Do not change ocean again unless necessary. Source eye_world build now reloads fresh image; all current scene references already correct.
+Film shot lengths: 240,264,288,240,240,312 sourceframes24fps; cuts start0,8.5,18,28.5,37,45.5 sec with1.5s dissolves; imagery ends58.5s; title to62s. Source assemble.py fixes FFmpeg xfade using setpts then fps24 (settb last caused invalidfps). Score original stereo48k32-bitPCM -16.6LUFS, finalvolume-1.4dB. Native edit uses scene strips, packed audio/font/image, 1488frames.
+Existing rough animatic (old eye and original ocean) checkpoints/animatic_edit/A_World_in_a_Drop_rough_animatic.mp4, verified62s 1280x544 24fps AACstereo. Shared earlier. Keep as historical rough; notes identify old imagery. Contact sheet studies/animatic_cut_review/contact_sheet.jpg.
+Checked actual studies, stills01-03 and revised eye studies. Stills01 revised dark storm ocean,02green drop,03silica garden complete as of13:16. Still04 expensive currentlyrendering;05theneye watcher06pending.
+Remaining: monitor renders (long CPU job, user explicitly comfortablehours); inspect remaining stills; inspect final film actual sampledframes/transitions, ffprobe duration/codecs/count; analyze audio peak/loudness, detect black except intentional fades/title. Audit native EDIT with source/audit_project.py (works, checks sixscenes, packedfiles, stable finalroll). Update notes if changes. Run source/package.py only once outputs complete. Create separate Stills.zip. Include finalfilm+stills+projects+source+score+notes+roughanimatic in Complete.zip. Preserve artifacts; optionallycopy finished deliverables to workspace/library-files or /mnt/data if needed for user download. Final brief with film, completepackage, stills links. Do not claim completed before outputexists.
+ART_AND_SCIENCE.txt, REPRODUCE.txt, LICENSES.txt already detailed and accurate to revisedeye, originalart/audio/noexternalmedia. Source/FONT_LICENSE.txt copied DejaVu license. Source .py compiles. Full working frames/logs/checkpoints retained; package excludes rawframes and Blender application.
+
+
+UPDATE 2026-10-10 13:39 UTC
+Eye expanded face mesh to remove tiny corner boundary at widest final camera.
+Source eye_world.py updated; historical extend_face.py idempotent patch; main.blend and checkpoint06 saved.
+New check studies/eye_extent/06_The_Witness/0301.png visually clean.
+Session28751 renders corrected high-res eye still then all final06 frames (2 threads) sequentially.
+Old eye render6722 terminated, old frame0001 and still preserved in studies/eye_before_extent*.png.
+Native EDIT was regenerated and audited after organic-eye change, but before face-extent patch; final watcher regenerates it again.
+New6 low-res animatic completed and checked, stable camera and dissolve; in studies/revised_eye_animatic. Its final corners preceded latest fix.
+All other rendering jobs still active: 8204 ocean,75506 loop02..06,22356 finishing watcher. Old still/eye watchers done.
+Final06 priority independent will finish before main loop reaches06; renderer skips existing PNGs.
+Added source/review_master.py (full decode, duration/frame/format assertions, audio measurement and contact sheets).
+Added make_still_gallery.py; run after corrected eye still to refresh delivery/Selected_Frames.jpg and Stills.zip.
+assemble.py input now exact imageglob framerate, avoiding concat25fps quantization; MCI2sec test checked and 48frames correct.
+reproduce.sh now also rendersstills. package.py now includes contact sheet.
+Next: let long renders complete, inspect actual final output, audit current EDIT, run package.py, copy finaldeliverables to /workspace/library-files.
+
+UPDATE 13:58 UTC
+All6 corrected stills complete and inspected. make_still_gallery.py ran; latest Stills.zip and Selected_Frames.jpg copied to /workspace/library-files.
+Native EDIT regenerated afterfaceextent. Actual VSE preview revealed Standard transform was wrong; editable_timeline.py now uses AgX Medium High Contrast and animates exposure from source scene settings.
+Tested corrected nativeeye preview against standalone sameframe: meanabsoluteRGBdifference0.00057/255 (essentially exact). Audit updated to assert AgX; latestaudit passed.
+Package.py now also includes all six numbered Blender checkpoints.
+Optional firsteye6fps interpolation experiment retained only in studies; DO NOT changefinalcadence: all6still12sourcefps.
+Current jobs: oceanPID5426 (session8204), sequential02..06PID4527/current4558 (session75506), priorityeyePID7186/session28751, finishingwatcherPID5030/session22356.
+At13:57:32 framecounts 59,82,0,0,0,6 =147/792. CPU-bound; userauthorizedhours. Continueuntildone.
+
+UPDATE 14:01 UTC (queue allocation)
+Stopped oldloopPID4527/4558 and oldeyePID7186; verified completedPNGs.
+Replaced with session45791: loop02,03,04,05 ONLY at4threads, append logs/final_XX.log.
+Replaced eye with session13918: ONLY06 at4threads, appendlogs/final_eye_priority.log.
+Ocean session8204/PID5426 stillunchanged3threads. Finisher22356/PID5030 unchanged.
+This eliminates duplicate06workers and prevents half-idleCPUwhenonequeue finishes. Noimagequality changes.
+
+UPDATE 2026-10-10T14:43:20.593365+00:00
+Currentactive rendering sessions: ocean8204/PID5426 (scene01), mainloop45791/PID7851 currently02 then03,04,05 ONLY at4threads, eye13918/PID7870 scene06only at4threads.
+Finisher was RESTARTED with extra verification: current session79071 (old22356 done). It waits all792PNGs, runs assemble --fps12, regenerates EDIT, audits EDIT, review_master.py, gallery; thenprintsREADYFORVISUALREVIEW.
+Main.blend outputpaths made relative; checkpoint07_portable_output_paths.blend saved. build_world sourceupdated. NativeEDIT opensSequencer timeline; actualedited0EDIT AgX colorpreviewmatchedsourceexactly.
+Closing subtitle now 'AN IMAGINED JOURNEY' (spacedcapitals) in sourceassemble/editabletimeline; finalfinisherregenerationpicksitup.
+Added explicitRec709colormatrix + primaries/transfer/range tags toassemble; oneframeencodeverified. review_masterassertstags.
+Docsclarify cache skips alsoaftergeometryedits/stills. Gallery/StillsZIPalreadycopiedtolibrary-filesbeforethese changes(noimagechanges).
+Recent actualleaf0201 andocean0145 imagesinspected; renderingqualityconsistent.
+At14:41:32 counts92/120,128/132,0/144,0/120,0/120,27/156. Waitseveralhoursuntilallcomplete; userauthorized.
+Afterfinishercomplete: inspectfilm_contact.jpg andtransition_contact.jpg plusselectedfullsizeframes; checkaudio_measurement.txt; package.py; copyfinalmovie+CompleteZIP+updatedStillsZIPtolibrary-files. Do NOTfinalearly.
+
+UPDATE 2026-10-10T14:55:46.132447+00:00
+Corneal pole correction VERIFIED: fullsizeeye0049exposedfalsecentralglint. Testbmeshmerged192coincidentpolevertices; artifactdisappeared. eye_world.py nowbuildsmergedpole; fix_cornea.py appliedmainandcheckpoint08.
+StoppedoldPID7870/session13918. Currenteyequeue session47288 completed31localizedmoviepatches+64sample1920stillpatch, thencompositedwithfeathered30pxcentralmask. Actualcorrected0049.png inspected: pinpointgone;reflectionretained;noseseam.
+CurrenteyePID9501/session47288 nowfullrender06 --step2 --samples24 --threads4 fromcorrectedgeometry. Earlyframes1..61corrected, originalsandpatchesretainedstudies/cornea_pole.
+Sourceauditnowassertscorneamerged_pole; finalEDITmustregeneratefromnewmain(asfinisherwill). CurrentEDITonDiskstillpre-polebutfinisherupdatesbeforepackage.
+ART_AND_SCIENCE.txt noteslocalizedconventionalrerenders; freshfullsourcebuildneedsnopatch.
+Gallery/StillsZIPregeneratedandcopiedagainintolibrary-fileswithcorrectedeye. Sourceframe003garden0025inspected,looksconsistent.
+Otherjobs: ocean8204/PID5426; main45791 now03/PID9012then04,05; finisher79071.
+Colorencodingtestinitiallyshowedmissingtags; addedsetparamsfilterperclipandfinaloutput, nowall709tagsverified; finalmaplabel[ picture ]correctedafterstringedit.
+At14:53:33 counts100,132,15,0,0,31 (278/792). LeafCOMPLETE.
+
+UPDATE 2026-10-10T15:41:41.446097+00:00
+Ocean01andLeaf02COMPLETE(120/132frames). Oceanprocess5426hasfinished. Main03activePID9012/session45791 then04and05; eye06PID9501/session47288; finisher79071 unchanged.
+CurrentEDITregeneratedafterpolefixandbundledfontchanges; auditpassed(includingmerged_poleandAgX). BothDejaVuTTFs nowin source/fonts, includedautomaticallyinarchive; sourcefontpathsportable. assemble run usescwdROOT andrelativefontpaths.
+Finaltitlepaddingnowaddsblackratherthancloneslastfaintimage. SubtitleANIMAGINEDJOURNEYunchanged.
+assemble nowverifiesexpectedframecounts, PNGintegrityandconsistentsizebeforeencodingeachclip. Defaultworkflowstill12sourcefps->24MCI.
+At15:39:37 counts120,132,117,0,0,61. Firstnewfullframe63/81aftercorneapatchverified1280x544.
+No furtherartchangesneeded; waitrenders,reviewactualmaster,package/copylibrary.
+
+UPDATE 2026-10-10T17:01:46.941902+00:00
+First three sequences complete. Main session45791 currently04 then05; eye47288 nearing completion (139/156), finisher79071 awaits792 frames. At17:01UTC counts120,132,144,84,0,139. Fresh finaleye0233 inspected; fine iris/lashes and clean pupil. Membrane0167 inspected; clean. No edits made after last state. Still need final master review, package.py, ZIP validation and atomic library-files copy.
+
+COMPLETE 2026-10-10T17:43:49.301883+00:00
+All792frames rendered. Master62s1280x54424fps1488framesH264/AACstereo48kBT709 decoded without errors. Audio -18.02LUFS, truepeak -4.37dBFS. Film/transitioncontact sheets visually inspected, finaleye0301 andfilament0121 inspected. NativeEDIT rebuilt and audited. Archive52files verified bySHA256,8Blendercheckpoints included. Film,CompleteZIP,StillsZIP,gallery,revisedeyePNG copied atomically to /workspace/library-files and hashes checked. Fullworkingdirectory and intermediate studies preserved. All work complete.

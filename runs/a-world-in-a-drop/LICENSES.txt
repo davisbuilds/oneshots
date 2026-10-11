@@ -1,0 +1,25 @@
+A WORLD IN A DROP — provenance and licenses
+
+Original project material
+All scene geometry, procedural materials, lighting, animation, synthesis code,
+score and sound design were created for this project. No third-party stock
+photography, footage, music, sample library, or generated image/video asset is
+included. The ocean texture in the eye is an original render of scene 01.
+
+Fonts
+The closing title uses DejaVu Serif and DejaVu Sans. Both fonts are bundled in
+src/renderers/fonts/ (staged as source/fonts/ during a build) and packed into the native edit. The Bitstream Vera / DejaVu license and notices are reproduced
+in src/renderers/fonts/LICENSE.txt (staged as source/fonts/LICENSE.txt). Font information: https://dejavu-fonts.github.io/
+
+Tools (not bundled in the portable artwork archive)
+Blender: https://www.blender.org/about/license/
+Official download: https://download.blender.org/release/Blender4.3/
+Official bpy module: https://pypi.org/project/bpy/4.3.0/
+FFmpeg: https://ffmpeg.org/legal.html
+NumPy: https://numpy.org/doc/stable/license.html
+SciPy: https://scipy.org/
+Pillow: https://python-pillow.github.io/
+
+These tools' software licenses are distinct from the rendered film and original
+project content. No external media attribution is required for the score or
+scene artwork because none was used.
