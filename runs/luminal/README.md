@@ -46,8 +46,8 @@ you play.
   flashes, screen shake (both off by default if your system asks for reduced
   motion), automatic checkpoints, an audio offset for Bluetooth headphones,
   and a reset.
-- Add `?autoplay` to the address to watch the level play itself along a route
-  the solver found.
+- **Watch** plays the whole level along the route the solver found (nothing
+  is recorded). `?autoplay` in the address does the same for any mode.
 
 ## The level
 

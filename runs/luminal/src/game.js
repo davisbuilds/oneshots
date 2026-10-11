@@ -153,10 +153,13 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'playing') pause(); });
 
     // ── Runs ─────────────────────────────────────────────────────────────
-    function begin(practice) {
+    // demo: the solver's route plays the level; nothing is recorded.
+    function begin(practice, demo) {
       audio.ensure();
       if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume();
       G.practice = practice;
+      G.demo = !!demo;
+      G.autoplay = G.demo || params.has('autoplay');
       G.checkpoints = []; G.pendingCp = [];
       showScreen(null);
       restartRun(true);
@@ -171,7 +174,7 @@
     function startFrom(s) {
       G.s = s;
       G.attempt++;
-      if (!G.practice) save.attempts++;
+      if (!G.practice && !G.demo) save.attempts++;
       G.runJumps = 0;
       G.input.queue = [];
       G.input.held = G.input.keys.size + G.input.pointers.size > 0;
@@ -201,7 +204,7 @@
       audio.stop(0.12);
       audio.sfxPlay('death');
       const pct = progressOf(s);
-      if (!G.practice) {
+      if (G.demo) { /* nothing recorded */ } else if (!G.practice) {
         save.deaths[Math.min(99, Math.floor(pct))]++;
         if (pct > save.best + 0.001) { save.best = pct; G.newBest = true; }
       } else if (pct > save.practiceBest) save.practiceBest = pct;
@@ -230,7 +233,7 @@
       G.state = 'complete';
       save.jumps += G.runJumps;
       let first = false;
-      if (!G.practice) {
+      if (G.demo) { save.jumps -= G.runJumps; } else if (!G.practice) {
         save.best = 100; save.completions++;
         if (!save.firstClear) { save.firstClear = save.attempts; first = true; }
       } else { save.practiceBest = 100; save.practiceCompletions++; }
@@ -242,7 +245,9 @@
       }
       for (let k = 0; k < 3; k++) G.parts.push({ kind: 'ring', x: s.x, y: s.y, life: 1 + k * 0.4, max: 1 + k * 0.4, size: 0.5, grow: 14 + k * 6, w: 0.4, c: [1, 0.95, 0.8, 1], alpha: 1 });
       const sum = $('completeStats');
-      sum.innerHTML = G.practice
+      sum.innerHTML = G.demo
+        ? `<div><b>That was the solver's route</b>: ${G.runJumps} jumps, one way through.</div><div>Your turn.</div>`
+        : G.practice
         ? `<div><b>Practice run complete</b></div><div>${G.checkpoints.length} checkpoints used · try it without them</div>`
         : `<div><b>${first ? 'First clear' : 'Cleared'}</b> on attempt <b>${save.attempts}</b></div><div>${G.runJumps} jumps this run · ${save.completions} total clear${save.completions === 1 ? '' : 's'}</div>`;
       setTimeout(() => { if (G.state === 'complete') showScreen('complete'); }, 2600);
@@ -444,7 +449,7 @@
         const sx = (G.attemptLabel.x - cam.x) * cam.zoom / dpr + innerWidth / 2;
         const sy = innerHeight / 2 - (G.attemptLabel.y - cam.y) * cam.zoom / dpr;
         lab.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) translate(-50%, -50%)`;
-        lab.textContent = (G.practice ? 'Practice · ' : '') + 'Attempt ' + G.attemptLabel.n;
+        lab.textContent = G.demo ? 'Demo · the solver plays' : (G.practice ? 'Practice · ' : '') + 'Attempt ' + G.attemptLabel.n;
         lab.style.opacity = sx < -200 ? 0 : 1;
       } else lab.style.opacity = 0;
       // Teaching signs, until the first clear.
@@ -574,11 +579,12 @@
     // buttons
     $('playBtn').onclick = () => begin(false);
     $('practiceBtn').onclick = () => begin(true);
+    $('watchBtn').onclick = () => begin(false, true);
     $('resumeBtn').onclick = resume;
     $('restartBtn').onclick = () => { showScreen(null); restartRun(true); };
-    $('practiceToggle').onclick = () => { G.practice = !G.practice; G.checkpoints = []; showScreen(null); restartRun(true); };
+    $('practiceToggle').onclick = () => { const p = !G.practice; G.checkpoints = []; begin(p); };
     $('quitBtn').onclick = toTitle;
-    $('againBtn').onclick = () => { showScreen(null); G.checkpoints = []; restartRun(true); };
+    $('againBtn').onclick = () => { showScreen(null); G.checkpoints = []; if (G.demo) begin(false); else restartRun(true); };
     $('titleBtn').onclick = toTitle;
     $('pauseBtn').onclick = e => { e.currentTarget.blur(); togglePause(); };
     $('cpAdd').onclick = e => { e.currentTarget.blur(); placeCheckpoint(); };
@@ -601,14 +607,14 @@
 
     // ── Loading: compose the soundtrack, then open the title ─────────────
     showScreen('title');
-    $('playBtn').disabled = true; $('practiceBtn').disabled = true;
+    $('playBtn').disabled = true; $('practiceBtn').disabled = true; $('watchBtn').disabled = true;
     const loadEl = $('loadState');
     const t0 = performance.now();
     let firstChunk = true;
     G.audioDone = false;
     const enable = () => {
       G.state = 'title';
-      $('playBtn').disabled = false; $('practiceBtn').disabled = false;
+      $('playBtn').disabled = false; $('practiceBtn').disabled = false; $('watchBtn').disabled = false;
       $('playBtn').focus({ preventScroll: true });
       document.body.classList.add('ready');
     };
@@ -635,7 +641,7 @@
     G.api = {
       ready: () => G.state !== 'loading',
       snapshot: () => ({ state: G.state, practice: G.practice, attempt: G.attempt, t: G.s && G.s.t, x: G.s && G.s.x, y: G.s && G.s.y, mode: G.s && G.s.mode, grav: G.s && G.s.grav, dead: G.s && G.s.dead, pct: G.s ? progressOf(G.s) : 0, checkpoints: G.checkpoints.length, save: JSON.parse(JSON.stringify(save)), held: G.input.held }),
-      begin: practice => begin(!!practice),
+      begin: (practice, demo) => begin(!!practice, !!demo),
       // Advance n steps using live input state (keys/pointers) or a route.
       step(n, route) {
         for (let k = 0; k < n && G.state === 'playing'; k++) {

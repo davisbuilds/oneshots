@@ -143,13 +143,16 @@ try {
   assert.equal((await step(page, 2)).held, false);
 
   // ── Real time: the clock follows the audio and the game keeps up ──────
-  await page.evaluate(() => { const g = LUMINAL.game; g.liveInTest = true; g.autoplay = true; g.api.toTitle(); g.api.begin(false); });
+  const before = (await snap(page)).save.attempts;
+  await page.evaluate(() => { const g = LUMINAL.game; g.liveInTest = true; g.api.toTitle(); });
+  await page.click('#watchBtn');
   await page.waitForTimeout(6000);
   const live = await page.evaluate(() => { const g = LUMINAL.game; return { t: g.s.t, clock: g.api.clock(), audio: g.audio.songTime(), state: g.state, frame: g.frameTimes[g.frameTimes.length - 1] }; });
   assert.equal(live.state, 'playing');
   assert.ok(live.t > 4.5, `the game advances in real time (${live.t.toFixed(2)} s)`);
   if (live.audio !== null) assert.ok(Math.abs(live.audio - live.clock) < 0.03, `the game clock follows the audio clock (${(live.audio - live.clock).toFixed(3)} s apart)`);
   assert.ok(live.clock - live.t < live.frame + 0.05, 'the simulation is at most a frame behind the clock');
+  assert.equal((await snap(page)).save.attempts, before, 'watching the demo records no attempt');
   await context.close();
 
   // ── Touch on a phone ─────────────────────────────────────────────────
