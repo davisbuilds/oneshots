@@ -12,6 +12,6 @@
     "verify:browser": "node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs && node runs/antikythera-engine/verify.mjs && node runs/borrowed-seconds/verify.mjs && node runs/gate-to-game/verify.mjs && node runs/luminal/verify.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.63.0"
+    "@playwright/test": "1.64.0"
   }
 }
