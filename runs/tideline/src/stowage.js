@@ -97,6 +97,8 @@
       }
       // A hold stack may not be taller than the hold.
       if (!st.deck) while (vessel.stackHeight(st, st.boxes) > st.top - st.base) st.boxes.pop();
+      // Lashing limits: a stack weighs no more than it is rated for.
+      while (st.boxes.reduce((a, b) => a + b.w, 0) > st.maxW - 1) st.boxes.pop();
       for (let i = 0; i < st.boxes.length; i++) st.boxes[i].loc = { kind: 'ship', vessel: vessel.name, stack: st.id, idx: i };
     }
     vessel.hatchWork = hatchWork;
@@ -107,7 +109,7 @@
       const c = conditionOf(vessel);
       for (const st of vessel.stacks) {
         if (!st.deck) continue;
-        while (st.boxes.length && st.base + vessel.stackHeight(st, st.boxes) > vessel.visibilityTop(st.x, c.Ta, c.Tf)) st.boxes.pop();
+        while (st.boxes.length && st.base + vessel.stackHeight(st, st.boxes) > vessel.visibilityTop(st.x, c.Ta, c.Tf) - 1.0) st.boxes.pop();
       }
       trimBallast(vessel, cfg.gm || 1.4, cfg.trim != null ? cfg.trim : 0.6);
     }
@@ -289,6 +291,18 @@
       if (!best) continue;              // shut out: stays in the yard for the next call
       plan.stacks[best.id].push(box);
       My += box.w * best.y;
+    }
+    // The line of sight was checked at the arrival drafts; the departure
+    // drafts differ. Re-check at departure and shut out what still blocks it.
+    for (let pass = 0; pass < 4; pass++) {
+      const dep = departureCondition(vessel, plan);
+      let changed = false;
+      for (const st of vessel.stacks) {
+        if (!st.deck) continue;
+        const lim = vessel.visibilityTop(st.x, dep.Ta, dep.Tf) - 0.05;
+        while (plan.stacks[st.id].length && st.base + vessel.stackHeight(st, rob[st.id].concat(plan.stacks[st.id])) > lim) { plan.stacks[st.id].pop(); changed = true; }
+      }
+      if (!changed) break;
     }
     return plan;
   }
