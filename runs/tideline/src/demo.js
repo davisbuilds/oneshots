@@ -17,7 +17,7 @@
     { d: 7.5, cap: ['Every carrier drives a path reserved in space and time', 'Safe-interval planning with token passing: no collisions, no deadlocks, checked over many seeds'],
       pick: 'follow', cine: true, cam: (u, s) => ({ x: s.x, y: s.y - 4, zoom: 0.07 + u * 0.06, az: 1.39 + u * 0.5, el: 0.5 + u * 0.1 }) },
     { d: 7, cap: ['Trucks check in at the gate, reverse into a bay, and are served from behind', 'Queue, turn time and yard occupancy feed the KPIs above'],
-      cine: true, cam: (u) => ({ x: 905 - u * 70, y: 392, zoom: 0.115 - u * 0.01 }) },
+      cine: true, cam: (u) => ({ x: 872 - u * 40, y: 404, zoom: 0.085 - u * 0.008, az: -0.95, el: 0.55 }) },
     { d: 9, cap: ['Each box changes the ship: draft, trim, list and GM', 'Anti-heel pumps level her; a plan that breaks the limits is refused'],
       pick: 'ship', cam: (u, s) => ({ x: s.x + 30 - u * 20, y: 20, zoom: 0.17 }) },
     { d: 6.5, cap: ['Tideline', 'An operations console that plays like a strategy game'],

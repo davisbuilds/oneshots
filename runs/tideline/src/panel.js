@@ -57,7 +57,7 @@
         <div class="vsub" id="vSub"></div>
         <div class="prog" id="vProg"></div>
         <div class="sect"><h3>Stowage plan<span class="r"><div class="mini" id="colorBy"><button data-c="type">Type</button><button data-c="port">Port</button><button data-c="weight">Weight</button></div></span></h3>
-          <div class="cvwrap"><canvas class="cv" id="cvProfile" data-h="150"></canvas></div>
+          <div class="cvwrap"><canvas class="cv" id="cvProfile" data-h="172"></canvas></div>
           <div class="legend" id="legend"></div>
         </div>
         <div class="sect"><h3>Bay <span id="bayNo"></span><span class="faint" style="font-weight:500;font-size:12px">end-on, looking forward</span><span class="r baynav"><button data-bay="-1" title="Previous bay">${TL.icon('chevL')}</button><button data-bay="1" title="Next bay">${TL.icon('chev')}</button></span></h3>
@@ -133,7 +133,8 @@
     const padL = 12, padR = 12, top = 22, base = h - 16;
     const sx = (w - padL - padR) / (hull.xFwd - hull.xAft);
     const zTopMax = v.stacks.reduce((m, s) => Math.max(m, s.top), 0) + 4;
-    const sz = Math.min(sx * 1.6, (base - top) / zTopMax);
+    // Heights drawn up to 2.4x the length scale, so tiers stay legible.
+    const sz = Math.min(sx * 2.4, (base - top) / zTopMax);
     const X = (x) => padL + (hull.xFwd - x) * sx, Z = (z) => base - z * sz;
     P.prof = { X, Z, sx, sz, call, top, base };
     // Water and the waterline (trim exaggerated x8).
@@ -203,7 +204,7 @@
     g.textAlign = 'left'; g.fillStyle = '#5b6378'; g.font = '600 10px Inter, system-ui, sans-serif';
     g.fillText(`F ${cond.Tf.toFixed(2)} m`, 4, h - 3);
     g.textAlign = 'right'; g.fillText(`A ${cond.Ta.toFixed(2)} m`, w - 4, h - 3);
-    g.textAlign = 'center'; g.fillStyle = '#8a8f9c'; g.fillText('Bow · waterline trim ×8 · Stern', w / 2, h - 3);
+    g.textAlign = 'center'; g.fillStyle = '#8a8f9c'; g.fillText(`Bow · heights ×${(sz / sx).toFixed(1)}, trim ×8 · Stern`, w / 2, h - 3);
   };
 
   // ── Bay section: rows across, port on the left (looking forward) ───────

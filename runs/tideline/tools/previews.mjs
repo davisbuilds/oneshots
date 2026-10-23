@@ -16,22 +16,32 @@ const adv = (ms) => page.evaluate((ms) => { const n = Math.round(ms / 50); for (
 await page.evaluate(() => { TL.app.still = false; });
 await adv(3000);
 await page.screenshot({ path: out + '/hero.png' });
-// The hand-over: a crane lowering a box into a waiting carrier.
-const at = await page.evaluate(() => {
-  const sim = TL.app.sim;
-  let best = null;
-  for (const sc of sim.scs) { const tk = sc.task; if (tk && tk.kind === 'disch' && tk.attachT > TL.app.simT + 20 && (!best || tk.attachT < best.task.attachT)) best = sc; }
-  return best ? { k: best.k, attach: best.task.attachT, s: best.task.pickState } : null;
-});
-if (at) {
-  await page.evaluate((at) => { const st = TL.app.sim.scG.states[at.s]; const c = TL.app.r.cam; c.x = st.x - 4; c.y = st.y + 6; c.zoom = 0.055; TL.app.hideCallouts = false; TL.app.sel = { kind: 'sc', ref: TL.app.sim.scs[at.k] }; }, at);
-  // Just before the box lands: advance in sim time to attach - 9 s.
-  const ms = await page.evaluate((at) => Math.max(0, (at.attach - 9 - TL.app.simT) / TL.app.speed * 1000), at);
-  await adv(ms);
-  await page.evaluate((at) => { const st = TL.app.sim.scG.states[at.s]; const c = TL.app.r.cam; c.x = st.x - 4; c.y = st.y + 6; c.zoom = 0.055; }, at);
-  await adv(50);
-  await page.screenshot({ path: out + '/detail-handover.png', clip: { x: 320, y: 220, width: 1100, height: 660 } });
+// The hand-over: a crane lowering a box into a carrier already waiting.
+// Search forward for a moment where the box is 4 to 10 s from touchdown.
+let at = null;
+for (let i = 0; i < 400 && !at; i++) {
+  at = await page.evaluate(() => {
+    const sim = TL.app.sim, t = TL.app.simT;
+    for (const sc of sim.scs) {
+      const tk = sc.task;
+      if (!tk || tk.kind !== 'disch' || t < tk.pickT0 + 2) continue;
+      const land = tk.attachT - 8;
+      if (land - t >= 4 && land - t <= 10) return { k: sc.k, s: tk.pickState };
+    }
+    return null;
+  });
+  if (!at) await adv(150);
 }
+if (at) {
+  // From the land side, under the crane's portal, with the panels faded.
+  await page.evaluate(() => document.body.classList.add('cine'));
+  await page.waitForTimeout(1200);
+  await page.evaluate((at) => { const st = TL.app.sim.scG.states[at.s]; const c = TL.app.r.cam; c.x = st.x; c.y = st.y - 7; c.zoom = 0.07; c.az = 1.3; c.el = 0.5; TL.app.sel = { kind: 'sc', ref: TL.app.sim.scs[at.k] }; }, at);
+  await adv(50);
+  await page.screenshot({ path: out + '/detail-handover.png', clip: { x: 360, y: 160, width: 1200, height: 760 } });
+  await page.evaluate(() => { document.body.classList.remove('cine'); const c = TL.app.r.cam; c.az = -Math.PI / 4; c.el = 0.62; TL.app.sel = null; });
+  await page.waitForTimeout(1200);
+} else console.log('no hand-over moment found');
 // The vessel panel and the schedule, at native resolution.
 await page.evaluate(() => { TL.UI.select('call', TL.app.sim.calls[0]); });
 await adv(400);

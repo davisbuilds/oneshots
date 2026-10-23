@@ -20,7 +20,7 @@ await page.goto(new URL('../index.html?still', import.meta.url).href);
 await page.waitForFunction(() => window.TL && TL.app && TL.app.ready, null, { timeout: 180000 });
 await page.evaluate(() => { document.body.classList.add('film'); TL.app.still = false; TL.UI.setSpeed(12); });
 const ff = spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
-  '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
+  '-c:v', 'libx264', '-preset', 'slow', '-crf', '23', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
 const done = new Promise((res, rej) => ff.on('close', c => (c ? rej(new Error(`ffmpeg exited ${c}`)) : res())));
 const dt = 1000 / fps;
 let frames = 0;

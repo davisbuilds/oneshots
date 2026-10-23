@@ -238,3 +238,49 @@ moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
   band): the red hull bottom had been the same terracotta as the high-cube
   boxes drawn over it. The bay section draws its coaming and hatch cover, or
   "hatch open" while a crane works the hold.
+
+## 8. Second pause, film, final checkpoints (from 12:41)
+
+- The run paused again from about 08:30 to 12:41 UTC (the human's usage
+  limit) and resumed where it stopped.
+- `tools/film.mjs` renders the tour one frame of virtual time at a time:
+  1,380 frames, 46 s at 1920 x 1080 in under 9 minutes with SwiftShader on
+  this machine. (It looked far slower while running; the progress log was
+  only being flushed late.) The first render used the old tour; re-rendered
+  with the land-side close-ups and faded panels, at CRF 23 (the paper grain
+  makes the stream large: 64 MB at CRF 20).
+- **Checkpoint 08** (`08-compare-crane-closeup.webp`,
+  `08-compare-vessel-panel.webp`, native crops `08-crop-*`):
+  - Vessel panel against the component mockup: ours is the more truthful
+    panel (its legend colours match its boxes, the bay section explains the
+    list, the gauges draw their limits and the state, particulars are
+    consistent), but its profile looked thin beside the mockup's bold
+    elevation. The profile is now taller, with heights drawn at up to 2.4x
+    the length scale; the label states the factor actually used.
+  - Crane close-up against its mockup: ours frames the waiting carrier
+    inside the crane portal with the ship behind, but the first capture came
+    after touchdown, so the box on the spreader was out of the moment; the
+    mockup's apron is also busier (trucks, kiosks, trees) where ours is a
+    working lane. Retiming alone did not work: carriers usually arrive just
+    in time, so a fixed offset caught either the box without the carrier or
+    the carrier without the box. The preview tool now searches forward for a
+    carrier already waiting with the box 4 to 10 s from touchdown; the new
+    detail (`08-crop-handover-native.webp`) shows carrier 20 under the
+    portal with the box coming down into its frame and a second carrier
+    queued at the other buffer: the reference's moment, produced by the
+    simulation rather than staged.
+  - The tour's gate shot framed an empty road and an office roof; it now
+    closes in on the gate canopy from the east.
+
+## 9. Final checks
+
+- `node tools/check.js --seeds 24 --hours 6 --monkey`: **24/24 seeds
+  clean.** 18,562 crane moves, 32,202 carrier jobs, 6,770 truck visits,
+  995 million pair tests at 0.25 s, 0 overlaps, 0 planner fallbacks; the
+  random player made 351 re-plans (116 accepted, 235 refused), 260 schedule
+  moves (168 accepted) and 253 crane reassignments (169 accepted). Worst
+  list 0.51°, lowest GM 1.65 m, longest wait in a lane 101 s. Six hours is
+  shorter than a Panamax call, so these runs contain no departures; the
+  14-hour runs in section 5 do, and every departing ship was checked.
+- `node --test tests/*.test.js`: 16 pass. `node verify.mjs`: all checks
+  pass (no network requests, no page errors).

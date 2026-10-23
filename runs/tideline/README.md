@@ -17,12 +17,17 @@ waits for ever.
 
 ![The console: Corvane Lantern at berth 1 under three cranes, the yard behind, the berth schedule and the vessel panel](preview/hero.webp)
 
+More views: [the whole terminal](preview/wide.webp) ·
+[a crane lowering a box into a waiting straddle carrier](preview/detail-handover.webp) ·
+[the vessel panel](preview/detail-panel.webp) · [the berth schedule](preview/detail-schedule.webp),
+the details at full resolution.
+
 | | |
 | :--- | :--- |
 | **Open it** | [`index.html`](index.html): no install, no server, no network, no dependencies |
 | **Model** | Claude Opus 5.5 (Claude Code) |
-| **Brief** | [`brief.md`](brief.md): one human turn, with four human-made mockups |
-| **Wall clock** | about 6 hours of work, with a pause of about 2.5 hours |
+| **Brief** | [`brief.md`](brief.md): the brief with four human-made mockups, and two "continue" messages after usage-limit pauses (3 human turns) |
+| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all |
 | **Full-size outputs** | release `run-tideline`: the demo tour as a film, built by the Run assets workflow ([below](#reproduce)) |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [art bible](process/ART-BIBLE.md), [snapshots](process/snapshots/), [supplied mockups](process/studies/) |
 
