@@ -284,3 +284,60 @@ moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
   14-hour runs in section 5 do, and every departing ship was checked.
 - `node --test tests/*.test.js`: 16 pass. `node verify.mjs`: all checks
   pass (no network requests, no page errors).
+
+## 10. After delivery: a play-test and a local review (19:42 to 20:15)
+
+The human played the build and saw Northmere Wren "rotated a bit and
+overlapping the ground" early on. A local code review (run as a subagent
+while the cloud review hung) reported six findings. Everything below was
+fixed, with a check that failed first.
+
+- **Ships under way ignored their own path.** `_shipMotion` computed offsets
+  for coming alongside and leaving, but `shipToWorld` never applied them: an
+  arriving ship sat on its berth, swung up to 18° about its stern, with its
+  bow 46 m into the quay (the committed `wide.webp` showed it at B3). The
+  same code had ships sailing stern first and leaving towards the
+  breakwater. Ships now turn about their midlength and follow a path: in
+  from the anchorage to the south-east bow first, swing off the berth with
+  the tugs, and pushed alongside; pulled off, then out east. Ships waiting
+  for one berth anchor in a line. `tools/check.js` now tests every ship
+  pose every 10 s against the quay, the breakwater and the other ships
+  (343 failures per seed before, none after); ship picking inverts the new
+  pose.
+- **A crash at 15 h.** Tracing a full day exposed it: when a truck delivered
+  an export, the box was added to the ship's export list after the carrier's
+  pick had already cleared `tr.box`, so the list collected nulls, and the
+  first ship to load after a truck delivery (Alder Saffron, 15.2 h) threw.
+  Earlier long runs stopped at 14 h. The test that follows Northmere Wren to
+  its departure now runs past it, and the checker runs 30 hours.
+- **Two crane reassignments could swap cranes** (review finding 1): each
+  request was checked against the current assignment only, so QC-03 to the
+  second ship and QC-04 to the first were both accepted, and they could
+  never pass. Requests are now checked against where every crane will be
+  once pending moves apply.
+- **Crane stalls.** A new per-crane check (no move for 30 min while it has
+  work) found stalls of up to 4.7 h after random reassignments: three cranes
+  on one 143 m ship, with bays split by work but not by the 30 m gap between
+  cranes, each waiting for its neighbour. A crane now tries every bay it can
+  reach, and one kept out for ten minutes by a neighbour on the same ship
+  hands it those bays. Worst stall after: 10 min.
+- **Schedule moves could overlap** (finding 2): a call dropped inside an
+  earlier planned call's window on the same berth was accepted unchanged.
+  It now berths when that call has left.
+- **The WebGL2 message never showed** (finding 3). `verify.mjs` now loads
+  the page with WebGL2 removed and requires the message. (The first fix
+  probed `getContext('webgl2')` early, which created the context without
+  `preserveDrawingBuffer`; the browser check caught the blank canvas.)
+- Smaller ones: the checker's unused "serving" helper is gone and its header
+  states the exemption it enforces (finding 4); drags ignore non-primary
+  buttons and end cleanly on `pointercancel` (finding 5); the yard panel
+  derives "3 high (1-over-2)" from the layout instead of the wrong
+  "1-over-3" (finding 6).
+
+Checks after the fixes: 19 unit tests pass (the three new ones fail on the
+delivered code); `node tools/check.js --seeds 24 --hours 6 --monkey` 24/24
+clean (18,804 crane moves, 995M pair tests, 0 overlaps, 0 fallbacks);
+`--seeds 6 --hours 30` with and without random actions clean (every call
+in the schedule comes alongside within 30 h, and the first four sail); `node verify.mjs` passes.
+Previews regenerated. The demo film was not re-rendered here; the Run
+assets workflow builds it from this source.

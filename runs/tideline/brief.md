@@ -42,3 +42,23 @@ paused the work from about 05:10:
 pause from about 08:30:
 
 > I hit my usage limit while you were working, but it has reset now. Please continue from where you left off.
+
+<!-- after delivery -->
+
+## After delivery
+
+**About 14:31 UTC, 2026-10-23**, after the run was delivered:
+
+> Open up a PR and queue codex review for the work done here
+
+**About 19:34 UTC**, after the cloud review hung:
+
+> cloud reviews across my workspace seem to be hanging, you can spawn a sonnet 5.5 high subagent and run a local review instead. In the meantime, where can I go to play the game? I'm currently on the macbook
+
+**About 19:42 UTC**, after playing it:
+
+> it looks really good, the only note I have it at one point early on in the flow the last northmere wren ship was rotated a bit and looked to be overlapping the ground. other than that everything seems to function/work well
+
+**About 19:55 UTC** (about repository settings, not the run):
+
+> unrelated but after these fixes are in, it looks like this repo doesn't have settings configured to delete branches after merge, can you enable that and also set to squash/rebase merges. you can also clean up any local/remote branches that have already been merged into main as well
