@@ -72,5 +72,12 @@
   }
   function evalGantry(g, t) { return g.x0 + (g.x1 - g.x0) * frac(g.p, t - g.t0); }
 
-  TL.Crane = { K, profile, frac, move, evalMove, gantry, evalGantry };
+  // Spreader position through a whole cycle: to the pick (m1), the loaded
+  // move (m2), and the empty climb back to park height (m3).
+  function evalCycle(c, t) {
+    const m = t < c.tLock ? c.m1 : t < c.m3.tUp ? c.m2 : c.m3;
+    return evalMove(m, Math.min(t, m.end));
+  }
+
+  TL.Crane = { K, profile, frac, move, evalMove, evalCycle, gantry, evalGantry };
 })(globalThis.TL = globalThis.TL || {});

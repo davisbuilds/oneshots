@@ -98,7 +98,7 @@
       this.tasks = [];
       this.taskSeq = 1;
       this.stats = { moves: [], truckTurns: [], rehandles: 0, refusedPlans: 0, holds: 0, plans: 0, planMs: 0, fallbacks: 0 };
-      this.truckRate = opts.truckRate != null ? opts.truckRate : 46;     // trucks per hour
+      this.truckRate = opts.truckRate != null ? opts.truckRate : 64;     // trucks per hour
       this.speedHint = 1;
       this._setupCalls(opts);
       this._setupCranes();
@@ -241,7 +241,12 @@
       });
       ks.forEach((k, n) => {
         const c = this.cranes[k];
-        c.call = call; c.bays = ranges[n]; c.bay = -1;
+        // A crane with export boxes waiting in (or on their way to) its
+        // buffers finishes that bay first: the boxes sit on the ground
+        // under it, and it cannot leave them behind.
+        const locked = c.call === call && (c.inbound > 0 || c.buffers.some(b => !b.discharge));
+        c.call = call; c.bays = ranges[n];
+        if (!locked) c.bay = -1;
         if (instant) {
           const first = c.bays.find(b => this.bayWork(call, b) > 0);
           const b = first != null ? first : c.bays[0];
@@ -388,6 +393,8 @@
       const pick = steps.find(s => s.kind === 'dwell' && s.leg === 0), drop = steps.find(s => s.kind === 'dwell' && s.leg === 1);
       task.pickT0 = pick.t0; task.pickT1 = pick.t1; task.dropT0 = drop.t0; task.dropT1 = drop.t1;
       task.attachT = pick.t1 - 6; task.detachT = drop.t0 + 6;
+      task.assignT = this.t;
+      if (this.trace) (this.taskLog = this.taskLog || []).push(task);
       sc.status = 'To ' + task.pickLabel;
       return true;
     }
@@ -511,6 +518,7 @@
     _craneDecide(c) {
       const call = c.call, v = call.vessel;
       // Current bay, or the next one in range with work.
+      if (c.bay >= 0 && c.bay >= v.bays.length) c.bay = -1;
       let ph = c.bay >= 0 ? this.bayPhase(call, c.bay) : { phase: 'done' };
       if (ph.phase === 'done' && c.inbound === 0 && !c.buffers.length) {
         const cand = c.bays.filter(b => this.bayPhase(call, b).phase !== 'done');
@@ -685,14 +693,22 @@
       return t;
     }
 
-    _startGantry(c, x) {
+    _startGantry(c, x, depth = 0) {
       // Keep clear of neighbours (their position and where they are going).
+      // An idle neighbour in the way is asked to move along first.
       for (const o of this.cranes) {
         if (o === c) continue;
         const ox = o.gantry ? o.gantry.x1 : o.x;
         const lo = Math.min(c.x, x), hi = Math.max(c.x, x);
-        if ((o.k < c.k && ox > x - CRANE_GAP) || (o.k > c.k && ox < x + CRANE_GAP)) return false;
-        if (ox > lo - CRANE_GAP && ox < hi + CRANE_GAP && Math.sign(ox - c.x) === Math.sign(x - c.x)) return false;
+        const blocks = (o.k < c.k && ox > x - CRANE_GAP) || (o.k > c.k && ox < x + CRANE_GAP) ||
+          (ox > lo - CRANE_GAP && ox < hi + CRANE_GAP && Math.sign(ox - c.x) === Math.sign(x - c.x));
+        if (!blocks) continue;
+        const idle = o.state === 'idle' && (!o.call || o.call.state !== 'working' || o.status === 'Finished') && !o.inbound && !o.buffers.length;
+        if (idle && depth < 6) {
+          const nx = o.k < c.k ? Math.min(ox, x - CRANE_GAP - 6) : Math.max(ox, x + CRANE_GAP + 6);
+          if (nx > 20 && nx < 800) this._startGantry(o, nx, depth + 1);
+        }
+        return false;
       }
       // Reserve the rail cells the legs sweep, at the earliest free window.
       const sweep = new Set();
@@ -713,6 +729,7 @@
       this._reserveLegs(c, t0 + dur, Infinity, x);
       c.gantry = CR.gantry(c.x, x, t0);
       c.gantry.end = t0 + dur;
+      if (this.trace) (c.gHist = c.gHist || []).push(c.gantry);
       c.state = 'gantry'; c.status = 'Gantry';
       return true;
     }
@@ -732,6 +749,9 @@
         : Sim.shipToWorld(this.shipPose(call), st.x, st.y, st.base + v.stackHeight(st, st.boxes), {});
       const h = box.h;
       const t = this.t;
+      // Over the apron the spreader (and any box under it) stays above the
+      // straddle carriers, 15.3 m tall, with 1.5 m to spare.
+      zTop = Math.max(zTop, 16.8);
       let m1, m2, tLock, tUnlock;
       if (kind === 'discharge') {
         m1 = CR.move(c.y, c.z, sTop.y, sTop.z, zTop, false, t);
@@ -746,7 +766,9 @@
       const visitT = kind === 'discharge' ? m2.end : m1.end;
       const cells = this.scG.states[bufState].fp;
       const F = M.freeIntervals(cells, this.res, ID.land + c.k, -1, t);
-      const a0 = Math.floor(visitT) - 10, a1 = Math.ceil(visitT) + 7;
+      // The spreader is below carrier height for about 12 s before it touches
+      // down and, with the lock and the climb back out, 20 s after.
+      const a0 = Math.floor(visitT) - 16, a1 = Math.ceil(visitT) + 24;
       let shift = 0;
       for (let i = 0; i < F.length; i += 2) {
         const fa = F[i], fb = F[i + 1];
@@ -759,8 +781,11 @@
       }
       this.res.add(cells, a0 + shift, a1 + shift, ID.land + c.k);
       tUnlock = m2.end;
-      const cyc = { kind, st, box, bufState, buf, m1, m2, tLock, tLift: tLock + CR.K.lock, tUnlock, end: tUnlock + CR.K.unlock, stage: 0, call };
+      // After letting go, the empty spreader climbs back clear of everything.
+      const m3 = CR.move(m2.y1, m2.z1, m2.y1, Math.max(CR.K.parkZ, zTop + CR.K.clearance), 0, false, tUnlock + CR.K.unlock);
+      const cyc = { kind, st, box, bufState, buf, m1, m2, m3, tLock, tLift: tLock + CR.K.lock, tUnlock, end: m3.end, stage: 0, call };
       c.cycle = cyc; c.state = 'cycle';
+      if (this.trace) (c.cycHist = c.cycHist || []).push({ t0: this.t, m1, m2, m3, tLock, end: cyc.end, box, bufState, kind });
       c.status = kind === 'discharge' ? 'Discharging' : 'Loading';
       box.busy = true;
       if (kind === 'discharge') {
@@ -782,8 +807,7 @@
     _cycleEvents(c) {
       const cyc = c.cycle, t = this.t, call = cyc.call, v = call.vessel;
       // Spreader position for display.
-      const m = t < cyc.tLock ? cyc.m1 : cyc.m2;
-      const p = CR.evalMove(m, Math.min(t, m.end));
+      const p = CR.evalCycle(cyc, t);
       c.y = p.y; c.z = p.z;
       if (cyc.stage === 0 && t >= cyc.tLift) {
         cyc.stage = 1;
@@ -819,7 +843,7 @@
         this.stats.moves.push({ t, crane: c.k, call: call.id });
         this._checkInvariant(call);
       }
-      if (t >= cyc.end) { c.cycle = null; c.state = 'idle'; c.y = cyc.m2.y1; c.z = cyc.m2.z1; }
+      if (t >= cyc.end) { c.cycle = null; c.state = 'idle'; c.y = cyc.m3.y1; c.z = cyc.m3.z1; }
     }
     // The live condition must stay inside operating limits after every move.
     _checkInvariant(call) {
@@ -831,10 +855,26 @@
       }
     }
 
-    // Anti-heeling pumps: move water toward upright, at a limited rate.
+    // Anti-heeling pumps: move water toward upright, at a limited rate. The
+    // ballast pumps also hold trim: when it drifts more than 1.2 m from 0.5 m
+    // by the stern, water moves between the peak tanks at 300 t/h.
     _antiHeel() {
       for (const call of this.calls) {
         if (call.state !== 'working') continue;
+        {
+          const v = call.vessel, c = this.condition(call), A = v.tanks.apk, Fk = v.tanks.fpk;
+          const err = c.trim - 0.5;
+          if (!call.trimRun && Math.abs(err) > 1.2) call.trimRun = true;
+          if (call.trimRun) {
+            if (Math.abs(err) < 0.3) call.trimRun = false;
+            else {
+              const rate = 300 / 3600, dir = err > 0 ? 1 : -1;     // + : move aft water forward
+              const m = Math.min(rate, dir > 0 ? A.cap * A.fill : Fk.cap * Fk.fill, dir > 0 ? Fk.cap * (1 - Fk.fill) : A.cap * (1 - A.fill));
+              if (m > 1e-3) { A.fill -= dir * m / A.cap; Fk.fill += dir * m / Fk.cap; call._condT = -1; }
+              else call.trimRun = false;
+            }
+          }
+        }
         const v = call.vessel, P = v.tanks.ahP, Sx = v.tanks.ahS, arm = Sx.y - P.y;
         const s = sumsOf(v);
         // Like a real anti-heeling system, it starts at a set list (0.35 deg)
@@ -884,7 +924,11 @@
           this.stats.truckTurns.push({ t: this.t, turn: this.t - tr.gateInT });
         }
       }
-      if (this.t % 60 === 0) this.trucks = this.trucks.filter(tr => tr.state !== 'gone' || this.t - tr.goneT < 120);
+      if (this.t % 60 === 0) {
+        const keep = (tr) => tr.state !== 'gone' || this.t - tr.goneT < 120;
+        if (this.trace) (this._goneTrucks = this._goneTrucks || []).push(...this.trucks.filter(tr => !keep(tr)));
+        this.trucks = this.trucks.filter(keep);
+      }
     }
     _spawnTruck() {
       const rng = this.rng;
@@ -921,7 +965,7 @@
     _truckIn(tr, bay) {
       const g = this.trG;
       const legs = [
-        { goal: g.boothIn[this.rng() < 0.5 ? 0 : 1], dwell: 30 + Math.round(this.rng() * 30) },
+        { goal: g.boothIn[this.rng() < 0.5 ? 0 : 1], dwell: 70 + Math.round(this.rng() * 70) },
         { goal: g.dock[bay], dwell: Infinity },
       ];
       // Try both gate lanes.
@@ -970,7 +1014,7 @@
     _truckOut(tr) {
       const g = this.trG;
       // Wait until the carrier has left the bay; plan from the dock.
-      const legs = [{ goal: g.boothOut[0], dwell: 20 }, { goal: g.sink, dwell: Infinity }];
+      const legs = [{ goal: g.boothOut[0], dwell: 45 }, { goal: g.sink, dwell: Infinity }];
       this.res.release(ID.truck + tr.k, this.t);
       let steps = null;
       for (const booth of g.boothOut) {
@@ -1005,7 +1049,8 @@
           const busy = this.cranes.some(c => c.call === call && (c.state === 'cycle' || c.inbound));
           if (!busy) {
             call.state = 'departing'; call.departT = this.t;
-            for (const c of this.cranes) if (c.call === call) { c.call = null; c.status = 'Idle'; c.bays = []; }
+            for (const c of this.cranes) if (c.call === call) { c.call = null; c.status = 'Idle'; c.bays = []; c.bay = -1; }
+            call.cranes = [];
             this._alert('sail', `${call.vessel.name} completed: ${call.done.d} off, ${call.done.l} on`, call);
           }
         }
@@ -1252,9 +1297,24 @@
       P.fill -= m / P.cap; Sx.fill += m / Sx.cap;
     }
 
+    // A ship alongside with no crane gets the nearest idle one that can
+    // reach it without passing another crane.
+    _autoCranes() {
+      for (const call of this.calls) {
+        if (call.state !== 'working' || call.cranes.length) continue;
+        const B = L.BERTHS[call.berth], mid = (B.x0 + B.x1) / 2;
+        const idle = this.cranes.filter(c => !c.pendingSet && (!c.call || c.call.state !== 'working')).sort((a, b) => Math.abs(a.x - mid) - Math.abs(b.x - mid));
+        for (const c of idle) {
+          const r = this.assignCrane(c.k, call);
+          if (r.ok) break;
+        }
+      }
+    }
+
     // ── One second ───────────────────────────────────────────────────────
     step() {
       this.t++;
+      if (this.t % 300 === 0) this._autoCranes();
       this._calls();
       this._antiHeel();
       this._cranes();

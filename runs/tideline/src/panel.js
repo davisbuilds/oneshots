@@ -64,7 +64,7 @@
           <div class="cvwrap"><canvas class="cv" id="cvBay" data-h="230"></canvas></div>
           <div class="note" id="bayNote"></div>
         </div>
-        <div class="sect"><h3>Stability <span class="faint" style="font-weight:500">(live)</span><span class="r" id="stabState"></span></h3>
+        <div class="sect" id="stabSect"><h3>Stability <span class="faint" style="font-weight:500">(live)</span><span class="r" id="stabState"></span></h3>
           <div class="gauges"><div><div class="gl">Trim</div><canvas id="gTrim" width="336" height="208"></canvas></div><div><div class="gl">Heel</div><canvas id="gHeel" width="336" height="208"></canvas></div></div>
           <div class="stats" id="stabStats"></div>
           <div id="depart"></div>
@@ -309,9 +309,9 @@
     g.fillStyle = '#28304a'; g.font = '700 38px Inter, system-ui, sans-serif'; g.textAlign = 'center';
     g.fillText(label, cx, cy - 4);
     g.font = '600 20px Inter, system-ui, sans-serif'; g.fillStyle = '#8a8f9c';
-    g.fillText(min.toFixed(1), cx - R, cy + 34); g.fillText('0', cx, cy + 34); g.fillText(max.toFixed(1), cx + R, cy + 34);
+    g.fillText(min.toFixed(1), cx - R, cy + 34); g.fillText(max.toFixed(1), cx + R, cy + 34);
     g.font = '600 18px Inter, system-ui, sans-serif'; g.fillStyle = '#5b6378';
-    g.fillText(unit, cx, cy + 22);
+    g.fillText(unit, cx, cy + 26);
   }
   P.gauges = function (call, c) {
     const lim = TL.Stability.LIMITS;

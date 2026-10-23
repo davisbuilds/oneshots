@@ -15,7 +15,7 @@
     concrete: hex('#ddd0b9'), orange: hex('#e08a3a'), red: hex('#c65a3e'),
   };
   // Container colours by owner (index in stowage.js LINES.color).
-  const BOXCOL = [hex('#c65a3e'), hex('#e2a93f'), hex('#4b8f98'), hex('#5d84a3'), hex('#e3d4b8'), hex('#8fa679'), hex('#9aa3b0')];
+  const BOXCOL = [hex('#c96a4f'), hex('#dcb062'), hex('#5c989d'), hex('#6d8da8'), hex('#e6d9c0'), hex('#9cae86'), hex('#a3abb6')];
 
   // ── Shaders ────────────────────────────────────────────────────────────
   const COMMON = `
@@ -253,9 +253,10 @@ uniform vec4 u_ships[6];   // centre x, y, half length, half beam
 uniform float u_shipYaw[6];
 out vec4 o;
 float field(vec2 p){
-  vec2 q = vec2(p.x * 0.0045 + p.y * 0.0012, p.y * 0.022);
-  float t = u_time * 0.006;
-  return fbm(q + vec2(t, t * 0.3)) + 0.5 * fbm(q * 2.3 - vec2(t * 0.7, 0.0)) * 0.6;
+  // Long, slow shapes stretched along the quay, like torn sheets of paper.
+  vec2 q = vec2(p.x * 0.0030 + p.y * 0.0009, p.y * 0.0125);
+  float t = u_time * 0.004;
+  return fbm(q + vec2(t, t * 0.3)) * 0.85 + 0.25 * fbm(q * 3.1 - vec2(t * 0.7, 0.0));
 }
 float shipDist(vec2 p){
   float d = 1e9;
@@ -271,10 +272,10 @@ void main(){
   // Depth: deeper (darker) away from the quay.
   float far = smoothstep(-40.0, -420.0, p.y);
   float f = field(p) + far * 0.22 - (1.0 - far) * 0.05;
-  vec2 off = normalize(-u_sun.xy) * 2.2;
+  vec2 off = normalize(-u_sun.xy) * 3.2;
   float fs = field(p + off) + far * 0.22;
-  vec3 c0 = vec3(0.235, 0.47, 0.53), c1 = vec3(0.19, 0.36, 0.47), c2 = vec3(0.145, 0.25, 0.39), c3 = vec3(0.12, 0.20, 0.33);
-  float t1 = 0.50, t2 = 0.62, t3 = 0.74;
+  vec3 c0 = vec3(0.33, 0.60, 0.62), c1 = vec3(0.23, 0.46, 0.55), c2 = vec3(0.16, 0.31, 0.45), c3 = vec3(0.13, 0.22, 0.37);
+  float t1 = 0.47, t2 = 0.58, t3 = 0.70;
   float aa = fwidth(f) * 1.2;
   vec3 c = mix(c0, c1, smoothstep(t1 - aa, t1 + aa, f));
   c = mix(c, c2, smoothstep(t2 - aa, t2 + aa, f));
@@ -287,11 +288,11 @@ void main(){
   for (int k = 0; k < 3; k++){
     float t = k == 0 ? t1 : (k == 1 ? t2 : t3);
     // Lower layer (f > t) near a cut where the layer above (f < t) overhangs.
-    sh += step(t, f) * step(fs, t) * 0.16;
+    sh += step(t, f) * step(fs, t) * 0.22;
     edgeL += (1.0 - smoothstep(0.0, aa * 1.5, abs(f - t))) * step(f, t);
   }
   c *= 1.0 - sh;
-  c = mix(c, c * 1.25 + 0.04, clamp(edgeL, 0.0, 1.0) * 0.45);
+  c = mix(c, c * 1.3 + 0.06, clamp(edgeL, 0.0, 1.0) * 0.6);
   // Foam strips: torn paper along the quay wall and around hulls.
   float q = -p.y;
   float foamN = fbm(vec2(p.x * 0.05, p.y * 0.2) + u_time * 0.01);
@@ -301,8 +302,12 @@ void main(){
   float foam = max(quayFoam * 0.9, hullFoam * 0.8);
   c = mix(c, vec3(0.62, 0.80, 0.80), foam * 0.75);
   // Long thin highlight cuts.
-  float streak = smoothstep(0.035, 0.0, abs(fbm(vec2(p.x * 0.006, p.y * 0.05) + 3.0) - 0.55)) * (0.4 + far * 0.6);
-  c = mix(c, vec3(0.55, 0.76, 0.78), streak * 0.5);
+  // Pale torn strips cut out of the top sheet.
+  float sn = fbm(vec2(p.x * 0.004 + p.y * 0.002, p.y * 0.03) + 7.0);
+  float strip = smoothstep(0.735, 0.745, sn) * (1.0 - smoothstep(0.77, 0.78, sn));
+  float stripS = smoothstep(0.735, 0.745, fbm(vec2((p.x + off.x) * 0.004 + (p.y + off.y) * 0.002, (p.y + off.y) * 0.03) + 7.0));
+  c = mix(c, c * 0.8, (1.0 - strip) * stripS * 0.0);
+  c = mix(c, vec3(0.60, 0.80, 0.80), strip * 0.85);
   vec3 col = light(c, vec3(0.0, 0.0, 1.0), v_wp) * 0.92;
   col *= 1.0 + grain(v_wp) * 0.9;
   o = vec4(col, 1.0);
@@ -444,7 +449,7 @@ void main(){
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       this.hulls = new Map();
       // Camera: target on the ground, zoom in metres per CSS pixel.
-      this.cam = { x: 190, y: 45, zoom: 0.25, az: -Math.PI / 4, el: 0.62, shiftX: 0, shiftY: 0 };
+      this.cam = { x: 175, y: 35, zoom: 0.18, az: -Math.PI / 4, el: 0.62, shiftX: 0, shiftY: 0 };
       this.sun = this._norm([-0.62, -0.30, 0.72]);
       this.decals = null;
       this.staticBuilt = false;

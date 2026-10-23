@@ -385,7 +385,7 @@
       if (sc && sc._draw) {
         const p = r.project(sc._draw.x, sc._draw.y, 8);
         if (inFree(p, 20)) {
-          const e = el('sc', 'call card');
+          const e = el('sc', 'call card keep');
           const tk = sc.task;
           const waiting = tk && t >= tk.pickT0 && t < tk.attachT;
           const status = !tk ? sc.status : waiting ? 'In position' : t < tk.pickT0 ? 'To ' + tk.pickLabel : 'To ' + tk.dropLabel;

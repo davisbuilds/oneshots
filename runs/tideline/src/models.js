@@ -45,12 +45,12 @@
     for (const y of [yW, yL]) for (const x of [-W, W]) {
       b.box(x, y, 0.9, 8, 2.6, 1.8, dark, 0);
       for (const dx of [-2.8, -0.9, 0.9, 2.8]) b.cyl(x + dx, y, 0.55, 0.55, 2.8, PAL.rubber);
-      b.box(x, y, (top + 2) / 2, 2.2, 2.2, top - 2, leg, 0);
+      b.box(x, y, (top + 2) / 2, 2.9, 2.9, top - 2, leg, 0);
     }
     // Portal beams (across the lanes, high enough for straddle carriers) and sill ties.
     for (const x of [-W, W]) {
-      b.box(x, (yW + yL) / 2, 21, 1.8, yL - yW, 2.0, leg, 3);
-      b.box(x, (yW + yL) / 2 - 7, top - 1, 2.0, yL - yW + 24, 3.0, leg, 3);
+      b.box(x, (yW + yL) / 2, 21, 2.4, yL - yW, 2.8, leg, 3);
+      b.box(x, (yW + yL) / 2 - 7, top - 1, 2.6, yL - yW + 24, 3.6, leg, 3);
     }
     b.box(0, yW, top - 3, 2 * W + 2.2, 2.2, 2.4, leg, 0);
     b.box(0, yL, top - 3, 2 * W + 2.2, 2.2, 2.4, leg, 0);
@@ -58,26 +58,26 @@
     // A-frame and stays.
     const apex = [0, yW + 9, 74];
     for (const x of [-W, W]) {
-      b.beam([x * 0.95, yW + 1, top], [x * 0.35, apex[1], apex[2]], 1.6, leg);
-      b.beam([x * 0.95, yL - 6, top], [x * 0.35, apex[1], apex[2]], 1.6, leg);
+      b.beam([x * 0.95, yW + 1, top], [x * 0.35, apex[1], apex[2]], 2.1, leg);
+      b.beam([x * 0.95, yL - 6, top], [x * 0.35, apex[1], apex[2]], 2.1, leg);
     }
     b.box(0, apex[1], apex[2], 2 * W * 0.35 + 1.6, 2.2, 2.2, leg);
     // Boom: two girders out over the water, raised when idle (hi = 0..1).
     const outreach = 52;
     b.push(F.mul(F.T(0, yW + 2, top + 1.5), F.Rx(-(hi || 0) * 1.25)));
-    for (const x of [-4.2, 4.2]) b.box(x, -outreach / 2, 0, 1.6, outreach + 2, 3.0, boom, 3);
+    for (const x of [-4.2, 4.2]) b.box(x, -outreach / 2, 0, 2.2, outreach + 2, 3.8, boom, 3);
     for (let k = 0; k <= 6; k++) b.box(0, -k * outreach / 6, 1.2, 8.4, 0.9, 0.6, boom, 0);
     b.box(0, -outreach, 0.4, 9.6, 1.5, 3.6, boom, 0);
     b.pop();
-    for (const x of [-4.2, 4.2]) b.box(x, yL - 2, top + 1.5, 1.6, yL - yW + 22, 3.0, boom, 3);
+    for (const x of [-4.2, 4.2]) b.box(x, yL - 2, top + 1.5, 2.2, yL - yW + 22, 3.8, boom, 3);
     for (const x of [-4.2, 4.2]) {
       b.beam([x * 0.6, apex[1], apex[2]], [x, yW - outreach * 0.55, top + 3.2], 0.7, leg);
       b.beam([x * 0.6, apex[1], apex[2]], [x, yW - outreach + 2, top + 3.2], 0.7, leg);
       b.beam([x * 0.6, apex[1], apex[2]], [x, yL + 14, top + 3.2], 0.8, leg);
     }
     // Machinery house on the backreach.
-    b.box(0, yL + 9, top + 5.5, 11, 13, 6.6, PAL.white, 2);
-    b.box(0, yL + 9, top + 9.1, 11.6, 13.6, 0.6, shade(PAL.white, 0.9), 0);
+    b.box(0, yL + 9, top + 5.8, 13, 13, 7.2, PAL.white, 2);
+    b.box(0, yL + 9, top + 9.7, 13.6, 13.6, 0.6, shade(PAL.white, 0.9), 0);
     // Trolley, cab, ropes, spreader and the box it holds.
     const ty = trolleyY;
     b.box(0, ty, top + 1.2, 9.0, 7.0, 2.6, PAL.white, 0);
@@ -315,8 +315,7 @@
       let x = c.x, y = c.y, z = c.z;
       if (c.gantry) x = CR.evalGantry(c.gantry, t);
       if (c.cycle) {
-        const m = t < c.cycle.tLock ? c.cycle.m1 : c.cycle.m2;
-        const p = CR.evalMove(m, Math.min(t, m.end));
+        const p = CR.evalCycle(c.cycle, t);
         y = p.y; z = p.z;
       }
       const hi = c.call && c.call.state === 'working' ? 0 : 0;

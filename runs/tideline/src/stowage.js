@@ -16,9 +16,9 @@
     CVN: { name: 'Corvane Line', prefix: 'CVN', color: 0 },
     BRW: { name: 'Brindlewake Shipping', prefix: 'BRW', color: 2 },
     NMF: { name: 'Northmere Feeders', prefix: 'NMF', color: 3 },
-    ALD: { name: 'Alder Ocean Lines', prefix: 'ALD', color: 1 },
+    ALD: { name: 'Alder Ocean Lines', prefix: 'ALD', color: 5 },
     LSE: { name: 'Halden Leasing', prefix: 'HDL', color: 4 },
-    LS2: { name: 'Grayle Container Leasing', prefix: 'GRY', color: 5 },
+    LS2: { name: 'Grayle Container Leasing', prefix: 'GRY', color: 1 },
   };
   const TYPES = {
     DV: { label: "40' DV", h: TL.BOX.H, tare: 3.75 },
@@ -118,7 +118,7 @@
   function trimBallast(vessel, gmTarget, trimTarget) {
     const T = vessel.tanks;
     if (!T.fpk) {
-      const L = vessel.hull.L, cap = Math.round(vessel.dispDesign * 0.025);
+      const L = vessel.hull.L, cap = Math.round(vessel.dispDesign * 0.05);
       T.fpk = { cap, fill: 0.3, x: 0.965 * L, y: 0, z: vessel.c.D * 0.35, fsm: 0 };
       T.apk = { cap, fill: 0.3, x: 0.035 * L, y: 0, z: vessel.c.D * 0.55, fsm: 0 };
     }

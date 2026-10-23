@@ -96,3 +96,109 @@ numbered in the order they were made; studies are in `studies/`.
 - 8 simulated hours now run clean: about 27 moves per crane-hour, 465
   rehandles, no stability violations, about 12 ms of compute per real
   second at 60x.
+
+## 3. First light (04:55 to 05:10, then a pause)
+
+- `src/gl.js`, `src/render.js`, `src/models.js`: WebGL2, everything drawn as
+  instances of four tiny meshes (box, prism, cylinder, faceted ball) with a
+  per-instance matrix and a material code; hulls meshed from the same hull
+  form the stability model integrates; ground markings painted analytically
+  in a shader; cut-paper water; a 4096 shadow map with 3x3 PCF.
+- The run was interrupted from about 05:10 to 07:41 UTC (the human's usage
+  limit); work resumed where it stopped, with no change of direction.
+- **Snapshot 01** (first frame): the pipeline works, but the paper is
+  overexposed to white, the camera shows the whole terminal so the ship is a
+  sliver, and the water is small blotches rather than long strips. Rebalanced
+  the light so a fully lit top face equals its paper colour (sky 0.56 +
+  sun 0.66 x 0.72), stretched the water noise along the quay, moved in.
+  **Snapshot 02**: reads as a paper diorama for the first time.
+
+## 4. The console (07:41 to 07:55)
+
+- `index.html` (tokens from the art bible), `src/icons.js` (every icon is
+  path data written in code; the logo is painted on a canvas), `src/ui.js`
+  (top bar, rail, KPI cards with context lines, callouts with leader lines,
+  camera, picking, search, toasts), `src/panel.js` (vessel, yard, equipment,
+  gate), `src/schedule.js` (berth schedule).
+- Player actions in the simulation, each with a reason when refused:
+  `replan` (drag a planned box), `moveCall` (berth schedule: quay length,
+  water under the keel at the deeper of arrival and departure drafts, later
+  calls pushed back), `assignCrane` (cranes share a rail and cannot pass).
+- **Snapshot 03, wrong:** the stowage canvases shrank on every redraw (I
+  read the canvas's own height attribute back as the design height); the
+  crane KPI read 5.8 moves/hr because the history began when the page
+  opened; the projected ETD was two days out for the same reason; the heel
+  sat at exactly 0.00 because the anti-heel model levelled perfectly every
+  second. Fixed: a fixed design height; the shift's earlier moves are
+  backfilled across the time each ship has been alongside, and the warm
+  start does only as many moves as its cranes could have made in that time;
+  the ETD blends the last hour with the planning norm; the anti-heel pumps
+  now start at 0.35 deg and stop near upright, as real systems do, so the
+  ship rocks slightly as boxes land.
+- **Wrong (mid-call plans):** once loading had started, the plan functions
+  counted loaded boxes twice (once as "remaining on board", once as planned).
+  Remaining-on-board is now "not for this port and not loaded here".
+
+## 5. The checker (07:55 to 08:05)
+
+`tools/check.js` reruns the terminal headless over many seeds, optionally
+with random player actions (re-plans, schedule moves, crane reassignments
+every ten minutes), and judges it from what the vehicles actually drove: all
+carriers and trucks rebuilt as real rectangles every 0.25 s and tested
+pairwise (separating axes), carriers against crane legs, and carriers under
+any spreader below carrier height. It found real faults:
+
+1. **Spreaders crossed the apron at 12 m**, below the 15.3 m straddle
+   carriers. The trolley now travels with the spreader (and its box) at
+   16.8 m or more over the apron.
+2. **An idle crane left its spreader on the ground** until its next cycle,
+   and a carrier drove under it. Every cycle now ends with an empty climb to
+   park height; one function evaluates the spreader for the sim, the
+   renderer and the checker.
+3. The spreader's reservation of the buffer lane was shorter than the time
+   it actually spends below carrier height; widened to 16 s before and 24 s
+   after touchdown.
+4. With random actions over 14 hours, **no ship finished and cranes idled
+   for up to five hours**: a reassigned crane re-picked its bay while export
+   boxes already sat in its buffers for the old one; cranes waited for ever
+   behind an idle neighbour on the rail; a ship stripped of its cranes was
+   never worked again. A crane's bay is now locked while boxes are inbound,
+   idle cranes yield along the rail, and an idle crane is assigned to any
+   ship alongside that has none.
+5. The feeder drifted past 2 m of trim during discharge: added trim
+   ballasting between the peak tanks (300 t/h), and larger peak tanks.
+
+Two things the checker reported were not faults, and I changed the checker
+rather than the sim, narrowly: a carrier straddling a trailer is allowed
+only while the truck stands still in its dock pose and the carrier is lined
+up over that bay; a spreader may be low over a carrier only if that carrier
+is taking or delivering the very box (this cycle's or the one just let go).
+
+Result: **6 seeds x 14 h with random actions, all clean**: 9,667 crane
+moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
+0 overlaps, 0 planner fallbacks, heel never above 0.47 deg, GM never below
+1.66 m; departures checked against limits as they sail.
+
+## 6. Demo tour, lettering, checkpoint against the references (08:05 to 08:10)
+
+- `src/demo.js`: six shots in 45 s, chosen from the live simulation when a
+  shot begins (the carrier that will be waiting when a box lands), so a
+  frame-by-frame render is deterministic. `tools/film.mjs` renders it.
+- `src/decals.js`: one atlas of lettering painted in code (ship names, crane
+  and carrier numbers, block letters, berth numbers, bay numbers).
+- **Checkpoint, snapshots 05 (beside Nexus Port and HarborView):**
+  - Information architecture matches HarborView: rail, KPI cards with a
+    context line, callouts with status chips, tabbed vessel panel, a berth
+    schedule with dates, now line and TEU. Better than the reference where
+    it was wrong: one axis, one berth per call, moves/hr, limits on gauges.
+  - Art direction falls short of Nexus Port: ours is a wide, busy view of
+    the whole yard where Nexus is a close diorama of one berth; our water is
+    darker and finer-grained; our containers more saturated (mustard
+    dominated the yard); cranes thinner than its chunky ones.
+  - Changed: softer container palette (and the Alder line's boxes sage, not
+    mustard), lighter teal water layers with crisper cut edges and pale torn
+    strips, cranes about 1.3x thicker, two cells of gap between yard blocks,
+    and a closer default camera on the working ship. **Snapshot 06** and
+    `06-compare-nexus-port.webp`: much closer in mood and scale. Still
+    behind the reference: its water shapes are bolder, and its ground is
+    calmer (fewer markings).

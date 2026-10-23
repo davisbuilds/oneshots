@@ -42,7 +42,7 @@
   const SLOT_TIERS = 3;
   const letters = 'ABCDEFG';
   for (let b = 0; b < 7; b++) {
-    const i0 = 4 + 17 * b;
+    const i0 = 4 + 18 * b;
     for (const [r, [j0, j1]] of [J.block1, J.block2].entries()) {
       const slots = [];
       for (let j = j0 + 1; j <= j1 - 1; j += 2) slots.push(j);
@@ -69,12 +69,12 @@
   const SC_TYPE = new Uint8Array(NX * NY);
   (function () {
     const set = (i, j, t) => { if (i >= 0 && j >= 0 && i < NX && j < NY) SC_TYPE[j * NX + i] = t; };
-    for (let i = 1; i <= 125; i++) {
+    for (let i = 1; i <= 131; i++) {
       for (const j of J.craneLanes) set(i, j, 1);
       set(i, J.rail, 2);
       for (const j of J.apron) set(i, j, 1);
     }
-    for (let i = 2; i <= 124; i++) { for (const j of J.cross) set(i, j, 1); for (const j of J.back) set(i, j, 1); }
+    for (let i = 2; i <= 130; i++) { for (const j of J.cross) set(i, j, 1); for (const j of J.back) set(i, j, 1); }
     for (const B of BLOCKS) for (let i = B.i0; i <= B.i1; i++) for (let j = B.j0; j <= B.j1; j++) set(i, j, 3);
     for (const P of POCKETS) for (let j = 57; j <= 59; j++) set(P.i, j, 4);
     for (const T of BAYS) for (let j = 57; j <= 59; j++) set(T.i, j, 4);
@@ -242,7 +242,7 @@
   // trees, fences. Positions only; all of it stays off the vehicle cells.
   function scenery() {
     const masts = [];
-    for (const B of BLOCKS) if (B.col < 6) masts.push({ x: (B.i1 + 1.5) * CELL, y: (B.j0 + B.j1 + 1) / 2 * CELL, h: 34 });
+    for (const B of BLOCKS) if (B.col < 6) masts.push({ x: (B.i1 + 2) * CELL, y: (B.j0 + B.j1 + 1) / 2 * CELL, h: 34 });
     const buildings = [
       { name: 'Operations', x: 900, y: 335, w: 46, d: 28, h: 16, kind: 'office' },
       { name: 'Workshop', x: 40, y: 410, w: 70, d: 34, h: 13, kind: 'shed' },
