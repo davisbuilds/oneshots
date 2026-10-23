@@ -267,7 +267,7 @@
     const top = 150, bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sched')) + 22;
     // Callouts live below the KPI cards and above the schedule.
     app.free = { x0: left, x1: W - right, y0: kb - 4, y1: H - bottom };
-    if (document.body.classList.contains('bare')) { app.free = { x0: 0, x1: W, y0: 0, y1: H }; app.r.cam.shiftX = 0; app.r.cam.shiftY = 0; return; }
+    if (document.body.classList.contains('bare') || document.body.classList.contains('cine')) { app.free = { x0: 0, x1: W, y0: 0, y1: H }; app.r.cam.shiftX = 0; app.r.cam.shiftY = 0; return; }
     app.r.cam.shiftX = (left + (W - right)) / 2 - W / 2;
     app.r.cam.shiftY = -(((top + (H - bottom)) / 2) - H / 2);
   };
@@ -412,6 +412,28 @@
           e.style.left = x + 'px'; e.style.top = y + 'px';
           lines.push([x + 230, y + 40, p[0], p[1]]);
           e._onclick = () => UI.select('truck', tr);
+        }
+      }
+      // A re-planned box: where it waits in the yard, then on its way.
+      const rp = app.ripple;
+      if (rp && performance.now() < rp.until) {
+        const b = rp.box, loc = b.loc || {};
+        let w = null, txt = '';
+        if (loc.kind === 'yard') { const st = sim.yard.byKey.get(loc.key); if (st) { w = [st.x, st.y, (loc.idx + 1) * b.h + 1]; txt = `waiting in block ${st.block.name}, tier ${loc.idx + 1}`; } }
+        else if (loc.kind === 'sc') { const c = sim.scs[loc.sc]; if (c._draw) { w = [c._draw.x, c._draw.y, 14]; txt = `on ${c.id}, to the crane`; } }
+        else if (loc.kind === 'ground') { const st = sim.scG.states[loc.state]; w = [st.x, st.y, 4]; txt = `under ${sim.cranes[loc.crane].id}`; }
+        else if (loc.kind === 'crane') { const c = sim.cranes[loc.crane]; w = [c._draw.x, c._draw.y, c._draw.z]; txt = `on ${c.id}'s spreader`; }
+        else if (loc.kind === 'ship') { rp.until = Math.min(rp.until, performance.now() + 3000); txt = 'loaded'; }
+        if (w) {
+          const p = r.project(w[0], w[1], w[2]);
+          if (inFree(p, 10)) {
+            const e = el('ripple', 'call card keep');
+            e.innerHTML = `<div class="ic" style="color:var(--teal)">${TL.icon('box')}</div><div><b>${b.id.slice(0, 4)} ${b.id.slice(4)}</b></div><span class="chev">${TL.icon('chev')}</span><div class="l3"><span class="chip blue">Re-planned to ${rp.slot}</span></div><div class="l3" style="margin-top:3px">${txt}</div>`;
+            const x = TL.clamp(p[0] + 50, app.free.x0 + 8, app.free.x1 - 240), y = TL.clamp(p[1] - 100, app.free.y0 + 8, app.free.y1 - 90);
+            e.style.left = x + 'px'; e.style.top = y + 'px';
+            lines.push([x, y + 30, p[0], p[1]]);
+            e._onclick = () => UI.select('call', rp.call);
+          }
         }
       }
       // Gate and yard block pins.

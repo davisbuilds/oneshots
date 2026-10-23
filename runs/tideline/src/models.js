@@ -64,15 +64,17 @@
     b.box(0, apex[1], apex[2], 2 * W * 0.35 + 1.6, 2.2, 2.2, leg);
     // Boom: two girders out over the water, raised when idle (hi = 0..1).
     const outreach = 52;
-    b.push(F.mul(F.T(0, yW + 2, top + 1.5), F.Rx(-(hi || 0) * 1.25)));
+    const BR = F.mul(F.T(0, yW + 2, top + 1.5), F.Rx(-(hi || 0) * 1.25));
+    b.push(BR);
     for (const x of [-4.2, 4.2]) b.box(x, -outreach / 2, 0, 2.2, outreach + 2, 3.8, boom, 3);
     for (let k = 0; k <= 6; k++) b.box(0, -k * outreach / 6, 1.2, 8.4, 0.9, 0.6, boom, 0);
     b.box(0, -outreach, 0.4, 9.6, 1.5, 3.6, boom, 0);
     b.pop();
     for (const x of [-4.2, 4.2]) b.box(x, yL - 2, top + 1.5, 2.2, yL - yW + 22, 3.8, boom, 3);
     for (const x of [-4.2, 4.2]) {
-      b.beam([x * 0.6, apex[1], apex[2]], [x, yW - outreach * 0.55, top + 3.2], 0.7, leg);
-      b.beam([x * 0.6, apex[1], apex[2]], [x, yW - outreach + 2, top + 3.2], 0.7, leg);
+      // Forestays follow the boom when it is raised.
+      b.beam([x * 0.6, apex[1], apex[2]], F.apply(BR, x, -2 - outreach * 0.55, 1.7), 0.7, leg);
+      b.beam([x * 0.6, apex[1], apex[2]], F.apply(BR, x, -outreach, 1.7), 0.7, leg);
       b.beam([x * 0.6, apex[1], apex[2]], [x, yL + 14, top + 3.2], 0.8, leg);
     }
     // Machinery house on the backreach.
@@ -132,6 +134,19 @@
     b.box(-2.5, 0, 1.15, 12.4, 2.4, 0.35, dark, 0);
     for (const x of [-7.2, -6.0, 5.0, 7.0]) for (const y of [-1.0, 1.0]) b.box(x, y, 0.5, 1.0, 0.5, 1.0, PAL.rubber, 0);
     if (box) boxAt(b, -2.5, 0, 1.35 + box.h / 2, 0, box);
+  }
+
+  // ── Tug (frame: waterline centre, x forward) ──────────────────────────
+  function tug(b) {
+    b.push(F.T(0, 0, 0));
+    b.box(0, 0, 0.6, 26, 9, 3.2, PAL.terracotta, 0);
+    b.box(11.5, 0, 0.6, 3, 6, 3.2, PAL.terracotta, 0, 'prism');
+    b.box(0, 0, 2.5, 26.4, 9.4, 0.6, PAL.rubber, 0);
+    b.box(2, 0, 4.4, 9, 6.4, 3.2, PAL.white, 2);
+    b.box(3, 0, 7.0, 5, 5.4, 2.0, PAL.white, 5);
+    b.box(-2.5, 0, 6.2, 2.2, 2.6, 3.2, PAL.ink, 0);
+    b.box(-8, 0, 3.4, 5, 7, 1.2, shade(PAL.deck, 0.9), 0);
+    b.pop();
   }
 
   // ── Static scenery ─────────────────────────────────────────────────────
@@ -299,6 +314,17 @@
       b.set(sm.frame);
       shipTop(b, call, sim, LINE_PAL[call.line] || LINE_PAL.CVN);
       b.pop();
+      // Tugs while a ship comes alongside or leaves: one towing at the bow,
+      // one pushing on the outboard quarter.
+      if ((call.state === 'approach' || call.state === 'departing') && !sm.pose.hidden) {
+        const p = sm.pose, h = v.hull;
+        const yaw = p.yaw || 0;
+        // Both push on the outboard (starboard) side, square to the hull.
+        const bowT = Sim.shipToWorld(p, h.L - 22, h.halfBreadth(h.L - 22, p.T) + 13.5, p.T, {});
+        const quarter = Sim.shipToWorld(p, 28, h.halfBreadth(28, p.T) + 13.5, p.T, {});
+        for (const q of [bowT, quarter]) { b.set(F.mul(F.T(q.x, q.y, TL.SIM.WL), F.Rz(yaw + Math.PI / 2))); tug(b); b.pop(); }
+        waterShips.push({ x: bowT.x, y: bowT.y, hl: 14, hw: 5, yaw: yaw + Math.PI / 2 }, { x: quarter.x, y: quarter.y, hl: 14, hw: 5, yaw: yaw + Math.PI / 2 });
+      }
       // Mooring lines to the bollards.
       if (call.state === 'working') {
         b.set(F.id());
@@ -318,7 +344,14 @@
         const p = CR.evalCycle(c.cycle, t);
         y = p.y; z = p.z;
       }
-      const hi = c.call && c.call.state === 'working' ? 0 : 0;
+      // Booms go up (about 80 degrees) when a crane has no ship to work,
+      // and come down over a minute and a half when it gets one.
+      const want = c.call && c.call.state === 'working' && c.status !== 'Finished' ? 0 : 1;
+      if (c._boom == null) c._boom = want;
+      const dtb = c._boomT != null ? Math.max(0, Math.min(5, t - c._boomT)) : 0;
+      c._boomT = t;
+      c._boom += TL.clamp(want - c._boom, -dtb / 90, dtb / 90);
+      const hi = TL.smooth(c._boom);
       b.set(F.T(x, 0, 0));
       crane(b, c, y, z, c.box, hi);
       b.pop();

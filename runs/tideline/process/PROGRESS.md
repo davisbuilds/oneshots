@@ -202,3 +202,39 @@ moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
     `06-compare-nexus-port.webp`: much closer in mood and scale. Still
     behind the reference: its water shapes are bolder, and its ground is
     calmer (fewer markings).
+
+## 7. Verification, tests, polish (08:10 to 08:30)
+
+- `verify.mjs` drives the page with real pointer events. **Wrong, found by
+  it:** crane pins could sit under the KPI cards and could not be clicked;
+  callouts now live below the cards. The screenshot step also hung
+  intermittently: stepping 120 frames inside one call queued 120 full
+  renders on the software GPU. Tests now advance time without drawing and
+  draw the last frame only.
+- Unit tests (16): hydrostatics against the box barge, free intervals,
+  well-formedness, planned carriers never sharing an instant, a plan from a
+  pocket existing even when the exit is blocked for 500 s, stowage refusals
+  naming their rule, an accepted re-plan moving G by exactly the box's
+  moment, determinism, crane cycle time, an hour of operation, every
+  generated plan legal. **Two real bugs they caught:** the auto planner
+  checked the bridge's line of sight at arrival drafts, not departure drafts
+  (now re-checked and the offending boxes shut out); arrival stacks could
+  exceed their 100 t lashing limit.
+- **Close-up angle.** From the water side the line of sight to the apron
+  always crosses the ship's deck stacks or the crane's upper works
+  (`studies/` keeps none of these trials; four were tried). From the land
+  side it passes between the crane's landside legs, under its portal beam
+  and machinery house: the carrier waiting with its spreader up, the box
+  coming down, the ship's hull behind. The tour's close shots use that angle
+  and fade the panels away; the camera's azimuth and elevation now blend
+  between shots like position and zoom.
+- Idle cranes raise their booms (about 80°) and lower them over a minute and
+  a half when they get a ship; forestays follow the boom. Tugs push ships
+  that are berthing or sailing.
+- After an accepted re-plan, a callout marks where that box waits in the
+  yard and follows it to the crane: the consequence of a drag is visible in
+  the yard, not only in the stability readout.
+- The profile became a cutaway (paper hull, navy outline, a thin antifouling
+  band): the red hull bottom had been the same terracotta as the high-cube
+  boxes drawn over it. The bay section draws its coaming and hatch cover, or
+  "hatch open" while a crane works the hold.

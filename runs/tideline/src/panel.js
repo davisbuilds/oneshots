@@ -147,10 +147,16 @@
     const n = 90;
     for (let i = 0; i <= n; i++) { const x = hull.xAft + (hull.xFwd - hull.xAft) * i / n; const z = bottom(x); i ? g.lineTo(X(x), Z(z)) : g.moveTo(X(x), Z(z)); }
     g.lineTo(X(hull.xFwd), Z(hull.D + 1.5)); g.lineTo(X(hull.xAft), Z(hull.D + 0.5)); g.closePath();
+    // A cutaway: paper inside, the hull as a navy outline with the red
+    // antifouling as a band along the bottom, so the boxes read clearly.
     g.save(); g.clip();
-    g.fillStyle = '#2c3a5a'; g.fillRect(0, 0, w, h);
-    g.fillStyle = '#b4523b'; g.fillRect(0, Z(v.c.T + 0.6), w, h);
+    g.fillStyle = '#ece3d3'; g.fillRect(0, 0, w, h);
     g.restore();
+    g.save(); g.lineWidth = 2.2; g.strokeStyle = '#2c3a5a'; g.stroke(); g.restore();
+    g.save(); g.clip(); g.lineWidth = 5; g.strokeStyle = 'rgba(180,82,59,0.75)';
+    g.beginPath();
+    for (let i = 0; i <= n; i++) { const x = hull.xAft + (hull.xFwd - hull.xAft) * i / n; const z = bottom(x); i ? g.lineTo(X(x), Z(z)) : g.moveTo(X(x), Z(z)); }
+    g.stroke(); g.restore();
     // Accommodation.
     const ac = v.accom, decks = Math.max(4, Math.round((v.c.eye - 2 - hull.D) / 2.8));
     g.fillStyle = '#f7f2ea'; g.strokeStyle = 'rgba(40,48,74,0.35)'; g.lineWidth = 1;
@@ -225,10 +231,15 @@
     g.closePath();
     g.fillStyle = '#e9dfcd'; g.fill();
     g.strokeStyle = '#2c3a5a'; g.lineWidth = 2; g.stroke();
-    // Inner hull / hatch line.
-    g.strokeStyle = 'rgba(40,48,74,0.25)'; g.lineWidth = 1;
+    // Coaming and hatch cover over the hold (open while a crane works it).
     const hd = v.c.D + TL.VESSEL.COAMING + TL.VESSEL.HATCH;
-    g.beginPath(); g.moveTo(X(-hull.B / 2 + 1), Z(hd)); g.lineTo(X(hull.B / 2 - 1), Z(hd)); g.stroke();
+    const holdW = sts.filter(st => !st.deck).length * TL.VESSEL.ROW_PITCH / 2 + 0.6;
+    const open = v._open && v._open.has(P.bay);
+    g.fillStyle = '#c9bea9';
+    g.fillRect(X(-holdW) - 2, Z(hd - TL.VESSEL.HATCH), 3, TL.VESSEL.COAMING * s);
+    g.fillRect(X(holdW) - 1, Z(hd - TL.VESSEL.HATCH), 3, TL.VESSEL.COAMING * s);
+    if (!open) { g.fillStyle = '#6f7f86'; g.fillRect(X(-holdW) - 2, Z(hd), (2 * holdW) * s + 4, TL.VESSEL.HATCH * s + 1); }
+    else { g.fillStyle = '#5b6378'; g.font = '600 9.5px Inter, system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('hatch open', X(0), Z(hd) - 2); }
     // Slots.
     const cw = TL.VESSEL.ROW_PITCH * s - 1.5;
     P.slots = [];
@@ -403,6 +414,7 @@
     const r = sim.replan(call, box, st.id, idx);
     P.flash = { call, st, idx, ok: r.ok, t: performance.now() };
     if (r.ok) {
+      app.ripple = { box, call, slot: call.vessel.brt(st.id, idx), until: performance.now() + 12000 };
       const d = r.cond;
       TL.UI.toast('ok', 'Re-planned ' + box.id, `Now ${call.vessel.brt(st.id, Math.min(idx, (call.plan.where(box) || {}).idx + st.boxes.filter(S.isRob).length))}. Departure GM ${before.GM.toFixed(2)} → ${d.GM.toFixed(2)} m, trim ${before.trim.toFixed(2)} → ${d.trim.toFixed(2)} m.` + (r.warns && r.warns.length && r.warns.some(w => /heavy/.test(w)) ? ' Heavy box above a lighter one.' : ''));
     } else {

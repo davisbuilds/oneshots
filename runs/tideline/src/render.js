@@ -254,7 +254,7 @@ uniform float u_shipYaw[6];
 out vec4 o;
 float field(vec2 p){
   // Long, slow shapes stretched along the quay, like torn sheets of paper.
-  vec2 q = vec2(p.x * 0.0030 + p.y * 0.0009, p.y * 0.0125);
+  vec2 q = vec2(p.x * 0.0062 + p.y * 0.0018, p.y * 0.026);
   float t = u_time * 0.004;
   return fbm(q + vec2(t, t * 0.3)) * 0.85 + 0.25 * fbm(q * 3.1 - vec2(t * 0.7, 0.0));
 }

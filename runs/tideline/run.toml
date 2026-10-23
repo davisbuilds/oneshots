@@ -1,0 +1,35 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "tideline"
+title = "Tideline"
+summary = "A container-terminal operations console that plays like a strategy game: a living isometric paper diorama with real ship stability, stowage you can drag, cranes you can reassign, and straddle carriers proven collision- and deadlock-free over many seeds."
+date = 2026-10-23
+kind = "long-horizon"
+medium = ["web", "webgl", "simulation", "game", "interactive", "naval-architecture", "multi-agent-planning", "procedural"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code"
+
+[run]
+brief = "brief.md"
+human_turns = 3                   # the brief, and "continue" after each of two usage-limit pauses
+wall_clock_minutes = "unrecorded"
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+# Renders the demo tour in headless Chromium (SwiftShader) from the committed
+# page, one frame of virtual time at a time, and encodes it with the wheel's FFmpeg.
+command = "(cd ../.. && npm ci && npx playwright install --with-deps chromium) && FFMPEG=\"$(python3 -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')\" node tools/film.mjs"
+verify = "node --test tests/*.test.js && node tools/check.js --seeds 12 --hours 6 --monkey && python3 tools/check_film.py"
+timeout_minutes = 100
+
+[[assets]]
+file = "tideline_demo.mp4"
+description = "The hands-off demo tour: about 46 s, 1920 x 1080, 30 fps, H.264 CRF 20"

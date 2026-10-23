@@ -13,11 +13,11 @@
     { d: 6.5, cap: ['Arden Bay Container Terminal', 'Three berths, six ship-to-shore cranes, 22 straddle carriers, one gate'],
       cam: (u) => ({ x: 330 - u * 60, y: -40 + u * 40, zoom: 0.46 - u * 0.08 }) },
     { d: 8.5, cap: ['A crane sets a box into a waiting straddle carrier', 'Trolley and hoist on trapezoidal profiles; the apron lane is reserved while the spreader is low'],
-      pick: 'handover', cam: (u, s) => ({ x: s.x - 6 + u * 4, y: s.y + 6, zoom: 0.075 - u * 0.012 }) },
+      pick: 'handover', cine: true, cam: (u, s) => ({ x: s.x - 2 + u * 3, y: s.y - 9, zoom: 0.07 - u * 0.012, az: 1.27 + u * 0.12, el: 0.5 }) },
     { d: 7.5, cap: ['Every carrier drives a path reserved in space and time', 'Safe-interval planning with token passing: no collisions, no deadlocks, checked over many seeds'],
-      pick: 'follow', cam: (u, s) => ({ x: s.x, y: s.y + 10, zoom: 0.075 + u * 0.06 }) },
+      pick: 'follow', cine: true, cam: (u, s) => ({ x: s.x, y: s.y - 4, zoom: 0.07 + u * 0.06, az: 1.39 + u * 0.5, el: 0.5 + u * 0.1 }) },
     { d: 7, cap: ['Trucks check in at the gate, reverse into a bay, and are served from behind', 'Queue, turn time and yard occupancy feed the KPIs above'],
-      cam: (u) => ({ x: 905 - u * 70, y: 392, zoom: 0.115 - u * 0.01 }) },
+      cine: true, cam: (u) => ({ x: 905 - u * 70, y: 392, zoom: 0.115 - u * 0.01 }) },
     { d: 9, cap: ['Each box changes the ship: draft, trim, list and GM', 'Anti-heel pumps level her; a plan that breaks the limits is refused'],
       pick: 'ship', cam: (u, s) => ({ x: s.x + 30 - u * 20, y: 20, zoom: 0.17 }) },
     { d: 6.5, cap: ['Tideline', 'An operations console that plays like a strategy game'],
@@ -43,7 +43,8 @@
     D.on = false;
     $('#demoBar').classList.remove('on');
     $('#caption').style.opacity = 0;
-    document.body.classList.remove('demo', 'capon');
+    document.body.classList.remove('demo', 'capon', 'cine');
+    if (app) { app.r.cam.az = -Math.PI / 4; app.r.cam.el = 0.62; }
     document.querySelector('#stabSect') && document.querySelector('#stabSect').classList.remove('glow');
     if (app && D.saved) TL.UI.setSpeed(D.saved.paused ? 0 : D.saved.speed);
   };
@@ -98,6 +99,8 @@
       // While a caption shows, the floating cards step aside (except the
       // carrier the shot is about).
       document.body.classList.toggle('capon', k > 0 && k < SHOTS.length - 1);
+      // Close shots fade the panels away; the console returns for the readout.
+      document.body.classList.toggle('cine', !!shot.cine);
       $('#demoText').textContent = `Demo tour · ${k + 1} / ${SHOTS.length}`;
     }
     if (shot.pick === 'follow' && D.state.sc && D.state.sc._draw) {
@@ -113,5 +116,7 @@
     const c = app.r.cam;
     c.x = TL.lerp(D.from.x, want.x, b); c.y = TL.lerp(D.from.y, want.y, b);
     c.zoom = Math.exp(TL.lerp(Math.log(D.from.zoom), Math.log(want.zoom), b));
+    c.az = TL.lerp(D.from.az, want.az != null ? want.az : -Math.PI / 4, b);
+    c.el = TL.lerp(D.from.el, want.el != null ? want.el : 0.62, b);
   };
 })(globalThis.TL = globalThis.TL || {});

@@ -30,3 +30,15 @@ Constraints: index.html must open directly from disk, with no install, no server
 I'm comfortable with hours of autonomous iteration. Build a working prototype early, then use it, inspect screenshots, and refine the simulation, interaction, and presentation. Don't stop at a plan or a mockup: build it, use it, improve it, and deliver it.
 
 Work in `runs/<slug>/` following `RUNS.md`. Save the brief verbatim to `brief.md`. Keep `process/PROGRESS.md` as you go, with times, what you inspected, what was wrong, and what you changed. Save numbered snapshots to `process/snapshots/` at each checkpoint, WebP, about 1200 px, plus crops at native resolution, and put the supplied mockups and any rejected directions in `process/studies/`, converted to WebP within the size caps. Write full-size outputs to `output/` only, and declare them as `[[assets]]`; if a rendered demo-mode clip fits the Run assets workflow, declare it too. Fill in `run.toml` (use "unrecorded" rather than guessing), then run `python3 scripts/build_index.py` and `python3 scripts/validate_runs.py` before you finish.
+
+## Later human messages
+
+**About 07:41 UTC, 2026-10-23**, during the run, after the human's usage limit
+paused the work from about 05:10:
+
+> I hit my usage limit while you were working, but it has reset now. Please continue from where you left off.
+
+**About 12:41 UTC, 2026-10-23**, during the run, after a second usage-limit
+pause from about 08:30:
+
+> I hit my usage limit while you were working, but it has reset now. Please continue from where you left off.
