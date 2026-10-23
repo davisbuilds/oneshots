@@ -18,10 +18,11 @@
     else { app.still = true; app.frame(app.simT); }
   }
   // Advance the simulation to time t (seconds) and draw.
-  app.frame = function (t) {
+  app.frame = function (t, noDraw) {
     const sim = app.sim;
     while (sim.t + 1 <= t) sim.step();
     app.simT = t;
+    if (noDraw) { TL.Models.place && TL.Models.place(sim, t); return; }
     const scene = TL.Models.fill(app.r, sim, t);
     scene.decals = TL.Decals.fill(sim, t, app.r.cam);
     app.r.draw(scene, t);
@@ -37,11 +38,11 @@
     requestAnimationFrame(loop);
   }
   // Film rendering: advance a fixed slice of real time, deterministically.
-  app.filmFrame = function (dtMs) {
+  app.filmFrame = function (dtMs, noDraw) {
     const dt = dtMs / 1000;
     if (!app.paused) app.simT += dt * app.speed;
     TL.Demo.update(dt);
-    app.frame(app.simT);
+    app.frame(app.simT, noDraw);
     return { demo: TL.Demo.on, t: TL.Demo.t };
   };
   window.addEventListener('DOMContentLoaded', boot);

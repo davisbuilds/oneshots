@@ -263,8 +263,10 @@
     const W = innerWidth, H = innerHeight;
     const left = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--rail')) + 22;
     const right = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel')) + 22;
+    const kb = document.getElementById('kpis').getBoundingClientRect().bottom;
     const top = 150, bottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sched')) + 22;
-    app.free = { x0: left, x1: W - right, y0: top - 70, y1: H - bottom };
+    // Callouts live below the KPI cards and above the schedule.
+    app.free = { x0: left, x1: W - right, y0: kb - 4, y1: H - bottom };
     if (document.body.classList.contains('bare')) { app.free = { x0: 0, x1: W, y0: 0, y1: H }; app.r.cam.shiftX = 0; app.r.cam.shiftY = 0; return; }
     app.r.cam.shiftX = (left + (W - right)) / 2 - W / 2;
     app.r.cam.shiftY = -(((top + (H - bottom)) / 2) - H / 2);

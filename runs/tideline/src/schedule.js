@@ -146,6 +146,8 @@
     for (const b of geo.bars) if (x >= b.x0 && x <= b.x1 && y >= b.y && y <= b.y + b.h) return { b, x, y };
     return { x, y };
   }
+  // What is under a pointer position (for tests and tooltips).
+  SC._hitTest = function (e) { const h = hit(e); return h && h.b ? h.b.b : null; };
   SC.down = function (e) {
     const h = hit(e); if (!h || !h.b) return;
     const call = h.b.b.call;

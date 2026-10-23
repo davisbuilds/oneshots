@@ -365,5 +365,13 @@
     return { ships, waterShips, decals: opts.decals || null };
   }
 
-  TL.Models = { fill, Builder, shipMatrix, crane, straddle, truck, boxAt, scSpreader };
+  // Positions only (no drawing): what picking and callouts need.
+  function place(sim, t) {
+    for (const c of sim.cranes) c._draw = { x: c.gantry ? CR.evalGantry(c.gantry, t) : c.x, y: c.y, z: c.z };
+    for (const sc of sim.scs) { M.poseAt(sim.scG, sc.steps, t, tmp); sc._draw = { x: tmp.x, y: tmp.y, th: tmp.th }; }
+    for (const tr of sim.trucks) if (tr.steps && tr.state !== 'gone') { M.poseAt(sim.trG, tr.steps, t, tmp); tr._draw = { x: tmp.x, y: tmp.y, th: tmp.th }; }
+    for (const call of sim.calls) if (call.state !== 'planned' && call.state !== 'gone') call._matrix = shipMatrix(sim, call);
+  }
+
+  TL.Models = { fill, place, Builder, shipMatrix, crane, straddle, truck, boxAt, scSpreader };
 })(globalThis.TL = globalThis.TL || {});
