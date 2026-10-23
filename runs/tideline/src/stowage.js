@@ -47,9 +47,9 @@
 
   function pickLine(rng, home) {
     const r = rng();
-    if (r < 0.5) return home;
-    if (r < 0.7) return 'LSE';
-    if (r < 0.8) return 'LS2';
+    if (r < 0.42) return home;
+    if (r < 0.70) return 'LSE';
+    if (r < 0.80) return 'LS2';
     return rng.pick(['CVN', 'BRW', 'NMF', 'ALD']);
   }
   function pickType(rng, deck, tierFrac) {
@@ -161,11 +161,10 @@
 
   // Final stacks under a plan: what remains on board after discharge, plus
   // the planned loads.
+  // What stays on board from arrival: not for this port, and not loaded here.
+  const isRob = (b) => b.pod !== PORT && !b.loaded;
   function finalStacks(vessel, plan) {
-    return vessel.stacks.map((st, i) => {
-      const rob = st.boxes.filter(b => b.pod !== PORT);
-      return rob.concat(plan.stacks[i] || []);
-    });
+    return vessel.stacks.map((st, i) => st.boxes.filter(isRob).concat(plan.stacks[i] || []));
   }
   // Departure condition under a plan, after the anti-heeling system has
   // levelled the ship as far as its tanks allow (what a loading computer
@@ -188,7 +187,7 @@
   function hatchBlocked(vessel, bayIdx) {
     for (const id of vessel.bays[bayIdx].stacks) {
       const st = vessel.stacks[id];
-      if (st.deck && st.boxes.some(b => b.pod !== PORT)) return true;
+      if (st.deck && st.boxes.some(isRob)) return true;
     }
     return false;
   }
@@ -222,7 +221,7 @@
     vessel.stacks.forEach((st, i) => {
       const r = checkStack(vessel, st, fin[i], cond);
       errs.push(...r.errs); warns.push(...r.warns);
-      if (!st.deck && (plan.stacks[i] || []).length && hatchBlocked(vessel, st.bay)) errs.push(`hold of bay ${String(vessel.bays[st.bay].no).padStart(2, '0')} is closed: deck cargo for later ports sits on its hatch covers`);
+      if (!st.deck && (plan.stacks[i] || []).some(b => !b.loaded) && hatchBlocked(vessel, st.bay)) errs.push(`hold of bay ${String(vessel.bays[st.bay].no).padStart(2, '0')} is closed: deck cargo for later ports sits on its hatch covers`);
     });
     const a = TL.Stability.assess(cond, { departure: true, depth: opts.depth });
     errs.push(...a.out);
@@ -237,7 +236,11 @@
     if (!from) return { ok: false, errs: ['only boxes still waiting in the yard can be re-planned'] };
     const st = vessel.stacks[toStack];
     if (!st) return { ok: false, errs: ['no such slot'] };
-    const rob = st.boxes.filter(b => b.pod !== PORT).length;
+    const rob = st.boxes.filter(isRob).length;
+    // Positions already loaded or on their way cannot change.
+    const fixed = (opts.fixed ? opts.fixed(toStack) : 0);
+    if (toIdx - rob < fixed) return { ok: false, errs: ['that tier is already loaded or a box is on its way to it'] };
+    if (opts.locked && opts.locked(box)) return { ok: false, errs: ['this box is already on its way to the crane'] };
     const snapshot = plan.stacks.map(s => (s ? s.slice() : []));
     // Remove, then insert at the requested position (contiguous, no gaps).
     plan.stacks[from.stack].splice(from.idx, 1);
@@ -258,7 +261,7 @@
   // checking each stack's rules as it goes and the stability at the end.
   function autoPlan(vessel, exports, opts = {}) {
     const plan = makePlan(vessel);
-    const rob = vessel.stacks.map(st => st.boxes.filter(b => b.pod !== PORT));
+    const rob = vessel.stacks.map(st => st.boxes.filter(isRob));
     const order = exports.slice().sort((a, b) => b.w - a.w);
     // Candidate stacks: holds of open bays, then decks, ordered to spread
     // weight evenly fore and aft and across.
@@ -308,6 +311,6 @@
   TL.Stow = {
     PORT, PODS, PORT_NAMES, LINES, TYPES, MAX_GROSS,
     newBox, generateArrival, trimBallast, levelAntiHeel, conditionOf, finalStacks, departureCondition,
-    hatchBlocked, checkStack, validatePlan, tryMove, autoPlan, makePlan, weightFor, pickType, pickLine,
+    hatchBlocked, checkStack, validatePlan, isRob, tryMove, autoPlan, makePlan, weightFor, pickType, pickLine,
   };
 })(globalThis.TL = globalThis.TL || {});

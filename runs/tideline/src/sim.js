@@ -105,6 +105,7 @@
       this._setupFleet();
       this._setupYard();
       this._warmStart(opts.warm != null ? opts.warm : 0.38);
+      this._backfill();
       this.nextTruck = 30;
       this.trucks = [];
       this.truckSeq = 0;
@@ -493,6 +494,7 @@
     // ── Crane control ────────────────────────────────────────────────────
     _cranes() {
       for (const c of this.cranes) {
+        if (c.pendingSet) this._applyPending(c);
         // Finish a gantry move.
         if (c.state === 'gantry') {
           c.x = CR.evalGantry(c.gantry, this.t);
@@ -583,7 +585,7 @@
     }
     // Request export boxes from the yard to this crane's free buffers.
     _requestLoads(c, ph, keepFree) {
-      if (!ph.load || !ph.load.length) return;
+      if (!ph.load || !ph.load.length || c.pendingSet) return;
       const call = c.call;
       const bufs = this.craneBuffers(c).filter(s => this.bufferFree(c, s));
       while (bufs.length > keepFree && c.inbound < 2) {
@@ -835,8 +837,13 @@
         if (call.state !== 'working') continue;
         const v = call.vessel, P = v.tanks.ahP, Sx = v.tanks.ahS, arm = Sx.y - P.y;
         const s = sumsOf(v);
+        // Like a real anti-heeling system, it starts at a set list (0.35 deg)
+        // and stops near upright, so the ship rocks a little as boxes land.
+        const c = this.condition(call);
+        if (!call.ahRun && Math.abs(c.heel) < 0.35) continue;
+        call.ahRun = Math.abs(c.heel) > 0.04;
         const need = -s.My / arm;
-        if (Math.abs(need) < 0.05) continue;
+        if (Math.abs(need) < 0.05) { call.ahRun = false; continue; }
         const m = TL.clamp(need, -Math.min(AH_RATE, Sx.cap * Sx.fill), Math.min(AH_RATE, P.cap * P.fill));
         P.fill -= m / P.cap; Sx.fill += m / Sx.cap;
       }
@@ -1039,14 +1046,141 @@
       return null;
     }
 
+
+    // ── Player actions ───────────────────────────────────────────────────
+    // Projected completion of a call (seconds), from the work left and the
+    // cranes on it at a realistic gross rate.
+    projectETD(call) {
+      const left = Math.max(0, call.planned.d - call.done.d) + Math.max(0, call.plan.count() - call.done.l);
+      const def = call.vessel.cls === 'panamax' ? 3 : call.vessel.cls === 'intermediate' ? 2 : 1;
+      const n = call.state === 'working' ? Math.max(1, call.cranes.length) : def;
+      // Blend the last hour's pace with the planning norm (27 per crane-hour).
+      const recent = this.stats.moves.filter(m => m.call === call.id && m.t > this.t - 3600).length;
+      const rate = call.state === 'working' ? 0.5 * recent + 0.5 * n * 27 : n * 27;
+      const start = call.state === 'working' ? this.t : Math.max(call.etb, this.t + (call.state === 'approach' ? 0 : 3600));
+      return start + left / Math.max(rate, 5) * 3600 + 1800;
+    }
+    callWindow(call) {
+      if (call.state === 'departing' || call.state === 'gone') return { start: call.etb, end: call.departT || call.etb };
+      return { start: call.state === 'working' ? Math.min(call.etb, this.t) : call.etb, end: this.projectETD(call) };
+    }
+    // Can this ship lie at that berth? Length of quay, and water under the
+    // keel at the deeper of its arrival and planned departure drafts.
+    berthErrs(call, berth) {
+      const errs = [], B = L.BERTHS[berth], v = call.vessel;
+      if (v.hull.LOA + 20 > B.x1 - B.x0) errs.push(`${v.name} is ${v.hull.LOA.toFixed(0)} m long; ${B.id} has ${(B.x1 - B.x0).toFixed(0)} m of quay`);
+      if (!call._drafts || call._draftsV !== this.planVersion) {
+        const arr = this.condition(call), dep = S.departureCondition(v, call.plan);
+        call._drafts = Math.max(arr.maxDraft, dep.maxDraft); call._draftsV = this.planVersion;
+      }
+      const draft = call._drafts, need = draft + Math.max(TL.Stability.LIMITS.ukcMin, TL.Stability.LIMITS.ukcFrac * draft);
+      if (need > B.depth) errs.push(`draft ${draft.toFixed(1)} m needs ${need.toFixed(1)} m of water; ${B.id} has ${B.depth.toFixed(1)} m`);
+      return errs;
+    }
+    // Move a call that is not yet alongside to another berth and/or time.
+    // Later calls on that berth are pushed back if they would overlap.
+    moveCall(call, berth, etb) {
+      const errs = [];
+      if (!(call.state === 'planned' || call.state === 'anchored')) return { ok: false, errs: [`${call.vessel.name} is already ${call.state === 'approach' ? 'approaching' : 'alongside'}; it cannot be moved`] };
+      const B = L.BERTHS[berth], v = call.vessel;
+      errs.push(...this.berthErrs(call, berth));
+      if (errs.length) return { ok: false, errs };
+      etb = Math.max(Math.round(etb / 900) * 900, this.t + 3600);
+      // Not before whatever is alongside or approaching that berth leaves.
+      for (const o of this.calls) {
+        if (o === call || o.berth !== berth) continue;
+        if (o.state === 'working' || o.state === 'approach') etb = Math.max(etb, this.projectETD(o) + 1800);
+      }
+      const old = { berth: call.berth, etb: call.etb };
+      call.berth = berth; call.etb = etb; call.eta = etb - 1800;
+      if (call.state === 'anchored') call.state = 'planned';
+      this._placeCall(call);
+      // Push later calls on this berth so nothing overlaps.
+      const pushed = [];
+      const queue = this.calls.filter(o => o.berth === berth && (o.state === 'planned' || o.state === 'anchored') ).sort((a, b) => a.etb - b.etb);
+      let free = -Infinity;
+      for (const o of this.calls) if (o.berth === berth && (o.state === 'working' || o.state === 'approach')) free = Math.max(free, this.projectETD(o) + 1800);
+      for (const o of queue) {
+        if (o !== call && o.etb < free) { o.etb = Math.ceil(free / 900) * 900; o.eta = o.etb - 1800; pushed.push(o.vessel.name); }
+        free = Math.max(free, this.projectETD(o) + 1800);
+      }
+      this.planVersion = (this.planVersion || 0) + 1;
+      this._alert('schedule', `${v.name} moved to ${B.id}, berthing ${TL.fmt.hm(call.etb)}` + (pushed.length ? `; pushed back: ${pushed.join(', ')}` : ''), call);
+      return { ok: true, pushed, old };
+    }
+    // Reassign a crane (k) to a call, or release it (call null). Cranes
+    // share one rail and cannot pass each other, so each call's cranes must
+    // be neighbours on the rail.
+    assignCrane(k, call) {
+      const c = this.cranes[k];
+      const from = c.call;
+      if (call === from) return { ok: true };
+      if (call && call.state !== 'working') return { ok: false, errs: [`${call.vessel.name} is not alongside yet`] };
+      if (from && from.state === 'working') {
+        const rest = from.cranes.filter(q => q !== k);
+        if (rest.length && Math.min(...rest) < k && Math.max(...rest) > k) return { ok: false, errs: [`${c.id} works between ${this.cranes[Math.min(...rest)].id} and ${this.cranes[Math.max(...rest)].id}; release a crane at the end of the group instead`] };
+      }
+      if (call) {
+        const set = call.cranes.concat([k]).sort((a, b) => a - b);
+        for (let j = set[0]; j <= set[set.length - 1]; j++) {
+          if (!set.includes(j)) {
+            const o = this.cranes[j];
+            return { ok: false, errs: [`${o.id} stands between ${c.id} and ${call.vessel.name} on the rail${o.call ? ` (working ${o.call.vessel.name})` : ''}; cranes cannot pass each other`] };
+          }
+        }
+        // The berth must lie on this crane's side of its neighbours.
+        const B = L.BERTHS[call.berth];
+        for (const o of this.cranes) {
+          if (o === c || set.includes(o.k) || !o.call || o.call.state !== 'working') continue;
+          if (o.k < k && o.x > B.x1 - 20) return { ok: false, errs: [`${o.id} is in the way at ${o.call.vessel.name}`] };
+          if (o.k > k && o.x < B.x0 + 20) return { ok: false, errs: [`${o.id} is in the way at ${o.call.vessel.name}`] };
+        }
+      }
+      c.pending = call || null;
+      c.pendingSet = true;
+      this._alert('crane', call ? `${c.id} reassigned to ${call.vessel.name}` : `${c.id} released`, c);
+      this._applyPending(c);
+      return { ok: true, waiting: c.pendingSet };
+    }
+    _applyPending(c) {
+      if (!c.pendingSet) return;
+      if (c.state === 'cycle' || c.inbound > 0 || c.buffers.some(b => !b.discharge)) return;
+      const call = c.pending, from = c.call;
+      c.pendingSet = false; c.pending = undefined;
+      if (from) { from.cranes = from.cranes.filter(q => q !== c.k); if (from.cranes.length && from.state === 'working') this.assignCranes(from, from.cranes); }
+      if (call) this.assignCranes(call, call.cranes.concat([c.k]));
+      else { c.call = null; c.bays = []; c.bay = -1; c.status = 'Idle'; }
+      this.planVersion = (this.planVersion || 0) + 1;
+    }
+    // Re-plan a box on the stowage plan (drag and drop).
+    replan(call, box, toStack, toIdx) {
+      const v = call.vessel, st = v.stacks[toStack];
+      if (!st) return { ok: false, errs: ['no such slot'] };
+      if (!st.deck) {
+        const deckLoaded = v.bays[st.bay].stacks.some(id => v.stacks[id].deck && v.stacks[id].boxes.some(b => b.loaded));
+        if (deckLoaded) return { ok: false, errs: [`bay ${String(v.bays[st.bay].no).padStart(2, '0')}: deck loading has started, the hatch is closed`] };
+      }
+      const fixed = (id) => { let n = 0; for (const b of call.plan.stacks[id] || []) { if (b.loaded || b.reserved) n++; else break; } return n; };
+      const r = S.tryMove(v, call.plan, box, toStack, toIdx, { depth: L.BERTHS[call.berth].depth, fixed, locked: (b) => b.loaded || b.reserved || b.busy });
+      if (r.ok) {
+        this.planVersion = (this.planVersion || 0) + 1;
+        this.stats.replans = (this.stats.replans || 0) + 1;
+      } else {
+        this.stats.refusedPlans++;
+      }
+      return r;
+    }
+
     // ── Warm start: the first calls are already part-worked ─────────────
     _warmStart(frac) {
       const rng = TL.rng(this.seed * 13 + 5);
       for (const call of this.calls) {
         if (call.state !== 'working') continue;
-        const f = call.id === 0 ? frac : frac * 0.35;
+        // As many moves as its cranes would have made since it berthed (less
+        // the first 20 minutes of lines and lashing), at 27 per crane-hour.
         const v = call.vessel;
-        const target = Math.round((call.planned.d + call.planned.l) * f);
+        const hours = Math.max(0, (-call.etb - 1200) / 3600);
+        const target = Math.min(Math.round((call.planned.d + call.planned.l) * 0.9), Math.round(hours * call.cranes.length * 27 * (0.9 + frac * 0)));
         let done = 0;
         // Work bays in each crane's range in order, completing them.
         const ranges = call.cranes.map(k => this.cranes[k].bays.slice());
@@ -1093,6 +1227,24 @@
       }
       this.res.release(ID.leg + 0, -1); for (const c of this.cranes) { this.res.release(ID.leg + c.k, -1); this._reserveLegs(c, this.t, Infinity, c.x); }
     }
+    // The moves done before the console opened, spread over the time each
+    // call has been alongside, so the KPIs start with a real history.
+    _backfill() {
+      const rng = TL.rng(this.seed * 31 + 7);
+      for (const call of this.calls) {
+        if (call.state !== 'working') continue;
+        const n = call.done.d + call.done.l, span = -call.etb - 1200;
+        if (n <= 0 || span <= 0) continue;
+        for (let i = 0; i < n; i++) {
+          const t = Math.round(call.etb + 1200 + span * (i + rng()) / n);
+          const k = call.cranes[i % call.cranes.length];
+          this.stats.moves.push({ t, crane: k, call: call.id });
+          this.cranes[k].moves.push(t);
+        }
+      }
+      this.stats.moves.sort((a, b) => a.t - b.t);
+      for (const c of this.cranes) c.moves.sort((a, b) => a - b);
+    }
     _levelNow(call) {
       const v = call.vessel, P = v.tanks.ahP, Sx = v.tanks.ahS, arm = Sx.y - P.y;
       const s = sumsOf(v);
@@ -1119,8 +1271,12 @@
       const recent = this.stats.moves.filter(m => m.t > t - H);
       const prev = this.stats.moves.filter(m => m.t > t - 2 * H && m.t <= t - H);
       const working = this.cranes.filter(c => c.call && c.call.state === 'working').length || 1;
-      const mph = recent.length / working;
-      const mphPrev = prev.length / working;
+      // Per crane that was working in each window.
+      const nIn = (list) => Math.max(1, new Set(list.map(m => m.crane)).size);
+      const mph = recent.length / Math.max(working === 1 ? 1 : 0, nIn(recent));
+      const mphPrev = prev.length / nIn(prev);
+      // (stats.moves holds the shift's history, including the hours before
+      // the console opened; see _backfill.)
       const turns = this.stats.truckTurns.filter(x => x.t > t - H).map(x => x.turn);
       return {
         atBerth: this.calls.filter(c => c.state === 'working').length,
