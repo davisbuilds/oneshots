@@ -1085,6 +1085,10 @@
     }
 
     // ── Calls over time ──────────────────────────────────────────────────
+    // One ship moves in the harbour at a time: a ship ready to sail waits
+    // alongside, and one due in waits at anchor, while another is under way
+    // (their paths off the berths cross).
+    _basinFree() { return !this.calls.some(o => o.state === 'approach' || o.state === 'departing'); }
     _calls() {
       for (const call of this.calls) {
         if (call.state === 'approach' && this.t >= call.etb) {
@@ -1095,7 +1099,7 @@
         }
         if (call.state === 'working' && call.done.d >= call.planned.d && call.done.l >= this._plannedLoads(call)) {
           const busy = this.cranes.some(c => c.call === call && (c.state === 'cycle' || c.inbound));
-          if (!busy) {
+          if (!busy && this._basinFree()) {
             call.state = 'departing'; call.departT = this.t;
             for (const c of this.cranes) if (c.call === call) { c.call = null; c.status = 'Idle'; c.bays = []; c.bay = -1; }
             call.cranes = [];
@@ -1104,14 +1108,16 @@
         }
         if (call.state === 'departing' && this.t - call.departT > 1800) call.state = 'gone';
         if (call.state === 'planned' && this.t >= call.etb - 3600) {
-          // Berth free? Then approach; otherwise wait at anchor.
+          // Berth and harbour free? Then approach; otherwise wait at anchor.
           const occupied = this.calls.some(o => o !== call && o.berth === call.berth && (o.state === 'working' || o.state === 'approach' || o.state === 'departing'));
-          if (!occupied) { call.state = 'approach'; call.etb = Math.max(call.etb, this.t + 3600); }
+          if (!occupied && this._basinFree()) { call.state = 'approach'; call.etb = Math.max(call.etb, this.t + 3600); }
           else call.state = 'anchored';
         }
-        if (call.state === 'anchored') {
+        // At anchor until the berth and the harbour are free, and not before
+        // its own berthing time (a re-plan may have pushed it back).
+        if (call.state === 'anchored' && this.t >= call.etb - 3600) {
           const occupied = this.calls.some(o => o !== call && o.berth === call.berth && (o.state === 'working' || o.state === 'approach' || o.state === 'departing'));
-          if (!occupied) { call.state = 'approach'; call.etb = this.t + 3600; }
+          if (!occupied && this._basinFree()) { call.state = 'approach'; call.etb = this.t + 3600; }
         }
         // Ship motion for approach / departure (drawn; berthing is exact).
         call.motion = this._shipMotion(call);
@@ -1147,11 +1153,13 @@
         if (u < 0.5) m = bez(S, K, W, TL.easeInOut(seg(u, 0, 0.5)) * 0.5 + seg(u, 0, 0.5) * 0.5);
         else if (u < 0.75) m = { x: 0, y: -off, yaw: Math.PI * (1 - TL.smooth(seg(u, 0.5, 0.75))) };
         else m = { x: 0, y: -off * (1 - TL.smooth(seg(u, 0.75, 1))), yaw: 0 };
-        // Ships waiting for the same berth anchor in a line further out.
+        // Ships waiting for the same berth anchor in a line further out,
+        // and move up slowly when the one ahead leaves.
         if (call.state === 'anchored') {
           const q = this.calls.filter(o => o.state === 'anchored' && o.berth === call.berth).sort((a, b) => a.etb - b.etb).indexOf(call);
-          m.y -= q * 90;
-        }
+          call._anchorQ = call._anchorQ == null ? q * 90 : call._anchorQ + TL.clamp(q * 90 - call._anchorQ, -0.15, 0.15);
+          m.y -= call._anchorQ;
+        } else call._anchorQ = null;
         return { dx: m.x, dy: m.y, yaw: m.yaw, pivot };
       }
       if (call.state === 'departing' || call.state === 'gone') {
@@ -1242,8 +1250,8 @@
       const eff = (o) => (o.pendingSet ? o.pending : o.call);
       const group = (cl) => this.cranes.filter(o => eff(o) === cl).map(o => o.k);
       if (call === eff(c)) return { ok: true };
-      // Changing its mind before it leaves: stay where it is.
-      if (c.pendingSet && call === from) { c.pendingSet = false; c.pending = undefined; return { ok: true }; }
+      // Other requests were checked assuming this one goes ahead, so it
+      // cannot be changed or cancelled once made.
       if (c.pendingSet) return { ok: false, errs: [`${c.id} is still on its way to ${c.pending ? c.pending.vessel.name : 'release'}; wait for it to finish`] };
       if (call && call.state !== 'working') return { ok: false, errs: [`${call.vessel.name} is not alongside yet`] };
       if (from && from.state === 'working') {

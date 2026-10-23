@@ -94,3 +94,60 @@ test('a call moved onto a berth never overlaps another call there', () => {
     assert.ok(wa.end <= wb.start || wb.end <= wa.start, `${a.vessel.name} and ${b.vessel.name} overlap on ${TL.Layout.BERTHS[a.berth].id}`);
   }
 });
+
+// Oriented rectangles overlap (separating axes), as in tools/check.js.
+function overlap(a, b) {
+  for (const t of [a.th, a.th + Math.PI / 2, b.th, b.th + Math.PI / 2]) {
+    const ux = Math.cos(t), uy = Math.sin(t);
+    const r = (o) => o.hl * Math.abs(Math.cos(o.th) * ux + Math.sin(o.th) * uy) + o.hw * Math.abs(-Math.sin(o.th) * ux + Math.cos(o.th) * uy);
+    if (Math.abs((b.x - a.x) * ux + (b.y - a.y) * uy) >= r(a) + r(b)) return false;
+  }
+  return true;
+}
+
+test('a ship ready to sail waits while another comes in, and their hulls never meet', () => {
+  const sim = new TL.Sim({ seed: 1 });
+  const wren = sim.calls.find(c => c.vessel.name === 'Northmere Wren'), brindle = sim.calls.find(c => c.vessel.name === 'Brindle Aster');
+  assert.equal(wren.state, 'approach');
+  // Brindle Aster's work is done while Wren is still coming in to the next berth.
+  brindle.done.d = brindle.planned.d; brindle.done.l = brindle.plan.count();
+  for (const k of brindle.cranes.slice().reverse()) sim.assignCrane(k, null);
+  let sailed = null;
+  for (let i = 0; i < 3 * 3600; i++) {
+    sim.step();
+    const moving = sim.calls.filter(c => c.state === 'approach' || c.state === 'departing');
+    assert.ok(moving.length <= 1, `t=${sim.t}: ${moving.map(c => c.vessel.name).join(' and ')} under way together`);
+    if (brindle.state === 'departing' && sailed == null) sailed = sim.t;
+    if (sim.t % 5) continue;
+    const live = sim.calls.filter(c => c.state !== 'planned' && c.state !== 'gone');
+    for (const a of live) for (const b of live) if (a !== b) assert.ok(!overlap(sim.hullRect(a), sim.hullRect(b)), `t=${sim.t}: ${a.vessel.name} x ${b.vessel.name}`);
+  }
+  assert.ok(sailed != null && sailed >= wren.etb, `Brindle Aster sailed at ${sailed}, Wren berthed at ${wren.etb}`);
+});
+
+test('a crane reassignment cannot be cancelled once others rely on it', () => {
+  const sim = new TL.Sim({ seed: 1 });
+  while (!(sim.cranes[2].state === 'cycle' || sim.cranes[2].inbound > 0)) sim.step();
+  // QC-03 to the second ship, then QC-02 after it, then QC-03 back.
+  const a = sim.assignCrane(2, sim.calls[1]), b = sim.assignCrane(1, sim.calls[1]), c = sim.assignCrane(2, sim.calls[0]);
+  assert.ok(a.ok && b.ok, 'the first two are accepted');
+  assert.ok(!c.ok, 'QC-03 cannot be called back');
+  sim.run(3 * 3600);
+  for (const call of sim.calls.filter(x => x.state === 'working')) {
+    const ks = call.cranes.slice().sort((x, y) => x - y);
+    assert.equal(ks.length ? ks[ks.length - 1] - ks[0] + 1 : 0, ks.length, `${call.vessel.name} has cranes ${ks}`);
+  }
+  for (const q of sim.cranes) assert.ok(!(q.status === 'Waiting for clearance' && q.clearSince != null && sim.t - q.clearSince > 1800), `${q.id} waiting since ${q.clearSince}`);
+});
+
+test('a ship at anchor waits for its berthing time, not just a free berth', () => {
+  // Northmere Kittiwake waits at anchor for berth 3, due at 26 h; Northmere
+  // Wren leaves that berth at about 16 h.
+  const sim = new TL.Sim({ seed: 1 });
+  const kitti = sim.calls.find(c => c.vessel.name === 'Northmere Kittiwake'), wren = sim.calls.find(c => c.vessel.name === 'Northmere Wren');
+  kitti.state = 'anchored';
+  const due = kitti.etb;
+  while (wren.state !== 'gone') { sim.step(); assert.equal(kitti.state, 'anchored'); }
+  while (kitti.state === 'anchored') sim.step();
+  assert.ok(sim.t >= due - 3600, `came in at ${(sim.t / 3600).toFixed(1)} h, due ${(due / 3600).toFixed(1)} h`);
+});

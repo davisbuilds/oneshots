@@ -285,7 +285,7 @@ moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
 - `node --test tests/*.test.js`: 16 pass. `node verify.mjs`: all checks
   pass (no network requests, no page errors).
 
-## 10. After delivery: a play-test and a local review (19:42 to 20:15)
+## 10. After delivery: a play-test and a local review (19:42 to 20:45)
 
 The human played the build and saw Northmere Wren "rotated a bit and
 overlapping the ground" early on. A local code review (run as a subagent
@@ -334,8 +334,24 @@ fixed, with a check that failed first.
   derives "3 high (1-over-2)" from the layout instead of the wrong
   "1-over-3" (finding 6).
 
-Checks after the fixes: 19 unit tests pass (the three new ones fail on the
-delivered code); `node tools/check.js --seeds 24 --hours 6 --monkey` 24/24
+A follow-up review of those fixes found four more, each now with a test
+that fails on the previous commit:
+
+- Ships leaving from neighbouring berths, or one leaving while another came
+  in, could meet (the departure lane runs through the approach swing). One
+  ship now moves in the harbour at a time: a ship ready to sail waits
+  alongside, one due in waits at anchor. The checker also fails if two are
+  ever under way together.
+- Cancelling a pending crane reassignment re-opened the crossing-cranes
+  deadlock (another request had been accepted on the strength of it). A
+  pending reassignment can no longer be changed.
+- Ships at anchor went alongside as soon as the berth was free, even when a
+  re-plan had pushed their berthing time back; they now wait for it.
+- Ships queued at anchor jumped 90 m when the one ahead left; they move up
+  slowly.
+
+Checks after the fixes: 22 unit tests pass (the six new ones fail on the
+code they fix); `node tools/check.js --seeds 24 --hours 6 --monkey` 24/24
 clean (18,804 crane moves, 995M pair tests, 0 overlaps, 0 fallbacks);
 `--seeds 6 --hours 30` with and without random actions clean (every call
 in the schedule comes alongside within 30 h, and the first four sail); `node verify.mjs` passes.

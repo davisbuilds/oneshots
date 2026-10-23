@@ -82,6 +82,8 @@ function checkSeed(seed) {
     if (sim.t % 10 === 0) {
       const hulls = sim.calls.filter(c => c.state !== 'planned' && c.state !== 'gone').map(c => ({ c, r: sim.hullRect(c) }));
       const hit = (msg) => { shipHits++; if (firstShip.length < 3) firstShip.push(`t=${sim.t} ${msg}`); };
+      const moving = sim.calls.filter(c => c.state === 'approach' || c.state === 'departing');
+      if (moving.length > 1) hit(`${moving.map(c => c.vessel.name).join(' and ')} under way together`);
       for (const h of hulls) {
         if (h.r.ymax > -1.0) hit(`${h.c.vessel.name} (${h.c.state}) reaches y=${h.r.ymax.toFixed(1)} m, over the quay`);
         if (overlap(h.r, BREAKWATER)) hit(`${h.c.vessel.name} (${h.c.state}) hits the breakwater`);

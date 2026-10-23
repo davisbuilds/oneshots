@@ -27,7 +27,7 @@ the details at full resolution.
 | **Open it** | [`index.html`](index.html): no install, no server, no network, no dependencies |
 | **Model** | Claude Opus 5.5 (Claude Code) |
 | **Brief** | [`brief.md`](brief.md): the brief with four human-made mockups, two "continue" messages after usage-limit pauses, and four messages after delivery: the PR request, a local review, a play-test note and repository settings (7 human turns) |
-| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all; then about 35 min of fixes after a play-test and a review ([log, section 10](process/PROGRESS.md#10-after-delivery-a-play-test-and-a-local-review-1942-to-2015)) |
+| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all; then about an hour of fixes after a play-test and a review ([log, section 10](process/PROGRESS.md#10-after-delivery-a-play-test-and-a-local-review-1942-to-2045)) |
 | **Full-size outputs** | release `run-tideline`: the demo tour as a film, built by the Run assets workflow ([below](#reproduce)) |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [art bible](process/ART-BIBLE.md), [snapshots](process/snapshots/), [supplied mockups](process/studies/) |
 
@@ -61,9 +61,10 @@ Safari). It needs WebGL2. The terminal starts at 06:00 on Friday 23 October
   Cranes share one rail and cannot pass, so only a crane at the end of a group
   can go, and only if no other crane stands between; otherwise it says which
   one is in the way. A crane finishes the box it holds and any box on its way
-  to it before it gantries over. Put too many cranes on one ship and they get
-  in each other's way: a crane kept out of its bays for ten minutes by a
-  neighbour on the same ship hands those bays to it.
+  to it before it gantries over, and once on its way cannot be called back
+  (other reassignments may rely on it). Put too many cranes on one ship and
+  they get in each other's way: a crane kept out of its bays for ten minutes
+  by a neighbour on the same ship hands those bays to it.
 - **Reorder the berth schedule.** Drag a planned call along the time axis or
   to another berth. The Panamax does not fit berth 3 (206 m of quay, 11 m of
   water) and is refused with both reasons; a call moved onto a busy berth
@@ -149,7 +150,9 @@ outside them. The only overlaps allowed are a carrier straddling a trailer
 while the truck stands still in its bay, and a spreader over the carrier
 taking or delivering that very box. It also fails on any crane with work that
 goes 30 minutes without a move, and on any ship, alongside or under way,
-whose hull touches the quay, the breakwater or another ship.
+whose hull touches the quay, the breakwater or another ship. Ships keep
+clear of each other by a harbour rule: one ship moves at a time, so a ship
+ready to sail waits alongside and one due in waits at anchor.
 
 ### The look
 
@@ -168,7 +171,7 @@ atlas. Nothing is loaded from the network.
 
 ```bash
 open index.html                          # the console
-node --test tests/*.test.js              # unit tests (19)
+node --test tests/*.test.js              # unit tests (22)
 node tools/check.js --seeds 24 --hours 6 --monkey
 node tools/check.js --seeds 6 --hours 30 # every call in the schedule comes alongside
 (cd ../.. && npm ci && npx playwright install chromium)
