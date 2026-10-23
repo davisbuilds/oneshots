@@ -1110,14 +1110,14 @@
         if (call.state === 'planned' && this.t >= call.etb - 3600) {
           // Berth and harbour free? Then approach; otherwise wait at anchor.
           const occupied = this.calls.some(o => o !== call && o.berth === call.berth && (o.state === 'working' || o.state === 'approach' || o.state === 'departing'));
-          if (!occupied && this._basinFree()) { call.state = 'approach'; call.etb = Math.max(call.etb, this.t + 3600); }
-          else call.state = 'anchored';
+          if (!occupied && this._basinFree()) { call.state = 'approach'; call.etb = Math.max(call.etb, this.t + 3600); call._fromQ = 0; }
+          else { call.state = 'anchored'; call._anchorOrder = this._anchorSeq = (this._anchorSeq || 0) + 1; }
         }
         // At anchor until the berth and the harbour are free, and not before
         // its own berthing time (a re-plan may have pushed it back).
         if (call.state === 'anchored' && this.t >= call.etb - 3600) {
           const occupied = this.calls.some(o => o !== call && o.berth === call.berth && (o.state === 'working' || o.state === 'approach' || o.state === 'departing'));
-          if (!occupied && this._basinFree()) { call.state = 'approach'; call.etb = this.t + 3600; }
+          if (!occupied && this._basinFree()) { call.state = 'approach'; call.etb = this.t + 3600; call._fromQ = call._anchorQ || 0; }
         }
         // Ship motion for approach / departure (drawn; berthing is exact).
         call.motion = this._shipMotion(call);
@@ -1148,15 +1148,17 @@
         const u = call.state === 'approach' ? TL.clamp(1 - (call.etb - this.t) / 3600, 0, 1) : 0;
         // Swing off the berth, far enough out to clear the ships alongside.
         const off = R + 45;
-        const S = { x: 650, y: -off - 380 }, K = { x: 260, y: -off }, W = { x: 0, y: -off };
+        // It weighs anchor from wherever it waited in the queue.
+        const S = { x: 650, y: -off - 380 - (call.state === 'approach' ? call._fromQ || 0 : 0) }, K = { x: 260, y: -off }, W = { x: 0, y: -off };
         let m;
         if (u < 0.5) m = bez(S, K, W, TL.easeInOut(seg(u, 0, 0.5)) * 0.5 + seg(u, 0, 0.5) * 0.5);
         else if (u < 0.75) m = { x: 0, y: -off, yaw: Math.PI * (1 - TL.smooth(seg(u, 0.5, 0.75))) };
         else m = { x: 0, y: -off * (1 - TL.smooth(seg(u, 0.75, 1))), yaw: 0 };
-        // Ships waiting for the same berth anchor in a line further out,
-        // and move up slowly when the one ahead leaves.
+        // Ships waiting for the same berth anchor in a line further out, in
+        // the order they arrived (a newcomer joins the back), and move up
+        // slowly when one ahead leaves.
         if (call.state === 'anchored') {
-          const q = this.calls.filter(o => o.state === 'anchored' && o.berth === call.berth).sort((a, b) => a.etb - b.etb).indexOf(call);
+          const q = this.calls.filter(o => o.state === 'anchored' && o.berth === call.berth).sort((a, b) => (a._anchorOrder || 0) - (b._anchorOrder || 0)).indexOf(call);
           call._anchorQ = call._anchorQ == null ? q * 90 : call._anchorQ + TL.clamp(q * 90 - call._anchorQ, -0.15, 0.15);
           m.y -= call._anchorQ;
         } else call._anchorQ = null;
@@ -1186,7 +1188,13 @@
       const recent = this.stats.moves.filter(m => m.call === call.id && m.t > this.t - 3600).length;
       const rate = call.state === 'working' ? 0.5 * recent + 0.5 * n * 27 : n * 27;
       const start = call.state === 'working' ? this.t : Math.max(call.etb, this.t + (call.state === 'approach' ? 0 : 3600));
-      return start + left / Math.max(rate, 5) * 3600 + 1800;
+      let end = start + left / Math.max(rate, 5) * 3600;
+      // Alongside, it can only sail once the ship under way is clear.
+      if (call.state === 'working') for (const o of this.calls) {
+        if (o.state === 'approach') end = Math.max(end, o.etb);
+        if (o.state === 'departing') end = Math.max(end, o.departT + 1800);
+      }
+      return end + 1800;
     }
     callWindow(call) {
       if (call.state === 'departing' || call.state === 'gone') return { start: call.etb, end: call.departT || call.etb };
@@ -1222,7 +1230,7 @@
       }
       const old = { berth: call.berth, etb: call.etb };
       call.berth = berth; call.etb = etb; call.eta = etb - 1800;
-      if (call.state === 'anchored') call.state = 'planned';
+      if (call.state === 'anchored') { call.state = 'planned'; call._anchorQ = null; call._anchorOrder = null; }
       this._placeCall(call);
       // Push later calls on this berth so nothing overlaps.
       const pushed = [];

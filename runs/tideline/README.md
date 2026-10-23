@@ -27,7 +27,7 @@ the details at full resolution.
 | **Open it** | [`index.html`](index.html): no install, no server, no network, no dependencies |
 | **Model** | Claude Opus 5.5 (Claude Code) |
 | **Brief** | [`brief.md`](brief.md): the brief with four human-made mockups, two "continue" messages after usage-limit pauses, and four messages after delivery: the PR request, a local review, a play-test note and repository settings (7 human turns) |
-| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all; then about an hour of fixes after a play-test and a review ([log, section 10](process/PROGRESS.md#10-after-delivery-a-play-test-and-a-local-review-1942-to-2045)) |
+| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all; then about 75 min of fixes after a play-test and reviews ([log, section 10](process/PROGRESS.md#10-after-delivery-a-play-test-and-a-local-review-1942-to-2055)) |
 | **Full-size outputs** | release `run-tideline`: the demo tour as a film, built by the Run assets workflow ([below](#reproduce)) |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [art bible](process/ART-BIBLE.md), [snapshots](process/snapshots/), [supplied mockups](process/studies/) |
 
@@ -171,7 +171,7 @@ atlas. Nothing is loaded from the network.
 
 ```bash
 open index.html                          # the console
-node --test tests/*.test.js              # unit tests (22)
+node --test tests/*.test.js              # unit tests (23)
 node tools/check.js --seeds 24 --hours 6 --monkey
 node tools/check.js --seeds 6 --hours 30 # every call in the schedule comes alongside
 (cd ../.. && npm ci && npx playwright install chromium)

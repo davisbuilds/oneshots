@@ -285,7 +285,7 @@ moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
 - `node --test tests/*.test.js`: 16 pass. `node verify.mjs`: all checks
   pass (no network requests, no page errors).
 
-## 10. After delivery: a play-test and a local review (19:42 to 20:45)
+## 10. After delivery: a play-test and a local review (19:42 to 20:55)
 
 The human played the build and saw Northmere Wren "rotated a bit and
 overlapping the ground" early on. A local code review (run as a subagent
@@ -350,7 +350,13 @@ that fails on the previous commit:
 - Ships queued at anchor jumped 90 m when the one ahead left; they move up
   slowly.
 
-Checks after the fixes: 22 unit tests pass (the six new ones fail on the
+A third review pass found that a ship joining the anchorage took its place
+in berthing order at once, on top of the ship it displaced; ships now queue
+in the order they arrive and weigh anchor from where they wait. A ship
+ready to sail but waiting for the harbour also showed a departure time
+that kept sliding to "in 30 minutes"; it now allows for the wait.
+
+Checks after the fixes: 23 unit tests pass (the seven new ones fail on the
 code they fix); `node tools/check.js --seeds 24 --hours 6 --monkey` 24/24
 clean (18,804 crane moves, 995M pair tests, 0 overlaps, 0 fallbacks);
 `--seeds 6 --hours 30` with and without random actions clean (every call
