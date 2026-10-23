@@ -131,6 +131,7 @@
       if (drag && !drag.moved) UI.click(e.clientX, e.clientY);
       drag = null;
     });
+    cv.addEventListener('pointercancel', () => { cv.classList.remove('dragging'); drag = null; });
     cv.addEventListener('wheel', (e) => {
       e.preventDefault();
       if (TL.Demo.on) TL.Demo.stop();
@@ -171,10 +172,10 @@
     if (best) return best;
     // Ships: the deck plane.
     for (const call of sim.calls) {
-      if (!call._matrix || call.state === 'gone') continue;
+      if (!call._matrix || call.state === 'gone' || call.state === 'planned') continue;
       const v = call.vessel, p = call._matrix.pose;
       const g = r.groundAt(px, py, TL.SIM.WL + v.hull.D - p.T + 4);
-      const lx = g[0] - p.xAP, ly = -(g[1] - p.yC);
+      const s = TL.Sim.worldToShip(p, g[0], g[1]), lx = s.x, ly = s.y;
       if (lx > v.hull.xAft && lx < v.hull.xFwd && Math.abs(ly) < v.hull.B / 2 + 2 && !p.hidden) return { kind: 'call', ref: call };
     }
     const g = r.groundAt(px, py, 0);

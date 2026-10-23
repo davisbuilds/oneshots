@@ -10,7 +10,8 @@
     app.sim = new TL.Sim({ seed: +(q.get('seed') || 1) });
     app.sim.run(+(q.get('warm') || 600));
     app.simT = app.sim.t;
-    app.r = new TL.Renderer(canvas);
+    // Without WebGL2 there is nothing to draw on: say so instead.
+    try { app.r = new TL.Renderer(canvas); } catch (e) { document.getElementById('fallback').style.display = 'grid'; throw e; }
     app.decals = TL.Decals.build(app.sim);
     if (TL.UI) TL.UI.init(app);
     app.ready = true;

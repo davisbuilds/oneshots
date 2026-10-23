@@ -363,6 +363,7 @@
       return (P.slots || []).find(o => x >= o.x - 1 && x <= o.x + o.w + 1 && y >= o.y - 1 && y <= o.y + o.h + 1);
     };
     bay.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
       const o = slotAt(e);
       if (!o || !o.planned) {
         if (o && o.box) TL.UI.toast('', o.box.id, `${S.TYPES[o.box.type].label} · ${o.box.w.toFixed(1)} t · to ${S.PORT_NAMES[o.box.pod]} · ${app.vesselCall.vessel.brt(o.st.id, o.idx)}${o.box.pod === S.PORT ? ' · discharges here' : ' · stays on board'}`, 3500);
@@ -396,6 +397,10 @@
       if (!o || (o.st === dr.from.st && o.idx === dr.from.idx)) { P.dirty = true; return; }
       P.tryDrop(dr.box, o.st, o.idx);
     });
+    // A cancelled pointer drops nothing.
+    const cancel = () => { if (!P.drag) return; P.drag = null; $('#drag').style.display = 'none'; P.dirty = true; };
+    bay.addEventListener('pointercancel', cancel);
+    bay.addEventListener('lostpointercapture', () => setTimeout(cancel, 0));
     prof.addEventListener('click', (e) => {
       const r = prof.getBoundingClientRect();
       const b = P.profileBay(e.clientX - r.left);
@@ -491,7 +496,7 @@
     const k = sim.kpi();
     $('#pbody').innerHTML = `<div class="cap">Yard occupancy by block</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px">${cells}</div><div class="note">Inland row (2) above, quay row (1) below. Exports stage in row 1, imports wait for trucks in row 2, reefers plug in at D2.</div>
       <div class="sect"><h3>Block ${B.name}${B.reefer ? ' <span class="chip blue">Reefer</span>' : ''}<span class="r">${(s.n / s.cap * 100).toFixed(0)}%</span></h3>
-      <table class="kv"><tr><td class="muted">Boxes / capacity</td><td>${s.n} / ${s.cap} (${s.n * 2} TEU)</td></tr><tr><td class="muted">Imports waiting for trucks</td><td>${s.imp}</td></tr><tr><td class="muted">Exports for coming calls</td><td>${s.exp}</td></tr><tr><td class="muted">Reefers</td><td>${s.rf}</td></tr><tr><td class="muted">Stacking</td><td>16 rows × 10 slots, 1-over-3</td></tr></table></div>
+      <table class="kv"><tr><td class="muted">Boxes / capacity</td><td>${s.n} / ${s.cap} (${s.n * 2} TEU)</td></tr><tr><td class="muted">Imports waiting for trucks</td><td>${s.imp}</td></tr><tr><td class="muted">Exports for coming calls</td><td>${s.exp}</td></tr><tr><td class="muted">Reefers</td><td>${s.rf}</td></tr><tr><td class="muted">Stacking</td><td>${B.i1 - B.i0 + 1} rows × ${B.slots.length} slots, ${L.SLOT_TIERS} high (1-over-${L.SLOT_TIERS - 1})</td></tr></table></div>
       <div class="sect"><h3>Terminal</h3><table class="kv"><tr><td class="muted">Yard</td><td>${fmt.int(k.yardTEU)} / ${fmt.int(k.yardCap)} TEU</td></tr><tr><td class="muted">Rehandles this run</td><td>${k.rehandles}</td></tr><tr><td class="muted">Boxes waiting on the apron</td><td>${sim.ground.size}</td></tr></table>
       <div class="note">A rehandle is a move that only digs out a box buried under others. Category stowage (any export of the same port, type and weight class may take a planned slot) keeps them down.</div></div>`;
   };

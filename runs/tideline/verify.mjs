@@ -177,6 +177,17 @@ try {
 
   assert.deepEqual(requests, [], 'no network requests');
   assert.deepEqual(errors, [], 'no page errors');
+
+  // ── Without WebGL2: the page says so ─────────────────────────────────
+  const bare = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await bare.addInitScript(() => {
+    const get = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (kind, ...rest) { return kind === 'webgl2' ? null : get.call(this, kind, ...rest); };
+  });
+  await bare.goto(url + '?still');
+  await bare.waitForFunction(() => getComputedStyle(document.getElementById('fallback')).display !== 'none', null, { timeout: 120000 });
+  assert.match(await bare.textContent('#fallback'), /needs WebGL2/, 'the fallback explains what is missing');
+  await bare.close();
   console.log('verify: all checks passed');
 } catch (e) {
   console.error('errors:', errors);

@@ -175,12 +175,30 @@
       const x1 = dx * Math.cos(th) - dz * Math.sin(th), z1 = dz * Math.cos(th) + dx * Math.sin(th);
       const z2 = z1 * Math.cos(ph) - y * Math.sin(ph), y2 = y * Math.cos(ph) + z1 * Math.sin(ph);
       out = out || {};
-      const yaw = p.yaw || 0;
-      const lx = p.LCF + x1, ly = -y2;
-      out.x = p.xAP + lx * Math.cos(yaw) - ly * Math.sin(yaw);
-      out.y = p.yC + lx * Math.sin(yaw) + ly * Math.cos(yaw);
+      // Under way the ship turns about its pivot and is offset from the berth.
+      const yaw = p.yaw || 0, pv = p.pivot || 0;
+      const lx = p.LCF + x1 - pv, ly = -y2;
+      out.x = p.xAP + pv + (p.dx || 0) + lx * Math.cos(yaw) - ly * Math.sin(yaw);
+      out.y = p.yC + (p.dy || 0) + lx * Math.sin(yaw) + ly * Math.cos(yaw);
       out.z = WL + (p.dz || 0) + z2;
       return out;
+    }
+    // The inverse in plan, ignoring trim and heel: world (x, y) to ship
+    // (x from AP, y to starboard).
+    static worldToShip(p, x, y) {
+      const yaw = p.yaw || 0, pv = p.pivot || 0;
+      const ux = x - (p.xAP + pv + (p.dx || 0)), uy = y - (p.yC + (p.dy || 0));
+      const lx = ux * Math.cos(yaw) + uy * Math.sin(yaw), ly = -ux * Math.sin(yaw) + uy * Math.cos(yaw);
+      return { x: lx + pv, y: -ly };
+    }
+    // The hull in plan as a rectangle at the waterline (LOA x beam, plus 1 m
+    // all round), from the pose the renderer draws; ymax is its most
+    // landward point (the quay edge is y = 0).
+    hullRect(call) {
+      const p = this.shipPose(call), h = call.vessel.hull;
+      const a = Sim.shipToWorld(p, h.xAft, 0, p.T, {}), f = Sim.shipToWorld(p, h.xFwd, 0, p.T, {});
+      const ys = [[h.xAft, -1], [h.xAft, 1], [h.xFwd, -1], [h.xFwd, 1]].map(([x, s]) => Sim.shipToWorld(p, x, s * h.B / 2, p.T, {}).y);
+      return { x: (a.x + f.x) / 2, y: (a.y + f.y) / 2, th: Math.atan2(f.y - a.y, f.x - a.x), hl: h.LOA / 2 + 1, hw: h.B / 2 + 1, ymax: Math.max(...ys) };
     }
     // World position of a box at (stack, index) on a call's ship (box centre).
     boxWorld(call, st, k, out) {
@@ -524,8 +542,25 @@
         const cand = c.bays.filter(b => this.bayPhase(call, b).phase !== 'done');
         if (!cand.length) { c.status = 'Finished'; c.bay = -1; this._parkSpreader(c); return; }
         cand.sort((a, b) => Math.abs(call.xAP + v.bays[a].x - c.x) - Math.abs(call.xAP + v.bays[b].x - c.x));
-        const b = cand[0], x = call.xAP + v.bays[b].x;
-        if (Math.abs(x - c.x) > 0.5) { if (!this._startGantry(c, x)) c.status = 'Waiting for clearance'; else c.bay = b; return; }
+        // The nearest bay it can reach; if another crane is in the way of
+        // all of them, wait for clearance.
+        let b = null, blockers = [];
+        for (const bb of cand) {
+          const x = call.xAP + v.bays[bb].x;
+          if (Math.abs(x - c.x) <= 0.5) { b = bb; break; }
+          if (this._startGantry(c, x)) { c.bay = bb; c.clearSince = null; return; }
+          if (c.blockedBy) blockers.push([bb, c.blockedBy]);
+        }
+        if (b == null) {
+          c.status = 'Waiting for clearance';
+          if (c.clearSince == null) c.clearSince = this.t;
+          // Ten minutes kept out by a crane on the same ship: there is no
+          // room for both, so hand it the bays on its side, where it stands.
+          const o = blockers.length && blockers[0][1];
+          if (o && o.call === call && !o.pendingSet && this.t - c.clearSince > 600) this._handOver(c, o, blockers.filter(q => q[1] === o).map(q => q[0]));
+          return;
+        }
+        c.clearSince = null;
         c.bay = b; ph = this.bayPhase(call, b);
       }
       if (ph.phase === 'done') { c.status = c.inbound ? 'Waiting for box' : 'Idle'; return; }
@@ -693,9 +728,19 @@
       return t;
     }
 
+    // Crane c gives bays it cannot reach to its neighbour o on the same ship.
+    _handOver(c, o, bays) {
+      const call = c.call, v = call.vessel;
+      c.bays = c.bays.filter(b => !bays.includes(b));
+      o.bays = o.bays.concat(bays).sort((a, b) => v.bays[a].x - v.bays[b].x);
+      c.clearSince = null;
+      this.planVersion = (this.planVersion || 0) + 1;
+      this._alert('crane', `${c.id} hands bay${bays.length > 1 ? 's' : ''} ${bays.map(b => String(v.bays[b].no).padStart(2, '0')).join(', ')} to ${o.id}: no room for both cranes`, c);
+    }
     _startGantry(c, x, depth = 0) {
       // Keep clear of neighbours (their position and where they are going).
       // An idle neighbour in the way is asked to move along first.
+      c.blockedBy = null;
       for (const o of this.cranes) {
         if (o === c) continue;
         const ox = o.gantry ? o.gantry.x1 : o.x;
@@ -708,6 +753,7 @@
           const nx = o.k < c.k ? Math.min(ox, x - CRANE_GAP - 6) : Math.max(ox, x + CRANE_GAP + 6);
           if (nx > 20 && nx < 800) this._startGantry(o, nx, depth + 1);
         }
+        c.blockedBy = o;
         return false;
       }
       // Reserve the rail cells the legs sweep, at the earliest free window.
@@ -996,7 +1042,9 @@
           pickState: bayState, dropState: this.yard.state(dest), pickDwell: SC_DWELL.pickTruck, dropDwell: SC_DWELL.dropGround,
           group: this.scG.nPockets + tr.bay, ignore: ID.truck + tr.k, pickLabel: L.BAYS[tr.bay].id, dropLabel: 'block ' + dest.block.name,
         });
-        task.onDone = () => { tr.state = 'served'; call.exports.push(tr.box); };
+        // The carrier's pick clears tr.box, so keep the box itself.
+        const box = tr.box;
+        task.onDone = () => { tr.state = 'served'; call.exports.push(box); };
         task.onPick = () => {};
       } else {
         const box = tr.target;
@@ -1074,19 +1122,46 @@
       const B = L.BERTHS[call.berth];
       return c.x > B.x0 - 60 && c.x < B.x1 + 60;
     }
+    // Ship motion, drawn, while a ship comes alongside or leaves. Ships lie
+    // port side to, bow east; the harbour opens to the south-east. Coming in,
+    // a ship sails bow first from the anchorage to a point off its berth,
+    // swings there with the tugs and is pushed alongside; leaving, it is
+    // pulled off, then sails out east and away. Offsets are from the berthed
+    // position; the ship turns about its midlength. tools/check.js tests
+    // every pose against the quay, the breakwater and the other ships.
     _shipMotion(call) {
-      const v = call.vessel;
-      if (call.state === 'approach' || call.state === 'anchored' || call.state === 'planned') {
+      const h = call.vessel.hull, pivot = (h.xAft + h.xFwd) / 2;
+      const R = Math.hypot(h.LOA / 2, h.B / 2);
+      const bez = (a, k, b, s) => {
+        const q = 1 - s;
+        return { x: q * q * a.x + 2 * s * q * k.x + s * s * b.x, y: q * q * a.y + 2 * s * q * k.y + s * s * b.y,
+          yaw: Math.atan2(q * (k.y - a.y) + s * (b.y - k.y), q * (k.x - a.x) + s * (b.x - k.x)) };
+      };
+      const seg = (u, a, b) => TL.clamp((u - a) / (b - a), 0, 1);
+      if (call.state === 'approach' || call.state === 'anchored') {
         const u = call.state === 'approach' ? TL.clamp(1 - (call.etb - this.t) / 3600, 0, 1) : 0;
-        if (call.state !== 'approach' && call.state !== 'anchored') return { dx: 0, dy: -2000, yaw: 0, hidden: true };
-        // From the anchorage (south-east), curve in and slide alongside.
-        const e = TL.easeInOut(u);
-        const dx = (1 - e) * 520, dy = -(1 - e) * (1 - e) * 340 - (1 - TL.smooth(u)) * 30;
-        return { dx, dy, yaw: (1 - e) * 0.32, along: true };
+        // Swing off the berth, far enough out to clear the ships alongside.
+        const off = R + 45;
+        const S = { x: 650, y: -off - 380 }, K = { x: 260, y: -off }, W = { x: 0, y: -off };
+        let m;
+        if (u < 0.5) m = bez(S, K, W, TL.easeInOut(seg(u, 0, 0.5)) * 0.5 + seg(u, 0, 0.5) * 0.5);
+        else if (u < 0.75) m = { x: 0, y: -off, yaw: Math.PI * (1 - TL.smooth(seg(u, 0.5, 0.75))) };
+        else m = { x: 0, y: -off * (1 - TL.smooth(seg(u, 0.75, 1))), yaw: 0 };
+        // Ships waiting for the same berth anchor in a line further out.
+        if (call.state === 'anchored') {
+          const q = this.calls.filter(o => o.state === 'anchored' && o.berth === call.berth).sort((a, b) => a.etb - b.etb).indexOf(call);
+          m.y -= q * 90;
+        }
+        return { dx: m.x, dy: m.y, yaw: m.yaw, pivot };
       }
       if (call.state === 'departing' || call.state === 'gone') {
-        const u = TL.clamp((this.t - call.departT) / 1800, 0, 1), e = TL.easeInOut(u);
-        return { dx: -e * 700, dy: -e * e * 300 - TL.smooth(u) * 25, yaw: -e * 0.25, along: true, hidden: call.state === 'gone' };
+        const u = TL.clamp((this.t - call.departT) / 1800, 0, 1);
+        // Out past the ships alongside at the other berths.
+        const off = h.B / 2 + 50;
+        let m;
+        if (u < 0.3) m = { x: 0, y: -off * TL.smooth(seg(u, 0, 0.3)), yaw: 0 };
+        else m = bez({ x: 0, y: -off }, { x: 350, y: -off }, { x: 1000, y: -off - 450 }, TL.easeInOut(seg(u, 0.3, 1)) * 0.5 + seg(u, 0.3, 1) * 0.5);
+        return { dx: m.x, dy: m.y, yaw: m.yaw, pivot, hidden: call.state === 'gone' };
       }
       return null;
     }
@@ -1123,7 +1198,8 @@
       return errs;
     }
     // Move a call that is not yet alongside to another berth and/or time.
-    // Later calls on that berth are pushed back if they would overlap.
+    // It never overlaps another call on that berth: it waits for earlier
+    // ones, and later ones are pushed back.
     moveCall(call, berth, etb) {
       const errs = [];
       if (!(call.state === 'planned' || call.state === 'anchored')) return { ok: false, errs: [`${call.vessel.name} is already ${call.state === 'approach' ? 'approaching' : 'alongside'}; it cannot be moved`] };
@@ -1145,8 +1221,10 @@
       const queue = this.calls.filter(o => o.berth === berth && (o.state === 'planned' || o.state === 'anchored') ).sort((a, b) => a.etb - b.etb);
       let free = -Infinity;
       for (const o of this.calls) if (o.berth === berth && (o.state === 'working' || o.state === 'approach')) free = Math.max(free, this.projectETD(o) + 1800);
+      // The moved call too: dropped inside an earlier call's window, it
+      // berths when that call has left.
       for (const o of queue) {
-        if (o !== call && o.etb < free) { o.etb = Math.ceil(free / 900) * 900; o.eta = o.etb - 1800; pushed.push(o.vessel.name); }
+        if (o.etb < free) { o.etb = Math.ceil(free / 900) * 900; o.eta = o.etb - 1800; if (o !== call) pushed.push(o.vessel.name); }
         free = Math.max(free, this.projectETD(o) + 1800);
       }
       this.planVersion = (this.planVersion || 0) + 1;
@@ -1159,26 +1237,36 @@
     assignCrane(k, call) {
       const c = this.cranes[k];
       const from = c.call;
-      if (call === from) return { ok: true };
+      // Check against where every crane will be once pending reassignments
+      // take effect, so two requests cannot together make cranes pass.
+      const eff = (o) => (o.pendingSet ? o.pending : o.call);
+      const group = (cl) => this.cranes.filter(o => eff(o) === cl).map(o => o.k);
+      if (call === eff(c)) return { ok: true };
+      // Changing its mind before it leaves: stay where it is.
+      if (c.pendingSet && call === from) { c.pendingSet = false; c.pending = undefined; return { ok: true }; }
+      if (c.pendingSet) return { ok: false, errs: [`${c.id} is still on its way to ${c.pending ? c.pending.vessel.name : 'release'}; wait for it to finish`] };
       if (call && call.state !== 'working') return { ok: false, errs: [`${call.vessel.name} is not alongside yet`] };
       if (from && from.state === 'working') {
-        const rest = from.cranes.filter(q => q !== k);
+        const rest = group(from).filter(q => q !== k);
         if (rest.length && Math.min(...rest) < k && Math.max(...rest) > k) return { ok: false, errs: [`${c.id} works between ${this.cranes[Math.min(...rest)].id} and ${this.cranes[Math.max(...rest)].id}; release a crane at the end of the group instead`] };
       }
       if (call) {
-        const set = call.cranes.concat([k]).sort((a, b) => a - b);
+        const set = group(call).concat([k]).sort((a, b) => a - b);
         for (let j = set[0]; j <= set[set.length - 1]; j++) {
           if (!set.includes(j)) {
-            const o = this.cranes[j];
-            return { ok: false, errs: [`${o.id} stands between ${c.id} and ${call.vessel.name} on the rail${o.call ? ` (working ${o.call.vessel.name})` : ''}; cranes cannot pass each other`] };
+            const o = this.cranes[j], oc = eff(o);
+            return { ok: false, errs: [`${o.id} stands between ${c.id} and ${call.vessel.name} on the rail${oc ? ` (${o.pendingSet ? 'going to' : 'working'} ${oc.vessel.name})` : ''}; cranes cannot pass each other`] };
           }
         }
-        // The berth must lie on this crane's side of its neighbours.
+        // The berth must lie on this crane's side of its neighbours (a crane
+        // being reassigned counts as standing at its new ship).
         const B = L.BERTHS[call.berth];
         for (const o of this.cranes) {
-          if (o === c || set.includes(o.k) || !o.call || o.call.state !== 'working') continue;
-          if (o.k < k && o.x > B.x1 - 20) return { ok: false, errs: [`${o.id} is in the way at ${o.call.vessel.name}`] };
-          if (o.k > k && o.x < B.x0 + 20) return { ok: false, errs: [`${o.id} is in the way at ${o.call.vessel.name}`] };
+          const oc = eff(o);
+          if (o === c || set.includes(o.k) || !oc || oc.state !== 'working') continue;
+          const ob = L.BERTHS[oc.berth], ox = o.pendingSet ? (ob.x0 + ob.x1) / 2 : o.x;
+          if (o.k < k && ox > B.x1 - 20) return { ok: false, errs: [`${o.id} is in the way at ${oc.vessel.name}`] };
+          if (o.k > k && ox < B.x0 + 20) return { ok: false, errs: [`${o.id} is in the way at ${oc.vessel.name}`] };
         }
       }
       c.pending = call || null;
@@ -1301,7 +1389,7 @@
     // reach it without passing another crane.
     _autoCranes() {
       for (const call of this.calls) {
-        if (call.state !== 'working' || call.cranes.length) continue;
+        if (call.state !== 'working' || this.cranes.some(c => (c.pendingSet ? c.pending : c.call) === call)) continue;
         const B = L.BERTHS[call.berth], mid = (B.x0 + B.x1) / 2;
         const idle = this.cranes.filter(c => !c.pendingSet && (!c.call || c.call.state !== 'working')).sort((a, b) => Math.abs(a.x - mid) - Math.abs(b.x - mid));
         for (const c of idle) {

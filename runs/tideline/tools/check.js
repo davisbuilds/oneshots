@@ -7,9 +7,11 @@
 // It does not trust the planner. Every straddle carrier and truck is rebuilt
 // as its real rectangle (10 x 5 m, 16.5 x 2.6 m) every quarter second and
 // tested pairwise with the separating-axis theorem, and against the crane
-// legs on the rail and any spreader lowered over the lanes. The only overlap
-// allowed is a carrier straddling the truck it is serving, in that truck's
-// transfer bay.
+// legs on the rail and any spreader lowered over the lanes. The only
+// overlaps allowed are a carrier lined up over a transfer bay straddling a
+// truck standing still in that bay, and a spreader over the carrier taking
+// or delivering that very box. Ships are tested against the quay, the
+// breakwater and each other, and every crane with work must keep moving.
 'use strict';
 const TL = require('../src/node.js');
 const L = TL.Layout, M = TL.MAPF;
@@ -33,6 +35,8 @@ function overlap(a, b) {
   }
   return true;
 }
+
+const BREAKWATER = { x: -140, y: -330, th: 0, hl: 210, hw: 7 };
 
 // Random actions a player might take, to show the guarantees hold under them.
 function monkey(sim, rng, log) {
@@ -68,9 +72,32 @@ function checkSeed(seed) {
   const fail = [];
   let worstHeel = 0, minGM = Infinity, lastProgress = start, maxIdle = 0, stab = 0;
   const departures = [];
+  let shipHits = 0;
+  const craneFree = sim.cranes.map(() => start), craneStuck = sim.cranes.map(() => false);
+  const firstShip = [];
   while (sim.t < end) {
     sim.step();
+    // Ships, moored or moving, stay in open water: clear of the quay, the
+    // breakwater and each other.
+    if (sim.t % 10 === 0) {
+      const hulls = sim.calls.filter(c => c.state !== 'planned' && c.state !== 'gone').map(c => ({ c, r: sim.hullRect(c) }));
+      const hit = (msg) => { shipHits++; if (firstShip.length < 3) firstShip.push(`t=${sim.t} ${msg}`); };
+      for (const h of hulls) {
+        if (h.r.ymax > -1.0) hit(`${h.c.vessel.name} (${h.c.state}) reaches y=${h.r.ymax.toFixed(1)} m, over the quay`);
+        if (overlap(h.r, BREAKWATER)) hit(`${h.c.vessel.name} (${h.c.state}) hits the breakwater`);
+      }
+      for (let i = 0; i < hulls.length; i++) for (let j = i + 1; j < hulls.length; j++)
+        if (overlap(hulls[i].r, hulls[j].r)) hit(`${hulls[i].c.vessel.name} (${hulls[i].c.state}) x ${hulls[j].c.vessel.name} (${hulls[j].c.state})`);
+    }
     if (MONKEY && sim.t % 600 === 0) monkey(sim, rng, log);
+    // Each crane: while it is assigned to a ship that still has work, it
+    // must not go 30 minutes without a move (or wait that long to leave).
+    if (sim.t % 60 === 0) for (const c of sim.cranes) {
+      const work = (c.call && c.call.state === 'working' && c.bays.some(b => sim.bayWork(c.call, b) > 0)) || c.pendingSet;
+      const last = Math.max(c.moves.length ? c.moves[c.moves.length - 1] : start, craneFree[c.k]);
+      if (!work) craneFree[c.k] = sim.t;
+      else if (sim.t - last > 1800 && !craneStuck[c.k]) { craneStuck[c.k] = true; fail.push(`t=${sim.t}: ${c.id} (${c.status}${c.pendingSet ? ', reassigning' : ''}) no move for 30 min`); }
+    }
     if (sim.t % 60 === 0) {
       for (const call of sim.calls) {
         if (call.state !== 'working') continue;
@@ -98,16 +125,6 @@ function checkSeed(seed) {
   const p = { x: 0, y: 0, th: 0, k: 0 };
   const scPose = (sc, t) => { M.poseAt(sim.scG, sc.hist, t, p); return { x: p.x, y: p.y, th: p.th, hl: SC.hl, hw: SC.hw }; };
   const trucks = sim.trucks.concat(sim._goneTrucks || []).filter(tr => tr.hist && tr.hist.length);
-  // Allowed pairs: carrier k serving truck j, while the task is open.
-  const serving = new Map();
-  for (const tk of sim.taskLog || []) {
-    const tr = tk.from.kind === 'truck' ? tk.from.truck : tk.to.kind === 'truck' ? tk.to.truck : null;
-    if (!tr) continue;
-    const key = tk.sc.k + ':' + tr.k;
-    (serving.get(key) || serving.set(key, []).get(key)).push([tk.assignT, tk.doneT != null ? tk.doneT : Infinity]);
-  }
-  // (until it has reversed out of the bay, a few seconds after the lift ends)
-  const isServing = (sk, tk, t) => (serving.get(sk + ':' + tk) || []).some(([a, b]) => t >= a && t <= b + 6);
   const trPose = (tr, t) => {
     const h = tr.hist; if (t < h[0].t0) return null;
     M.poseAt(sim.trG, h, t, p);
@@ -186,6 +203,7 @@ function checkSeed(seed) {
   for (const tr of trucks) if (tr.gateInT != null && tr.state !== 'gone' && end - tr.gateInT > 3 * 3600) fail.push(`truck ${tr.id} inside for over 3 h`);
   if (openOld) fail.push(`${openOld} tasks open for more than 90 min`);
   if (maxWait > 900) fail.push(`a carrier waited ${maxWait} s in a lane`);
+  if (shipHits) fail.push(`${shipHits} ship clearance failures (first: ${firstShip.join("; ")})`);
   if (sim.stats.violations) fail.push(`${sim.stats.violations} stability violations after crane moves`);
   return {
     seed, ms: Date.now() - t0, moves: sim.stats.moves.filter(m => m.t > start).length, tasks: sim.tasks.filter(t => t.state === 'done').length,

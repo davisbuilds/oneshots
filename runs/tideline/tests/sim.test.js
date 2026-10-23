@@ -49,3 +49,48 @@ test('every call’s generated load plan is legal at its berth', () => {
     }
   }
 });
+
+test('ships coming alongside and leaving keep clear of the quay', () => {
+  // Northmere Wren approaches berth 3 in the first hour, works, and sails at
+  // about 16 h (past the first export a truck delivers being loaded).
+  const sim = new TL.Sim({ seed: 1 });
+  const wren = sim.calls.find(c => c.vessel.name === 'Northmere Wren');
+  const seen = new Set();
+  for (let i = 0; i < 18 * 3600 && wren.state !== 'gone'; i++) {
+    sim.step();
+    if (sim.t % 30) continue;
+    seen.add(wren.state);
+    const r = sim.hullRect(wren);
+    assert.ok(r.ymax < -1, `${wren.state} at t=${sim.t}: hull reaches y=${r.ymax.toFixed(1)} m`);
+  }
+  assert.deepEqual([...seen].sort(), ['approach', 'departing', 'working']);
+});
+
+test('two pending crane reassignments cannot make cranes pass each other', () => {
+  const sim = new TL.Sim({ seed: 1 });
+  const busy = (c) => c.state === 'cycle' || c.inbound > 0;
+  while (!(busy(sim.cranes[2]) && busy(sim.cranes[3]))) sim.step();
+  // QC-03 to the second ship and QC-04 to the first: together, a swap.
+  const a = sim.assignCrane(2, sim.calls[1]), b = sim.assignCrane(3, sim.calls[0]);
+  assert.ok(!(a.ok && b.ok), 'both accepted');
+  sim.run(2 * 3600);
+  for (const call of sim.calls.filter(c => c.state === 'working')) {
+    const ks = call.cranes.slice().sort((x, y) => x - y);
+    assert.equal(ks.length ? ks[ks.length - 1] - ks[0] + 1 : 0, ks.length, `${call.vessel.name} has cranes ${ks}`);
+  }
+  for (const c of sim.cranes) assert.ok(!c.pendingSet, `${c.id} still waiting to reassign`);
+});
+
+test('a call moved onto a berth never overlaps another call there', () => {
+  const sim = new TL.Sim({ seed: 1 });
+  const halyard = sim.calls.find(c => c.vessel.name === 'Corvane Halyard');
+  // Dropped on berth 1 inside Alder Saffron's window.
+  const r = sim.moveCall(halyard, 0, 15 * 3600);
+  assert.ok(r.ok, r.errs && r.errs.join('; '));
+  const live = sim.calls.filter(c => c.state !== 'gone');
+  for (const a of live) for (const b of live) {
+    if (a === b || a.berth !== b.berth) continue;
+    const wa = sim.callWindow(a), wb = sim.callWindow(b);
+    assert.ok(wa.end <= wb.start || wb.end <= wa.start, `${a.vessel.name} and ${b.vessel.name} overlap on ${TL.Layout.BERTHS[a.berth].id}`);
+  }
+});

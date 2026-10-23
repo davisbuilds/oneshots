@@ -19,6 +19,8 @@
     cv.addEventListener('pointerdown', SC.down);
     cv.addEventListener('pointermove', SC.move);
     cv.addEventListener('pointerup', SC.up);
+    cv.addEventListener('pointercancel', SC.cancel);
+    cv.addEventListener('lostpointercapture', () => setTimeout(SC.cancel, 0));
     cv.addEventListener('pointerleave', () => { if (!SC.drag) $('#schedTip').style.display = 'none'; });
   };
   SC.flash = function () { SC.flashT = performance.now(); };
@@ -149,6 +151,7 @@
   // What is under a pointer position (for tests and tooltips).
   SC._hitTest = function (e) { const h = hit(e); return h && h.b ? h.b.b : null; };
   SC.down = function (e) {
+    if (e.button !== 0) return;
     const h = hit(e); if (!h || !h.b) return;
     const call = h.b.b.call;
     if (!(call.state === 'planned' || call.state === 'anchored')) { TL.UI.select('call', call, { fly: true }); return; }
@@ -164,7 +167,7 @@
       d.berth = TL.clamp(Math.floor((h.y - geo.top) / geo.rowH), 0, L.BERTHS.length - 1);
       d.errs = app.sim.berthErrs(d.call, d.berth);
       const etb = d.call.etb + d.dt;
-      tip.innerHTML = `<b>${d.call.vessel.name}</b> → ${L.BERTHS[d.berth].id}, berthing ${TL.DAYS[TL.UI.dateOf(etb).getUTCDay()]} ${fmt.hm(etb)}` + (d.errs.length ? `<br><span style="color:var(--out)">${d.errs.join('<br>')}</span>` : '<br><span class="muted">Release to re-plan; later calls on that berth move back if they would overlap.</span>');
+      tip.innerHTML = `<b>${d.call.vessel.name}</b> → ${L.BERTHS[d.berth].id}, berthing ${TL.DAYS[TL.UI.dateOf(etb).getUTCDay()]} ${fmt.hm(etb)}` + (d.errs.length ? `<br><span style="color:var(--out)">${d.errs.join('<br>')}</span>` : '<br><span class="muted">Release to re-plan; it waits for earlier calls on that berth, and later ones move back.</span>');
       tip.style.display = 'block'; tip.style.left = e.clientX + 14 + 'px'; tip.style.top = e.clientY - 70 + 'px';
       SC.draw();
       return;
@@ -185,6 +188,10 @@
     if (r.ok) TL.UI.toast('ok', `${d.call.vessel.name} → ${L.BERTHS[d.call.berth].id}`, `Berthing ${dayHM(d.call.etb)}.` + (r.pushed.length ? ` Pushed back: ${r.pushed.join(', ')}.` : '') + ' Its exports are staged near the old berth, so carriers will drive further.');
     else TL.UI.toast('red', 'Cannot re-plan', r.errs.join('; '), 7000);
     SC.draw();
+  };
+  SC.cancel = function () {
+    if (!SC.drag) return;
+    SC.drag = null; $('#schedTip').style.display = 'none'; SC.draw();
   };
   function dayHM(t) { const d = TL.UI.dateOf(t); return `${TL.DAYS[d.getUTCDay()]} ${fmt.hm(t)}`; }
 })(globalThis.TL = globalThis.TL || {});
