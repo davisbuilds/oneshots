@@ -375,3 +375,12 @@ clean (18,804 crane moves, 995M pair tests, 0 overlaps, 0 fallbacks);
 in the schedule comes alongside within 30 h, and the first four sail); `node verify.mjs` passes.
 Previews regenerated. The demo film was not re-rendered here; the Run
 assets workflow builds it from this source.
+
+The first Run assets build after the merge failed on GitHub's runner: the
+first screenshot of the film timed out after 30 s. `film.mjs` drew the 30
+settle frames without screenshots, so on a software GPU they queued up and
+the first screenshot waited for all of them; the runner is slower than this
+machine. The settle frames now advance the simulation without drawing, the
+screenshot timeout is generous, and the log prints the time per frame. The
+same build in Playwright's Linux image (1.64.0, 4 CPUs) wrote 1,380 frames at
+about 0.4 s each, and `check_film.py` passed.
