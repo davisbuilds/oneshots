@@ -24,12 +24,17 @@ const ff = spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-loglevel', 'error', '-
 const done = new Promise((res, rej) => ff.on('close', c => (c ? rej(new Error(`ffmpeg exited ${c}`)) : res())));
 const dt = 1000 / fps;
 let frames = 0;
-const shoot = async () => { ff.stdin.write(await page.screenshot({ type: 'jpeg', quality: 92 })); frames++; };
-// Settle for a second, start the tour, film until it ends, hold a second.
-for (let i = 0; i < 30; i++) await page.evaluate(d => TL.app.filmFrame(d), dt);
+// One draw per screenshot: frames drawn without a screenshot queue up on a
+// software GPU, and the next screenshot waits for all of them. Slow runners
+// can take seconds a frame, so the screenshot timeout is generous.
+const t0 = Date.now();
+const shoot = async () => { ff.stdin.write(await page.screenshot({ type: 'jpeg', quality: 92, timeout: 600000 })); frames++; };
+// Settle for a second (simulation only), start the tour, film until it
+// ends, hold a second.
+for (let i = 0; i < 30; i++) await page.evaluate(d => TL.app.filmFrame(d, true), dt);
 await page.evaluate(() => TL.Demo.start());
 let s;
-do { s = await page.evaluate(d => TL.app.filmFrame(d), dt); await shoot(); if (frames % 150 === 0) console.log(`${frames} frames`); } while (s.demo && frames < fps * 90);
+do { s = await page.evaluate(d => TL.app.filmFrame(d), dt); await shoot(); if (frames % 150 === 0) console.log(`${frames} frames, ${((Date.now() - t0) / frames / 1000).toFixed(2)} s a frame`); } while (s.demo && frames < fps * 90);
 for (let i = 0; i < fps; i++) { await page.evaluate(d => TL.app.filmFrame(d), dt); await shoot(); }
 ff.stdin.end();
 await done;
