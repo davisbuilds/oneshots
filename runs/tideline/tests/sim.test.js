@@ -154,21 +154,28 @@ test('a ship at anchor waits for its berthing time, not just a free berth', () =
   assert.ok(sim.t >= due - 3600, `came in at ${(sim.t / 3600).toFixed(1)} h, due ${(due / 3600).toFixed(1)} h`);
 });
 
-test('ships waiting at anchor for one berth keep clear of each other', () => {
-  // Berth 1 is busy for hours. Alder Saffron anchors for it, a re-plan then
-  // pushes its time back, and Corvane Halyard (now due earlier) anchors too.
+test('ships at anchor keep clear of each other, and the one due first leaves first', () => {
+  // Three ships anchor for berth 1 while Corvane Lantern works there. Alder
+  // Saffron, in the slot ahead, is then pushed back, so Corvane Halyard
+  // (due next) has to leave past it.
   const sim = new TL.Sim({ seed: 1 });
-  const saffron = sim.calls.find(c => c.vessel.name === 'Alder Saffron'), halyard = sim.calls.find(c => c.vessel.name === 'Corvane Halyard');
+  const by = (n) => sim.calls.find(c => c.vessel.name === n);
+  const lantern = by('Corvane Lantern'), saffron = by('Alder Saffron'), halyard = by('Corvane Halyard'), kitti = by('Northmere Kittiwake');
   saffron.etb = sim.t + 3660;
-  while (saffron.state !== 'anchored') sim.step();
+  for (const [c, dt] of [[halyard, 300], [kitti, 600]]) { c.berth = 0; sim._placeCall(c); c.etb = sim.t + 3600 + dt; }
+  while (kitti.state !== 'anchored') sim.step();
+  assert.ok(halyard._slot > saffron._slot, 'Halyard waits behind Saffron');
   saffron.etb += 10 * 3600;
-  halyard.berth = 0; sim._placeCall(halyard); halyard.etb = sim.t + 3600 + 300;
-  let both = 0;
-  for (let i = 0; i < 2 * 3600; i++) {
+  // Lantern's work is done: it sails, and berth 1 frees.
+  lantern.done.d = lantern.planned.d; lantern.done.l = lantern.plan.count();
+  for (const k of lantern.cranes.slice().reverse()) sim.assignCrane(k, null);
+  let n = 0;
+  while (halyard.state !== 'working' && n++ < 6 * 3600) {
     sim.step();
-    if (saffron.state !== 'anchored' || halyard.state !== 'anchored') continue;
-    both++;
-    assert.ok(!overlap(sim.hullRect(saffron), sim.hullRect(halyard)), `t=${sim.t}: the two ships at anchor overlap`);
+    assert.ok(saffron.state === 'anchored' && kitti.state === 'anchored', `${saffron.state}, ${kitti.state}: only Halyard is due`);
+    if (sim.t % 5) continue;
+    const live = sim.calls.filter(c => c.state !== 'planned' && c.state !== 'gone');
+    for (const a of live) for (const b of live) if (a !== b) assert.ok(!overlap(sim.hullRect(a), sim.hullRect(b)), `t=${sim.t}: ${a.vessel.name} (${a.state}) x ${b.vessel.name} (${b.state})`);
   }
-  assert.ok(both > 3000, 'both waited at anchor');
+  assert.equal(halyard.state, 'working');
 });

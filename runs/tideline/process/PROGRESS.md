@@ -285,7 +285,7 @@ moves, 17,730 carrier jobs, 4,046 truck visits, 453 million pair tests,
 - `node --test tests/*.test.js`: 16 pass. `node verify.mjs`: all checks
   pass (no network requests, no page errors).
 
-## 10. After delivery: a play-test and a local review (19:42 to 20:55)
+## 10. After delivery: a play-test and local reviews (19:42 to 20:55, 00:30 to 00:55)
 
 The human played the build and saw Northmere Wren "rotated a bit and
 overlapping the ground" early on. A local code review (run as a subagent
@@ -356,8 +356,20 @@ in the order they arrive and weigh anchor from where they wait. A ship
 ready to sail but waiting for the harbour also showed a departure time
 that kept sliding to "in 30 minutes"; it now allows for the wait.
 
-Checks after the fixes: 23 unit tests pass (the seven new ones fail on the
-code they fix); `node tools/check.js --seeds 24 --hours 6 --monkey` 24/24
+A fourth pass (after a usage-limit pause from about 20:55 to 00:30 UTC)
+found that queue still unsafe: a ship moving up the line ran into the one
+that had just left, and ships berthed in array order rather than the
+schedule's. Each round had patched the moving queue, so it was replaced: one
+anchorage column far out to the south-east, ships in fixed slots heading
+west, so nobody moves up; a ship weighs anchor by sailing west out of the
+column, clear of the ships north of it, then curves in; a slot is reused
+only once its last ship is well away; and of the ships due at one berth, the
+one due first goes first. A test with three ships anchored for one berth, the
+one due first in a back slot, checks every pair of hulls until it is
+alongside (it found the overlap on the previous design).
+
+Checks after the fixes: 23 unit tests pass (the new ones fail on the code
+they fix); `node tools/check.js --seeds 24 --hours 6 --monkey` 24/24
 clean (18,804 crane moves, 995M pair tests, 0 overlaps, 0 fallbacks);
 `--seeds 6 --hours 30` with and without random actions clean (every call
 in the schedule comes alongside within 30 h, and the first four sail); `node verify.mjs` passes.

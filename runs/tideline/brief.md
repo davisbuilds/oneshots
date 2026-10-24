@@ -62,3 +62,8 @@ pause from about 08:30:
 **About 19:55 UTC** (about repository settings, not the run):
 
 > unrelated but after these fixes are in, it looks like this repo doesn't have settings configured to delete branches after merge, can you enable that and also set to squash/rebase merges. you can also clean up any local/remote branches that have already been merged into main as well
+
+**About 00:30 UTC, 2026-10-24**, after a usage-limit pause from about 20:55,
+while the last review pass was running:
+
+> I hit my usage limit while you were working, but it has reset now. Please continue from where you left off.

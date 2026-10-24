@@ -26,8 +26,8 @@ the details at full resolution.
 | :--- | :--- |
 | **Open it** | [`index.html`](index.html): no install, no server, no network, no dependencies |
 | **Model** | Claude Opus 5.5 (Claude Code) |
-| **Brief** | [`brief.md`](brief.md): the brief with four human-made mockups, two "continue" messages after usage-limit pauses, and four messages after delivery: the PR request, a local review, a play-test note and repository settings (7 human turns) |
-| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all; then about 75 min of fixes after a play-test and reviews ([log, section 10](process/PROGRESS.md#10-after-delivery-a-play-test-and-a-local-review-1942-to-2055)) |
+| **Brief** | [`brief.md`](brief.md): the brief with four human-made mockups, two "continue" messages after usage-limit pauses, and five messages after delivery: the PR request, a local review, a play-test note, repository settings and one more "continue" (8 human turns) |
+| **Wall clock** | 04:16 to 13:06 UTC: about 2 h 10 min of work, around two usage-limit pauses of about 6.6 h in all; then about 100 min of fixes after a play-test and reviews, around a third pause ([log, section 10](process/PROGRESS.md#10-after-delivery-a-play-test-and-local-reviews-1942-to-2055-0030-to-0055)) |
 | **Full-size outputs** | release `run-tideline`: the demo tour as a film, built by the Run assets workflow ([below](#reproduce)) |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [art bible](process/ART-BIBLE.md), [snapshots](process/snapshots/), [supplied mockups](process/studies/) |
 
@@ -152,7 +152,8 @@ taking or delivering that very box. It also fails on any crane with work that
 goes 30 minutes without a move, and on any ship, alongside or under way,
 whose hull touches the quay, the breakwater or another ship. Ships keep
 clear of each other by a harbour rule: one ship moves at a time, so a ship
-ready to sail waits alongside and one due in waits at anchor.
+ready to sail waits alongside and one due in waits at anchor, in a fixed
+slot of a single anchorage column it can leave without passing another.
 
 ### The look
 

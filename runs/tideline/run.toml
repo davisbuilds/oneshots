@@ -17,7 +17,7 @@ harness = "Claude Code"
 
 [run]
 brief = "brief.md"
-human_turns = 7                   # the brief, "continue" after each of two usage-limit pauses, and four after delivery (see brief.md)
+human_turns = 8                   # the brief, "continue" after each of two usage-limit pauses, and five after delivery (see brief.md)
 wall_clock_minutes = 530         # 04:16 to 13:06 UTC, including two usage-limit pauses (about 6.6 h); about 130 min of work
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
