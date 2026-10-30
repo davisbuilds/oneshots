@@ -81,8 +81,9 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
   keep commits coherent and preserve unrelated work.
 - History policy: PRs into `main`, merged by squash or rebase (merge commits are
   disabled; rebase keeps a run's coherent commits, squash suits a single change).
-  GitHub deletes the head branch after merge. Request Codex review for PRs, resolve
-  review threads, and require green applicable checks before an authorized merge.
+  GitHub deletes the head branch after merge. Request Codex review for PRs that
+  change runtime behavior (skip docs-only and mechanical changes), resolve review
+  threads, and require green applicable checks before an authorized merge.
   Query GitHub for effective settings rather than assuming they enforce this.
 - Push, publish, merge, or remove remote branches only when requested or already
   authorized. After compaction, re-ground in source and recent changes.
