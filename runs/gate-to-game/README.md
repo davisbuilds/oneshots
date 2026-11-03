@@ -154,14 +154,14 @@ node tools/shot.js 600 output/shot.ppm   # play 10 s headless, write the screen
 ```
 
 The browser verifier and the film need the repository's locked Playwright
-(`npm ci` and `npx playwright install chromium` at the repository root):
+(`npm ci` and current Google Chrome installed at the repository root):
 
 ```bash
 node verify.mjs                 # real-browser checks; screenshots in output/playwright/
 node tools/film.mjs             # the tour film, output/gate_to_game_tour.mp4
 ```
 
-`CHROMIUM_PATH` points either at another Chromium build. The film needs an
+`CHROMIUM_PATH` may point at another patched Chromium build; the shared launcher checks its actual version before opening a page (see the root README). The film needs an
 FFmpeg with libx264 (`FFMPEG`, or `ffmpeg` on the path); the release build
 takes it from the `imageio-ffmpeg` wheel in [`requirements.txt`](requirements.txt).
 The film is declared as a release asset and is built from this source by the

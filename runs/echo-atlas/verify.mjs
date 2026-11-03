@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
-const { chromium } = require('@playwright/test');
-const browser = await chromium.launch();
+import { launchBrowser } from '../../scripts/browser.mjs';
+const browser = await launchBrowser();
 
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

@@ -1,11 +1,11 @@
 // shoot.mjs: development screenshots of the live page in headless Chromium.
 //   node tools/shoot.mjs out.png [W H] [--eval "js"] [--t seconds]
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../../scripts/browser.mjs';
 const args = process.argv.slice(2);
 const out = args[0];
 const W = +(args[1] && !args[1].startsWith('--') ? args[1] : 1600), H = +(args[2] && !args[2].startsWith('--') ? args[2] : 900);
 const opt = (k) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : null; };
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const browser = await launchBrowser({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: +(process.env.DPR || 1) });
 const errs = [];
 page.on('pageerror', e => errs.push(e.message));

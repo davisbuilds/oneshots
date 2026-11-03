@@ -75,6 +75,13 @@ jobs:
             "$RUNNER_TEMP/venv/bin/pip" install -r "runs/$RUN/$REQ"
           fi
 
+      - name: Provision pinned Chrome for browser renders
+        if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "tideline"]'), inputs.run)
+        run: |
+          npm ci --ignore-scripts
+          npx --no-install playwright install-deps chromium
+          bash scripts/install-ci-chrome.sh
+
       - name: Build
         timeout-minutes: ${{ fromJSON(steps.manifest.outputs.timeout) }}
         working-directory: runs/${{ inputs.run }}

@@ -36,7 +36,7 @@ and the locked npm tooling:
 
 ```bash
 npm ci
-npx playwright install chromium
+# Install current Google Chrome separately; see the root README.
 npm run verify:browser
 ```
 

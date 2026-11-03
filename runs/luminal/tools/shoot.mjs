@@ -1,11 +1,11 @@
 // shoot.mjs: development screenshots at chosen beats along the stored route.
 //   node tools/shoot.mjs out_dir beat1 beat2 ...   [W=1280 H=720]
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../../scripts/browser.mjs';
 import { mkdir } from 'node:fs/promises';
 const [out, ...beats] = process.argv.slice(2);
 await mkdir(out, { recursive: true });
 const W = +(process.env.W || 1280), H = +(process.env.H || 720);
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--autoplay-policy=no-user-gesture-required', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const browser = await launchBrowser({ args: ['--autoplay-policy=no-user-gesture-required', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const page = await browser.newPage({ viewport: { width: W, height: H } });
 const errs = [];
 page.on('pageerror', e => errs.push(e.message));

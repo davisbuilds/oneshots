@@ -6,7 +6,7 @@
 import { spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../../scripts/browser.mjs';
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -15,7 +15,7 @@ const fps = +opt('--fps', 30);
 const [W, H] = opt('--size', '1280x800').split('x').map(Number);
 await mkdir(fileURLToPath(new URL('../output/', import.meta.url)), { recursive: true });
 
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || undefined });
+const browser = await launchBrowser({ headless: true });
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));

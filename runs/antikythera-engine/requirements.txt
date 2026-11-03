@@ -3,7 +3,7 @@
 numpy==2.4.6
 # src/render_assets.py and src/check_assets.py (the release assets): headless
 # Chromium driven from the page itself, and a bundled FFmpeg with libx264.
-# After installing: python3 -m playwright install --with-deps chromium
+# Install current Google Chrome separately; see the root README.
 playwright==1.63.0
 imageio-ffmpeg==0.6.0
 # The ephemeris, the tests, the fixture and the embed step use only the standard library.

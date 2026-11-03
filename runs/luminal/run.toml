@@ -25,7 +25,7 @@ snapshots = "process/snapshots"
 [build]
 # The single-file build is plain Node; the soundtrack WAV is rendered by the
 # page itself in headless Chromium.
-command = "(cd ../.. && npm ci && npx playwright install --with-deps chromium) && node tools/bundle.mjs && node tools/audio.mjs"
+command = "(cd ../.. && npm ci) && node tools/bundle.mjs && node tools/audio.mjs"
 verify = "node tools/bundle.mjs --check && node tools/solve.js --check && node --test tests/*.test.js"
 timeout_minutes = 20
 

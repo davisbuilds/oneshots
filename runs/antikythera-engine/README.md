@@ -162,7 +162,7 @@ python3 src/embed.py --check
 The release assets are rendered from the page itself in headless Chromium:
 
 ```bash
-python3 -m playwright install --with-deps chromium
+# Install current Google Chrome separately; see the root README.
 python3 src/render_assets.py   # -> output/: film, web film, stills, cut sheets
 python3 src/check_assets.py
 ```

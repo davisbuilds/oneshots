@@ -38,6 +38,11 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - name: Test browser version policy
+        run: |
+          npm ci --ignore-scripts
+          npm run test:browser-policy
+
       - name: Test the gate-to-game stack
         run: |
           node --version

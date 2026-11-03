@@ -1,6 +1,6 @@
 // verify.mjs: open index.html from disk in headless Chromium and play it.
-//   node verify.mjs            (after npm ci and npx playwright install chromium)
-// CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build.
+//   node verify.mjs            (after npm ci and installing current Google Chrome)
+// CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build, subject to the version guard.
 // Covers: loading and the soundtrack, keyboard/mouse/touch input through the
 // page's own handlers, death and respawn, a full clear driven step by step
 // through the production update, saved bests, practice checkpoints, pause,
@@ -8,11 +8,11 @@
 import assert from 'node:assert/strict';
 import { mkdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../scripts/browser.mjs';
 
 const output = fileURLToPath(new URL('./output/playwright/', import.meta.url));
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--autoplay-policy=no-user-gesture-required'] });
+const browser = await launchBrowser({ headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
 const url = new URL('./index.html', import.meta.url).href;
 const errors = [], requests = [];
 const watch = p => {

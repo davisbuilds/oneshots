@@ -1,12 +1,12 @@
 // previews.mjs: the committed preview images (hero, details), from the live page.
 //   node tools/previews.mjs [outdir]   (writes PNGs; convert to WebP with cwebp)
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../../scripts/browser.mjs';
 import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const out = process.argv[2] || fileURLToPath(new URL('../output/previews/', import.meta.url));
 await mkdir(out, { recursive: true });
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const browser = await launchBrowser({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 const errs = [];
 page.on('pageerror', e => errs.push(e.message));
