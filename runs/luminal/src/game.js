@@ -364,7 +364,7 @@
     // ── Frame ────────────────────────────────────────────────────────────
     function frame(now) {
       requestAnimationFrame(frame);
-      const dtf = Math.min(0.1, (now - G.lastFrame) / 1000);
+      const dtf = Math.max(0, Math.min(0.1, (now - G.lastFrame) / 1000));
       G.lastFrame = now;
       G.frameTimes.push(dtf); if (G.frameTimes.length > 60) G.frameTimes.shift();
       // A device that cannot hold ~45 fps drops to one pixel per CSS pixel.
