@@ -1,15 +1,15 @@
 // verify.mjs: open index.html from disk in headless Chromium and check that
 // the computer runs, the game plays, and the zoom goes all the way down.
-//   node verify.mjs            (after npm ci and npx playwright install chromium)
-// CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build.
+//   node verify.mjs            (after npm ci and installing current Google Chrome)
+// CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build, subject to the version guard.
 import assert from 'node:assert/strict';
 import { mkdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../scripts/browser.mjs';
 
 const output = fileURLToPath(new URL('./output/playwright/', import.meta.url));
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || undefined });
+const browser = await launchBrowser({ headless: true });
 const url = new URL('./index.html', import.meta.url).href;
 const errors = [], requests = [];
 const watch = p => {

@@ -26,7 +26,7 @@ snapshots = "process/snapshots"
 requirements = "requirements.txt"
 # Renders the demo tour in headless Chromium (SwiftShader) from the committed
 # page, one frame of virtual time at a time, and encodes it with the wheel's FFmpeg.
-command = "(cd ../.. && npm ci && npx playwright install --with-deps chromium) && FFMPEG=\"$(python3 -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')\" node tools/film.mjs"
+command = "(cd ../.. && npm ci) && FFMPEG=\"$(python3 -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')\" node tools/film.mjs"
 verify = "node --test tests/*.test.js && node tools/check.js --seeds 12 --hours 6 --monkey && python3 tools/check_film.py"
 timeout_minutes = 100
 

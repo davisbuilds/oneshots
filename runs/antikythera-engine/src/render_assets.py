@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the full-size outputs from the page itself, in headless Chromium.
 
-    python3 -m playwright install --with-deps chromium   # once (or set CHROMIUM_PATH)
+    Install current Google Chrome first (or set a patched CHROMIUM_PATH).
     python3 src/render_assets.py                          # writes output/
     python3 src/render_assets.py --film-seconds 3         # a quick trial
 
@@ -23,7 +23,6 @@ comes from the imageio-ffmpeg wheel, which bundles a build with libx264.
 from __future__ import annotations
 
 import argparse
-import os
 import shutil
 import subprocess
 import sys
@@ -32,6 +31,9 @@ from pathlib import Path
 
 import imageio_ffmpeg
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+from browser import launch_browser
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output"
@@ -47,10 +49,7 @@ STILLS = [
 
 
 def launch(p):
-    kw = {"args": ARGS}
-    if os.environ.get("CHROMIUM_PATH"):
-        kw["executable_path"] = os.environ["CHROMIUM_PATH"]
-    return p.chromium.launch(**kw)
+    return launch_browser(p, args=ARGS)
 
 
 def watch_errors(page, errors: list[str]):

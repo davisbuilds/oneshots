@@ -7,18 +7,15 @@
 // (ignored by git).
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const require = createRequire(import.meta.url);
-const { chromium } = require('@playwright/test');
+import { launchBrowser } from '../../scripts/browser.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const fixture = JSON.parse(execFileSync('python3', [join(here, 'src', 'fixture.py')]).toString());
 
 const launch = { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] };
-if (process.env.CHROMIUM_PATH) launch.executablePath = process.env.CHROMIUM_PATH;
-const browser = await chromium.launch(launch);
+const browser = await launchBrowser(launch);
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const errors = [];

@@ -83,9 +83,29 @@ is not required.
 
 Several runs include a headless `verify.mjs` smoke test that uses
 `@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and npm,
-run `npm ci` and `npx playwright install chromium`, then
-`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all seven existing
+install current Google Chrome and run `npm ci`, then
+`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all eight configured
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
+All active JavaScript verifiers/render tools and the Antikythera Python renderer
+use the supported Playwright `chrome` channel, with a temporary automation profile.
+Install and update Google Chrome using your platform's official installer; existing
+macOS installations (including arm64) are used without replacement. The shared
+launchers check the actual running browser version before creating a page and
+require Chrome/Chromium **156.0.8078.79 or newer** for
+[CVE-2026-76024](https://www.cve.org/CVERecord?id=CVE-2026-76024).
+An explicit `CHROMIUM_PATH` may select a separately installed Chromium executable,
+subject to the same check. Missing, old or unrecognized browsers fail; there is no
+bundled Chromium fallback. Keep Chrome current: the floor addresses this advisory,
+not every future vulnerability. Playwright's Chrome-channel support is documented
+[upstream](https://playwright.dev/docs/browsers#google-chrome--microsoft-edge).
+
+The Linux x86_64 Run assets job uses `scripts/install-ci-chrome.sh` to download an
+exact Chrome for Testing archive into its temporary directory and verify its
+SHA-256, then exports `CHROMIUM_PATH`. It never replaces a host browser. That
+installer is intended for disposable CI; local machines use their installed Chrome.
+Browser policy tests run with `npm run test:browser-policy` (after `npm ci`).
+`tideline/verify.mjs` remains a separate optional browser check.
+
 The locked tooling is optional; the HTML runs still open without it.
 Screenshots from the verifiers stay in their run directories and are ignored.
 

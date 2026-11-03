@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { chromium } = require('@playwright/test');
+import { launchBrowser } from '../../scripts/browser.mjs';
 
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--enable-webgl'] });
+const browser = await launchBrowser({ args: ['--use-gl=angle', '--enable-webgl'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });

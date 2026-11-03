@@ -1,6 +1,6 @@
 // verify.mjs: open index.html from disk in headless Chromium and use it.
-//   node verify.mjs            (after npm ci and npx playwright install chromium)
-// CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build.
+//   node verify.mjs            (after npm ci and installing current Google Chrome)
+// CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build, subject to the version guard.
 // Covers: loading with no network and no errors, the scene and UI drawing,
 // picking a crane in the scene, reassigning cranes (accepted and refused),
 // dragging a planned box on the stowage plan (accepted and refused, with the
@@ -9,11 +9,11 @@
 import assert from 'node:assert/strict';
 import { mkdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../scripts/browser.mjs';
 
 const output = fileURLToPath(new URL('./output/playwright/', import.meta.url));
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+const browser = await launchBrowser({ headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const url = new URL('./index.html', import.meta.url).href;
 const errors = [], requests = [];
 const shot = async (page, name) => {

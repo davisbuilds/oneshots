@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { mkdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../scripts/browser.mjs';
 
 const output = fileURLToPath(new URL('./output/playwright/', import.meta.url));
 await mkdir(output, { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const browser = await launchBrowser({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = [];

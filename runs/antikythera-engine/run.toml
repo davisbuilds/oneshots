@@ -29,7 +29,7 @@ requirements = "requirements.txt"
 # verify), rebuilds the page, then renders the assets from the page in headless
 # Chromium with software GL. The film is about 1,900 frames at roughly one frame
 # a second.
-command = "python3 -m playwright install --with-deps chromium && python3 src/design.py && python3 src/embed.py && python3 src/render_assets.py"
+command = "python3 src/design.py && python3 src/embed.py && python3 src/render_assets.py"
 verify = "git diff --exit-code -- data/design.json index.html && python3 src/test_ephemeris.py && python3 src/test_design.py && python3 src/check_assets.py"
 timeout_minutes = 100
 

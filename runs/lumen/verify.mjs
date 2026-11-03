@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { chromium } = require('@playwright/test');
+import { launchBrowser } from '../../scripts/browser.mjs';
 
-const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader'] });
+const browser = await launchBrowser({ args: ['--enable-unsafe-swiftshader', '--use-gl=angle', '--use-angle=swiftshader'] });
 const page = await browser.newPage({ viewport: { width: 640, height: 360 } });
 const errors = [];
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });

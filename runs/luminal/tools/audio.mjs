@@ -1,12 +1,12 @@
 // audio.mjs: render the soundtrack in headless Chromium, mix it down to a
 // WAV in output/, and print loudness per section (for checking the mix).
 //   node tools/audio.mjs
-import { chromium } from '@playwright/test';
+import { launchBrowser } from '../../../scripts/browser.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 const out = fileURLToPath(new URL('../output/', import.meta.url));
 await mkdir(out, { recursive: true });
-const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
+const browser = await launchBrowser();
 const page = await browser.newPage();
 await page.goto(new URL('../index.html?test', import.meta.url).href);
 await page.waitForFunction(() => window.LUMINAL && LUMINAL.game && LUMINAL.game.audioDone, null, { timeout: 300000 });

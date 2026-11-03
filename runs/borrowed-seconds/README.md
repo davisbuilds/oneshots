@@ -100,7 +100,7 @@ From the repository root, using its locked optional browser tooling:
 
 ```bash
 npm ci
-npx playwright install chromium
+# Install current Google Chrome separately; see the root README.
 node runs/borrowed-seconds/verify.mjs
 ```
 
