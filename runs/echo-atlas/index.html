@@ -154,7 +154,7 @@ function updateEar(){
   if(returnArmed&&performance.now()-lastPulse>160&&total>.045){lastReturn=(performance.now()-lastPulse)/1000;returnArmed=false;$('echo').textContent=lastReturn.toFixed(2)+' seconds.';$('status').textContent='The room has answered';ping(tone,.08)}
 }
 function loop(){if(!paused){step();step()}draw();requestAnimationFrame(loop)}
-function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);const newGW=W<600?160:240,newGH=Math.max(112,Math.min(W<600?380:190,Math.round(newGW*H/W)));if(newGW!==GW||Math.abs(newGH-GH)>8){GW=newGW;GH=newGH;buildScene(scene,false)}}
+function resize(){W=innerWidth;H=innerHeight;if(!W||!H)return;DPR=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);const newGW=W<600?160:240,newGH=Math.max(112,Math.min(W<600?380:190,Math.round(newGW*H/W)));if(newGW!==GW||Math.abs(newGH-GH)>8){GW=newGW;GH=newGH;buildScene(scene,false)}}
 function pos(e){const r=canvas.getBoundingClientRect();return{x:Math.max(1,Math.min(GW-2,Math.floor((e.clientX-r.left)/r.width*GW))),y:Math.max(1,Math.min(GH-2,Math.floor((e.clientY-r.top)/r.height*GH)))}}
 function apply(x,y,from){
   if(tool==='ring'){if(!from||Math.hypot(x-from.x,y-from.y)>8)pulse(x,y)}
