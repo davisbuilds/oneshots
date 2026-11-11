@@ -75,7 +75,7 @@ jobs:
             "$RUNNER_TEMP/venv/bin/pip" install -r "runs/$RUN/$REQ"
           fi
 
-      - name: Provision pinned Chrome for browser renders
+      - name: Provision locked upstream Chromium for browser renders
         if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "tideline"]'), inputs.run)
         run: |
           npm ci --ignore-scripts
