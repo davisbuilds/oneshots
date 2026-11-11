@@ -514,12 +514,17 @@
       }
     }
 
+    function focusButton(button) {
+      // An embedded game must wait for a gesture before moving input focus.
+      if (button && (window.top === window || navigator.userActivation?.isActive)) button.focus({ preventScroll: true });
+    }
+
     function showScreen(name) {
       for (const id of ['title', 'pause', 'complete']) $(id).hidden = id !== name;
       if (name === 'title') renderTitleStats();
       if (name) {
         const first = $(name).querySelector('button.primary');
-        if (first) first.focus({ preventScroll: true });
+        focusButton(first);
       }
     }
 
@@ -625,7 +630,7 @@
     const enable = () => {
       G.state = 'title';
       $('playBtn').disabled = false; $('practiceBtn').disabled = false; $('watchBtn').disabled = false;
-      $('playBtn').focus({ preventScroll: true });
+      focusButton($('playBtn'));
       document.body.classList.add('ready');
     };
     L.renderSong(chunk => {

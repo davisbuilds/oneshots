@@ -99,11 +99,14 @@ bundled Chromium fallback. Keep Chrome current: the floor addresses this advisor
 not every future vulnerability. Playwright's Chrome-channel support is documented
 [upstream](https://playwright.dev/docs/browsers#google-chrome--microsoft-edge).
 
-The Linux x86_64 Run assets job uses `scripts/install-ci-chrome.sh` to download an
-exact Chrome for Testing archive into its temporary directory and verify its
-SHA-256, then exports `CHROMIUM_PATH`. It never replaces a host browser. That
-installer is intended for disposable CI; local machines use their installed Chrome.
+The Linux x86_64 Run assets job uses `scripts/install-ci-chrome.sh` to install
+Chromium from the locked Playwright 1.65.0 graph into a fresh runner-temporary
+cache, then exports its full browser as `CHROMIUM_PATH` for both Node and Python
+renderers. This retires the separate Chrome-for-Testing archive pin. The installer
+is intended for disposable CI; local machines use their installed Chrome.
 Browser policy tests run with `npm run test:browser-policy` (after `npm ci`).
+The Validate Runs workflow also provisions the locked Linux browser and exercises
+the Echo Atlas verifier through the same launcher, without publishing assets.
 `tideline/verify.mjs` remains a separate optional browser check.
 
 The locked tooling is optional; the HTML runs still open without it.
