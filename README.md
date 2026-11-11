@@ -105,6 +105,8 @@ cache, then exports its full browser as `CHROMIUM_PATH` for both Node and Python
 renderers. This retires the separate Chrome-for-Testing archive pin. The installer
 is intended for disposable CI; local machines use their installed Chrome.
 Browser policy tests run with `npm run test:browser-policy` (after `npm ci`).
+The Validate Runs workflow also provisions the locked Linux browser and exercises
+the Echo Atlas verifier through the same launcher, without publishing assets.
 `tideline/verify.mjs` remains a separate optional browser check.
 
 The locked tooling is optional; the HTML runs still open without it.

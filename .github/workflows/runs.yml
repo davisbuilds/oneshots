@@ -43,6 +43,14 @@ jobs:
           npm ci --ignore-scripts
           npm run test:browser-policy
 
+      - name: Provision the locked render browser
+        run: bash scripts/install-ci-chrome.sh
+
+      - name: Check the actual Linux renderer browser route
+        run: |
+          node runs/echo-atlas/tests/zero-size-frame.mjs
+          node runs/echo-atlas/verify.mjs
+
       - name: Test the gate-to-game stack
         run: |
           node --version
