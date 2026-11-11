@@ -67,6 +67,8 @@
       dpr = Math.min(window.devicePixelRatio || 1, G.lowRes ? 1 : 2);
       const w = Math.floor(innerWidth * dpr), h = Math.floor(innerHeight * dpr);
       W = w; H = h;
+      // An embedding frame may load before its host gives it a viewport.
+      if (W <= 0 || H <= 0) return;
       renderer.resize(w, h);
       renderer.scale = dpr;
       canvas.style.width = innerWidth + 'px';
@@ -424,6 +426,7 @@
     }
 
     function draw(dtf) {
+      if (W <= 0 || H <= 0) return;
       updateVisuals(dtf);
       const s = G.s;
       const t = s ? s.t : (performance.now() / 1000) % 30;

@@ -33,6 +33,14 @@ try {
       }
     });
     ready.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    if (innerWidth === 0 && innerHeight === 0) {
+      let frames = 0;
+      const observe = () => {
+        if (++frames === 3) console.debug('luminal-zero-frame-observed');
+        else requestAnimationFrame(observe);
+      };
+      requestAnimationFrame(observe);
+    }
   </script></body>`);
   const host = await browser.newPage({ viewport: { width: 960, height: 600 } });
   const errors = [];
@@ -40,7 +48,9 @@ try {
   host.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   server = createServer((request, response) => {
     response.setHeader('Content-Type', 'text/html');
-    response.end(request.url === '/luminal.html' ? embedded : '<!doctype html><button id="host" autofocus>Outside the game</button><iframe sandbox="allow-scripts" width="900" height="520"></iframe>');
+    response.end(request.url === '/luminal.html' ? embedded : request.url === '/zero-frame'
+      ? '<!doctype html><iframe sandbox="allow-scripts" src="/luminal.html" style="width:0;height:0;border:0"></iframe>'
+      : '<!doctype html><button id="host" autofocus>Outside the game</button><iframe sandbox="allow-scripts" width="900" height="520"></iframe>');
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   await host.goto(`http://127.0.0.1:${server.address().port}/`);
@@ -62,6 +72,25 @@ try {
   assert.equal(await frame.evaluate(() => LUMINAL.game.state), 'playing', 'the focused Resume button works with the keyboard');
   assert.deepEqual(errors, [], 'activated focus and input also produce no browser errors');
   console.log('PASS sandboxed startup preserves host focus and real input activates game controls');
+  await host.close();
+
+  const zeroHost = await browser.newPage({ viewport: { width: 960, height: 600 } });
+  const zeroErrors = [];
+  zeroHost.on('pageerror', error => zeroErrors.push(error.message));
+  zeroHost.on('console', message => { if (message.type() === 'error') zeroErrors.push(message.text()); });
+  await Promise.all([
+    zeroHost.waitForEvent('console', { predicate: message => message.text() === 'luminal-zero-frame-observed', timeout: 60_000 }),
+    zeroHost.goto(`http://127.0.0.1:${server.address().port}/zero-frame`),
+  ]);
+  assert.deepEqual(zeroErrors, [], 'rendering waits while the embedding frame has a zero viewport');
+  const zeroFrame = zeroHost.frames().find(candidate => candidate !== zeroHost.mainFrame());
+  assert.deepEqual(await zeroFrame.evaluate(() => [innerWidth, innerHeight]), [0, 0], 'the game really starts in a zero-sized iframe');
+  await zeroHost.locator('iframe').evaluate(frame => Object.assign(frame.style, { width: '900px', height: '520px' }));
+  await zeroFrame.waitForFunction(() => LUMINAL.game.view && document.querySelector('canvas').width > 0 && document.querySelector('canvas').height > 0);
+  assert.equal(await zeroFrame.evaluate(() => Number.isFinite(LUMINAL.game.cam.zoom) && LUMINAL.game.cam.zoom > 0), true, 'a visible frame resumes drawing with a valid camera');
+  assert.deepEqual(zeroErrors, [], 'a zero-to-positive viewport transition produces no browser errors');
+  await zeroHost.close();
+  console.log('PASS a zero-sized embedding frame waits for layout and then renders');
 } finally {
   await browser.close();
   if (server) await new Promise(resolve => server.close(resolve));
