@@ -50,6 +50,7 @@ jobs:
         run: |
           node runs/echo-atlas/tests/zero-size-frame.mjs
           node runs/echo-atlas/verify.mjs
+          node runs/luminal/tests/browser-frame.mjs
 
       - name: Test the gate-to-game stack
         run: |
