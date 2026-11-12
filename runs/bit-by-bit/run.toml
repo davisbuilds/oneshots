@@ -18,7 +18,7 @@ reasoning = "medium"
 
 [run]
 brief = "brief.md"
-human_turns = 3                    # the brief, then two after delivery (see brief.md)
+human_turns = 7                    # the brief, then six after delivery (see brief.md)
 wall_clock_minutes = 60            # about 60 working minutes: 19:15 to 19:50 UTC, then 00:08 to 00:35 after the session's worker restarted
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"

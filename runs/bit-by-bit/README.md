@@ -20,7 +20,7 @@ More views: [the map](preview/map.webp) · [a lesson card](preview/detail-lesson
 | :--- | :--- |
 | **Play it** | open [`index.html`](index.html): no install, no server, no network, about 245 KiB |
 | **Model** | Claude Fable 5.2, medium reasoning (Claude Code, cloud session) |
-| **Brief** | [`brief.md`](brief.md): one human turn during the run, and two after delivery about metadata and collection tooling |
+| **Brief** | [`brief.md`](brief.md): one human turn during the run, and six after delivery about metadata, collection tooling and review |
 | **Wall clock** | about 60 working minutes, in two sittings |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 
@@ -90,7 +90,7 @@ Three ideas carry it:
 ## Reproduce
 
 ```bash
-node --test tests/*.test.js     # 83 tests of the puzzle logic, no dependencies
+node --test tests/*.test.js     # 85 tests of the puzzle logic (one runs a listing in python3)
 ```
 
 ```bash

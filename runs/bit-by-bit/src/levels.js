@@ -172,7 +172,7 @@
       intro: ['Taking the smallest out leaves a hole at the top. Fill it with the _last_ value in the heap, then let that value **sink**: swap it with its smaller child until it is smaller than both.', 'Do that until the heap is empty, and watch the order things come out in.'],
       goal: 'Empty the heap, smallest first.',
       win: { name: 'Extract-min and heapsort', big: 'O(n log n)', insight: 'Each extraction is at most log n swaps, and the values came out sorted. That is **heapsort**: O(n log n) with no extra memory. A heap is also the engine inside the shortest-path algorithm in the next world.',
-        code: ['def pop(heap):', '    top = heap[0]', '    heap[0] = heap.pop()              # last one fills the hole', '    i = 0', '    while True:', '        c = smaller_child(heap, i)', '        if c is None or heap[i] <= heap[c]: break', '        swap(heap, i, c); i = c', '    return top'] } },
+        code: ['def pop(heap):', '    top = heap[0]', '    last = heap.pop()', '    if not heap: return top           # that was the only one', '    heap[0] = last                    # last one fills the hole', '    i = 0', '    while True:', '        c = smaller_child(heap, i)', '        if c is None or heap[i] <= heap[c]: break', '        swap(heap, i, c); i = c', '    return top'] } },
 
     // ── 8. Graphs ───────────────────────────────────────────────────────
     { id: '8-1', title: 'Ripples', type: 'traverse', cfg: { kind: 'bfs', vary: true },

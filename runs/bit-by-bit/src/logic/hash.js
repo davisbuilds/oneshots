@@ -15,6 +15,8 @@
   };
   L.hash = {
     unit: 'looks',
+    // Choosing coats is a free puzzle with dead ends, so it can be stepped back.
+    undo: (s) => s.mode === 'murphy',
     init(cfg, rng) {
       const tens = () => rng.int(1, 9) * 10;
       const s = base({ mode: cfg.mode, table: Array(M).fill(null), phase: 'insert', opened: [], found: [] });

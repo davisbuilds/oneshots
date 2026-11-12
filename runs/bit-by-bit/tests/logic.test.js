@@ -279,3 +279,46 @@ test('recursion: the tower pars are 2^n - 1 from any position, memo collapses th
     assert.equal(done.path.reduce((t, [r, c]) => t + done.g[r][c], 0), done.opt);
   }
 });
+
+// ── Review findings ──────────────────────────────────────────────────────
+test('a hint never tells the player to step back in a puzzle that has no undo', () => {
+  const rnd = BB.rng(41);
+  let asked = 0;
+  for (const lv of BB.levels) {
+    const P = BB.logic[lv.type];
+    for (let k = 0; k < 30; k++) {
+      const s = BB.init(lv.type, lv.cfg, 1700 + k);
+      for (let n = 0; n < 60 && s.status === 'play'; n++) {
+        const h = P.hint(s);
+        if (h && h.undo) { asked++; assert.ok(typeof P.undo === 'function' ? P.undo(s) : P.undo, `${lv.id}: the hint says to step back, so undo must be available`); break; }
+        // A plausible wrong-ish move: any pool ticket, key or siding, else the hinted move.
+        const a = s.pool ? { t: 'pick', k: rnd.pick(s.pool) } : s.left ? { t: 'pick', k: rnd.pick(s.left) } : s.stacks && s.input && s.input.length && rnd() < 0.5 ? { t: 'push', k: rnd.int(0, s.stacks.length - 1) } : h.a;
+        BB.act(s, a);
+      }
+    }
+  }
+  assert.ok(asked > 20, 'the search reaches positions where the hint is to step back');
+});
+
+test('the extract-min listing on the lesson card really empties a heap, down to the last element', () => {
+  const { spawnSync } = require('node:child_process');
+  const listing = BB.level('7-2').win.code.join('\n');
+  const py = `
+def swap(h, i, j): h[i], h[j] = h[j], h[i]
+def smaller_child(h, i):
+    kids = [j for j in (2 * i + 1, 2 * i + 2) if j < len(h)]
+    return min(kids, key=lambda j: h[j]) if kids else None
+${listing}
+import heapq, random
+random.seed(7)
+for n in range(1, 40):
+    heap = [random.randrange(100) for _ in range(n)]
+    want = sorted(heap); heapq.heapify(heap)
+    out = []
+    while heap: out.append(pop(heap))
+    assert out == want, (n, out, want)
+print("ok")
+`;
+  const r = spawnSync('python3', ['-c', py], { encoding: 'utf8' });
+  assert.equal(r.stdout.trim(), 'ok', r.stderr);
+});

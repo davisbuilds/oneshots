@@ -249,7 +249,7 @@
         return { a: { t: 'stop' }, note: `${h[c]} is not smaller than its parent ${h[par(c)]}. It stays where it is.`, line: 3 };
       }
       const m = minKid(h, c);
-      return { a: { t: 'swap', i: m }, note: `${h[c]} is bigger than its smaller child, ${h[m]}: swap them.`, line: 8 };
+      return { a: { t: 'swap', i: m }, note: `${h[c]} is bigger than its smaller child, ${h[m]}: swap them.`, line: 10 };
     },
   };
   BB.heapOk = (h) => h.every((v, i) => !i || h[par(i)] <= v);

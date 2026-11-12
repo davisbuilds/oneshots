@@ -154,6 +154,14 @@ try {
   await tap(p, 'Variable b'); await tap(p, `Node ${s.nodes[1].v}`);
   assert.equal((await st()).vars.b, s.nodes[1].id);
 
+  // 5-3: a dead-end choice of coats can be stepped back, as the hint says.
+  await open('5-3');
+  s = await st();
+  for (const k of s.pool.slice(0, 2)) await tap(p, `Ticket ${k}`);
+  assert.equal(await p.locator('#undo').isVisible(), true, 'Undo is offered while choosing coats');
+  await p.locator('#undo').click();
+  assert.deepEqual((await st()).picked, [s.pool[0]]);
+
   // 8-5: lay cables by tapping links; a keyboard user can do the same.
   await open('8-5');
   s = await st();
