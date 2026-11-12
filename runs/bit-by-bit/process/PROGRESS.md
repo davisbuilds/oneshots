@@ -170,7 +170,7 @@ Final run: `node --test tests/*.test.js` 83 pass; `node verify.mjs` ok.
   locally in Chrome 156. The two workflows were edited to match but have not
   run on GitHub yet.
 
-## 8. Review findings and a rebase (02:15 to 02:40)
+## 8. Review findings and a merge of main (02:15 to 02:40)
 
 The curator's other repositories pin pnpm 11.28.6, so the collection was
 re-pinned from 12.18.0 to match, and a pull request was opened. An automated
@@ -188,7 +188,9 @@ code review found two faults, both real and both mine:
   itself under python3 on heaps of 1 to 39 elements; it failed before the fix.
 
 `main` had moved (Playwright 1.65.0, a new CI browser-provisioning script),
-so the branch was rebased onto it. The lockfile was regenerated with pnpm
+so it was merged into the branch. (I rebased first, but the session would
+not allow the force push a rebase needs, so the same result was rebuilt as a
+merge.) The lockfile was regenerated with pnpm
 11.28.6 and the provisioning script's `npx` call became `pnpm exec`. I ran
 that script locally as CI does: it installed Chromium 158, and the three
 checks CI runs through it passed.
