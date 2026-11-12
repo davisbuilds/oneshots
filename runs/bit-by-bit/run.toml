@@ -11,8 +11,10 @@ entry = "index.html"
 curator_note = ""
 
 [agent]
-model = "unrecorded"               # for the curator to fill in; the agent was told not to write it here
+model = "Claude Fable 5.2"
+model_id = "claude-fable-5-2"
 harness = "Claude Code (cloud session)"
+reasoning = "medium"
 
 [run]
 brief = "brief.md"

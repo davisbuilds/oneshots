@@ -19,7 +19,7 @@ More views: [the map](preview/map.webp) · [a lesson card](preview/detail-lesson
 | | |
 | :--- | :--- |
 | **Play it** | open [`index.html`](index.html): no install, no server, no network, about 245 KiB |
-| **Model** | not recorded in this run's files (Claude Code, cloud session) |
+| **Model** | Claude Fable 5.2, medium reasoning (Claude Code, cloud session) |
 | **Brief** | [`brief.md`](brief.md): one human turn |
 | **Wall clock** | about 60 working minutes, in two sittings |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
