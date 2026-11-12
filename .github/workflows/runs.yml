@@ -52,3 +52,6 @@ jobs:
         run: |
           node --test runs/luminal/tests/*.test.js
           node runs/luminal/tools/solve.js --check
+
+      - name: Test Bit by Bit's puzzle logic
+        run: node --test runs/bit-by-bit/tests/*.test.js

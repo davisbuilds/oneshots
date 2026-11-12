@@ -85,7 +85,7 @@ is not required.
 Several runs include a headless `verify.mjs` smoke test that uses
 `@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and npm,
 install current Google Chrome and run `npm ci`, then
-`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all eight configured
+`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all nine configured
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
 All active JavaScript verifiers/render tools and the Antikythera Python renderer
 use the supported Playwright `chrome` channel, with a temporary automation profile.
@@ -118,7 +118,8 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
 `scripts/validate_runs.py`, the fast renderer build-recovery tests, and the
-`gate-to-game` stack tests (Node's built-in test runner, no dependencies).
+`gate-to-game`, `luminal` and `bit-by-bit` logic tests (Node's built-in test
+runner, no dependencies).
 The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above
 is current. Workflow changes also run a pinned, offline zizmor security audit.
@@ -127,7 +128,7 @@ Actions and the optional browser dependency receive weekly Dependabot updates.
 ```bash
 python3 scripts/build_index.py        # after changing run metadata
 npm run check                        # manifests and publication hygiene
-npm test                             # build-recovery and gate-to-game regression tests
+npm test                             # build-recovery and run regression tests
 ```
 
 Publication hygiene reads staged/tracked Git blobs; stage intended edits before
