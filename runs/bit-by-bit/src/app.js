@@ -238,7 +238,7 @@
 
   const openLevel = (id, o = {}) => {
     const lv = BB.level(id);
-    if (!lv || !unlocked(lv)) { location.hash = ''; return; }
+    if (!lv || !unlocked(lv)) { go(''); return; }
     stopDemo(true);
     clearTimeout(G.timer);
     G.lv = lv;
@@ -293,14 +293,14 @@
     <div class="row"><button class="btn" data-book>${icon('book')}<span>Notebook</span></button><button class="btn primary" data-home><span>Back to the map</span></button></div>`, 'win');
 
   // ── Wiring ─────────────────────────────────────────────────────────────
-  const route = () => {
-    const hsh = location.hash.replace(/^#\/?/, '');
-    if (hsh.startsWith('play/')) { const id = decodeURIComponent(hsh.slice(5)); if (!G.lv || G.lv.id !== id || $('#play').hidden) openLevel(id); return; }
+  const route = (to) => {
+    const hsh = (typeof to === 'string' ? to : location.hash).replace(/^#\/?/, '');
+    if (hsh.startsWith('play-')) { const id = hsh.slice(5); if (!G.lv || G.lv.id !== id || $('#play').hidden) openLevel(id); return; }
     stopDemo(true); clearTimeout(G.timer);
     G.lv = null; G.s = null;
     if (hsh === 'book') { renderBook(); show('book'); } else { renderMap(); show('map'); }
   };
-  const go = (hsh) => { if (location.hash !== hsh && (hsh || location.hash)) location.hash = hsh; route(); };
+  const go = (hsh) => { try { if (location.hash !== hsh && (hsh || location.hash)) location.hash = hsh; } catch (e) { /* a frame may refuse; the page still navigates */ } route(hsh); };
 
   document.addEventListener('click', (e) => {
     const t = e.target.closest('button, [data-go]');
@@ -308,12 +308,12 @@
     const d = t.dataset;
     if (t.disabled) return;
     if (t.closest('#app') && !t.closest('#stage')) BB.sfx.play({ t: 'ui' });
-    if (d.go) { const same = G.lv && G.lv.id === d.go && !$('#play').hidden; if (same) openLevel(d.go); else go('#play/' + d.go); }
+    if (d.go) { const same = G.lv && G.lv.id === d.go && !$('#play').hidden; if (same) openLevel(d.go); else go('#play-' + d.go); }
     else if ('home' in d) go('');
     else if ('book' in d) go('#book');
     else if ('settings' in d) settings();
     else if ('close' in d) { closeModal(); if ($('#map').hidden === false) renderMap(); }
-    else if ('reset' in d) { if (confirm('Erase all stars and start over?')) { const opts = save.opts; save = blank(); save.opts = opts; save.opts.unlock = false; persist(); closeModal(); renderMap(); } }
+    else if ('reset' in d) { if (!t.dataset.sure) { t.dataset.sure = '1'; t.textContent = 'Really erase? Tap again'; } else { const opts = save.opts; save = blank(); save.opts = opts; save.opts.unlock = false; persist(); closeModal(); renderMap(); } }
     else if ('again' in d) { closeModal(); stopDemo(true); begin(G.seed); G.say = { who: 'bit', text: G.lv.goal }; render(); }
     else if ('fresh' in d) { closeModal(); stopDemo(true); begin(1 + Math.floor(Math.random() * 1e6)); G.say = { who: 'bit', text: 'A fresh one. ' + G.lv.goal }; render(); }
     else if ('undolast' in d) { closeModal(); clearTimeout(G.timer); undo(true); }
@@ -344,7 +344,7 @@
       else if (e.key === 'r') { begin(G.seed); G.say = { who: 'bit', text: G.lv.goal }; render(); }
     }
   });
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', () => route());
   let rz = 0;
   window.addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(render); });
 
@@ -374,7 +374,7 @@
 
   BB.app = {
     // Used by the browser verifier: everything goes through the same paths as a click.
-    api: { open: (id, o) => { location.hash = '#play/' + id; openLevel(id, o); }, act: (a) => dispatch(a), hint: () => P().hint(G.s), state: () => G.s, undo, startDemo, stopDemo, save: () => save, render, closeModal, giveHint, route, probe },
+    api: { open: (id, o) => { location.hash = '#play-' + id; openLevel(id, o); }, act: (a) => dispatch(a), hint: () => P().hint(G.s), state: () => G.s, undo, startDemo, stopDemo, save: () => save, render, closeModal, giveHint, route, probe },
   };
   applyOpts();
   if (TEST) document.documentElement.classList.add('still');
