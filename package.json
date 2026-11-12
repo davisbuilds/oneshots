@@ -5,10 +5,10 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "npm@11.6.2",
+  "packageManager": "pnpm@12.18.0+sha512.9d7882d5dc82147ecfc4e062aa34834e0ad0296710a1837a1115ae012127d36b7109e321ac1598a1dd0a65597681b1e99917e12ed0d749eae91187943363beb3",
   "scripts": {
     "check": "python3 scripts/validate_runs.py && python3 scripts/check_publication_hygiene.py",
-    "test": "python3 runs/three-worlds-chatgpt/src/test_build.py && python3 runs/three-worlds/src/test_build.py && python3 runs/artemis-ii/src/test_build_all.py && python3 runs/a-world-in-a-drop/src/test_checksums.py && node --test runs/gate-to-game/tests/*.test.js && node --test runs/luminal/tests/*.test.js && node --test runs/bit-by-bit/tests/*.test.js && npm run test:browser-policy",
+    "test": "python3 runs/three-worlds-chatgpt/src/test_build.py && python3 runs/three-worlds/src/test_build.py && python3 runs/artemis-ii/src/test_build_all.py && python3 runs/a-world-in-a-drop/src/test_checksums.py && node --test runs/gate-to-game/tests/*.test.js && node --test runs/luminal/tests/*.test.js && node --test runs/bit-by-bit/tests/*.test.js && pnpm run test:browser-policy",
     "verify:browser": "node runs/echo-atlas/tests/zero-size-frame.mjs && node runs/echo-atlas/verify.mjs && node runs/neon-swarm/verify.mjs && node runs/seventeen/verify.mjs && node runs/lumen/verify.mjs && node runs/antikythera-engine/verify.mjs && node runs/borrowed-seconds/verify.mjs && node runs/gate-to-game/verify.mjs && node runs/luminal/tests/browser-frame.mjs && node runs/luminal/verify.mjs && node runs/bit-by-bit/verify.mjs",
     "test:browser-policy": "node --test scripts/test_browser.mjs && python3 scripts/test_browser.py"
   },

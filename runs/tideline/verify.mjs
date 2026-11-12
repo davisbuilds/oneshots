@@ -1,5 +1,5 @@
 // verify.mjs: open index.html from disk in headless Chromium and use it.
-//   node verify.mjs            (after npm ci and installing current Google Chrome)
+//   node verify.mjs            (after pnpm install --frozen-lockfile and installing current Google Chrome)
 // CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build, subject to the version guard.
 // Covers: loading with no network and no errors, the scene and UI drawing,
 // picking a crane in the scene, reassigning cranes (accepted and refused),

@@ -18,13 +18,13 @@ reasoning = "medium"
 
 [run]
 brief = "brief.md"
-human_turns = 1
+human_turns = 3                    # the brief, then two after delivery (see brief.md)
 wall_clock_minutes = 60            # about 60 working minutes: 19:15 to 19:50 UTC, then 00:08 to 00:35 after the session's worker restarted
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 
 [build]
 # Nothing to build: the page runs from the committed files. The verifier needs
-# the repository's npm tooling and current Chrome (see the root README).
-verify = "node --test tests/*.test.js && (cd ../.. && npm ci) && node verify.mjs"
+# the repository's pnpm tooling and current Chrome (see the root README).
+verify = "node --test tests/*.test.js && (cd ../.. && pnpm install --frozen-lockfile) && node verify.mjs"
 timeout_minutes = 15

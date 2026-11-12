@@ -15,7 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
-| [**Bit by Bit**](runs/bit-by-bit/) | A puzzle game that teaches data structures and algorithms by making you the algorithm: 34 hand-played levels from array indexing to dynamic programming, against an adversary who always arranges the worst case, each one naming and showing the code for what you just did. | Claude Fable 5.2 (medium) | 1 | [brief](runs/bit-by-bit/brief.md) · [log](runs/bit-by-bit/process/PROGRESS.md) · [snapshots](runs/bit-by-bit/process/snapshots) |
+| [**Bit by Bit**](runs/bit-by-bit/) | A puzzle game that teaches data structures and algorithms by making you the algorithm: 34 hand-played levels from array indexing to dynamic programming, against an adversary who always arranges the worst case, each one naming and showing the code for what you just did. | Claude Fable 5.2 (medium) | 3 | [brief](runs/bit-by-bit/brief.md) · [log](runs/bit-by-bit/process/PROGRESS.md) · [snapshots](runs/bit-by-bit/process/snapshots) |
 | [**Tideline**](runs/tideline/) | A container-terminal operations console that plays like a strategy game: a living isometric paper diorama with real ship stability, stowage you can drag, cranes you can reassign, and straddle carriers that cannot collide or deadlock by construction, checked from their actual trajectories over many seeds. | Claude Opus 5.5 | 8 | [brief](runs/tideline/brief.md) · [log](runs/tideline/process/PROGRESS.md) · [snapshots](runs/tideline/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-tideline) |
 | [**Luminal**](runs/luminal/) | A one-button rhythm platformer in luminous geometry: one level, Heliotrope, built on an original synthesized soundtrack, with cube, ship, wave and gravity sections, practice checkpoints and saved bests, and a solver that proves every section can be cleared. | Claude Opus 5.5 | 2 | [brief](runs/luminal/brief.md) · [log](runs/luminal/process/PROGRESS.md) · [snapshots](runs/luminal/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-luminal) |
 | [**A World in a Drop**](runs/a-world-in-a-drop/) | A 62-second procedural Blender film follows rain from a stormy ocean through imagined microscopic worlds and into the iris of an eye watching the sea. | GPT-6 | 3 | [brief](runs/a-world-in-a-drop/brief.md) · [log](runs/a-world-in-a-drop/process/PROGRESS.md) · [snapshots](runs/a-world-in-a-drop/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-a-world-in-a-drop) |
@@ -83,9 +83,10 @@ is not required.
   reproduction and the dependencies it was run with.
 
 Several runs include a headless `verify.mjs` smoke test that uses
-`@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and npm,
-install current Google Chrome and run `npm ci`, then
-`node runs/<slug>/verify.mjs` or `npm run verify:browser` for all nine configured
+`@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and pnpm
+(pinned in `package.json`; `corepack enable` provides it), install current Google Chrome
+and run `pnpm install --frozen-lockfile`, then
+`node runs/<slug>/verify.mjs` or `pnpm run verify:browser` for all nine configured
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
 All active JavaScript verifiers/render tools and the Antikythera Python renderer
 use the supported Playwright `chrome` channel, with a temporary automation profile.
@@ -104,7 +105,7 @@ The Linux x86_64 Run assets job uses `scripts/install-ci-chrome.sh` to download 
 exact Chrome for Testing archive into its temporary directory and verify its
 SHA-256, then exports `CHROMIUM_PATH`. It never replaces a host browser. That
 installer is intended for disposable CI; local machines use their installed Chrome.
-Browser policy tests run with `npm run test:browser-policy` (after `npm ci`).
+Browser policy tests run with `pnpm run test:browser-policy` (after `pnpm install --frozen-lockfile`).
 `tideline/verify.mjs` remains a separate optional browser check.
 
 The locked tooling is optional; the HTML runs still open without it.
@@ -127,8 +128,8 @@ Actions and the optional browser dependency receive weekly Dependabot updates.
 
 ```bash
 python3 scripts/build_index.py        # after changing run metadata
-npm run check                        # manifests and publication hygiene
-npm test                             # build-recovery and run regression tests
+pnpm run check                       # manifests and publication hygiene
+pnpm test                            # build-recovery and run regression tests
 ```
 
 Publication hygiene reads staged/tracked Git blobs; stage intended edits before

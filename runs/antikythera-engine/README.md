@@ -179,7 +179,7 @@ with `python3 scripts/fetch_assets.py antikythera-engine` from the repository
 root.
 
 The browser check needs Node 22+ and the repository's locked Playwright
-(`npm ci` at the root). From the repository root:
+(`pnpm install --frozen-lockfile` at the root). From the repository root:
 
 ```bash
 node runs/antikythera-engine/verify.mjs

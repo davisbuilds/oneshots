@@ -33,12 +33,12 @@ node --test runs/bit-by-bit/tests/*.test.js
 
 Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser
 verification uses Node 24 (`.nvmrc`; CI installs it with `actions/setup-node`)
-and the locked npm tooling:
+and the locked pnpm tooling (the version is pinned in `package.json`; `corepack enable` provides it):
 
 ```bash
-npm ci
+pnpm install --frozen-lockfile
 # Install current Google Chrome separately; see the root README.
-npm run verify:browser
+pnpm run verify:browser
 ```
 
 Use each renderer's documented Python version and its own virtual environment

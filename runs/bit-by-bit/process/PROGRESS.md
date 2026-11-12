@@ -152,5 +152,20 @@ Final run: `node --test tests/*.test.js` 83 pass; `node verify.mjs` ok.
 - The every-level click-through runs at 1280 x 720 only. At phone and tablet
   size the verifier checks that nothing is drawn off the stage, not that
   every control can be hit. Fifteen-tile rows are small on a narrow phone.
-- The collection's shared `npm test` and `verify:browser` scripts and CI
-  were left alone; this run's checks are in its own manifest.
+
+## 7. After delivery (00:20 to 00:45)
+
+- Made in-page navigation independent of the address hash and replaced the
+  browser `confirm()` on "Erase my progress" with a second tap, so the game
+  also works inside a sandboxed frame. Verifier rerun: ok.
+- At delivery I had left `agent.model` as "unrecorded" because of an
+  instruction given to me, not because of anything in this repository. The
+  curator supplied the model and reasoning level and asked for them to be
+  filled in; the session's own metadata agreed, and they are now recorded.
+- At the curator's request, added this run's logic tests to the collection's
+  `test` script and CI, and its verifier to `verify:browser` (nine runs now),
+  then moved the collection's Node tooling from npm to pnpm, pinned through
+  `packageManager`. After a fresh frozen install with pnpm: `pnpm run check`,
+  `pnpm test` and all nine verifiers in `pnpm run verify:browser` passed
+  locally in Chrome 156. The two workflows were edited to match but have not
+  run on GitHub yet.

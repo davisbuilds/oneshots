@@ -20,7 +20,7 @@ More views: [the map](preview/map.webp) · [a lesson card](preview/detail-lesson
 | :--- | :--- |
 | **Play it** | open [`index.html`](index.html): no install, no server, no network, about 245 KiB |
 | **Model** | Claude Fable 5.2, medium reasoning (Claude Code, cloud session) |
-| **Brief** | [`brief.md`](brief.md): one human turn |
+| **Brief** | [`brief.md`](brief.md): one human turn during the run, and two after delivery about metadata and collection tooling |
 | **Wall clock** | about 60 working minutes, in two sittings |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 
@@ -94,7 +94,7 @@ node --test tests/*.test.js     # 83 tests of the puzzle logic, no dependencies
 ```
 
 ```bash
-(cd ../.. && npm ci) && node verify.mjs
+(cd ../.. && pnpm install --frozen-lockfile) && node verify.mjs
 ```
 
 `verify.mjs` needs current Google Chrome (see the root README, or set

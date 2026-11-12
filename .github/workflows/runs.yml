@@ -40,8 +40,9 @@ jobs:
 
       - name: Test browser version policy
         run: |
-          npm ci --ignore-scripts
-          npm run test:browser-policy
+          corepack enable
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm run test:browser-policy
 
       - name: Test the gate-to-game stack
         run: |

@@ -175,7 +175,7 @@ open index.html                          # the console
 node --test tests/*.test.js              # unit tests (23)
 node tools/check.js --seeds 24 --hours 6 --monkey
 node tools/check.js --seeds 6 --hours 30 # every call in the schedule comes alongside
-(cd ../.. && npm ci)
+(cd ../.. && pnpm install --frozen-lockfile)
 node verify.mjs                          # browser verification
 FFMPEG=ffmpeg node tools/film.mjs        # the demo film, output/tideline_demo.mp4
 ```

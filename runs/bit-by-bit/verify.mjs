@@ -1,5 +1,5 @@
 // verify.mjs: open index.html from disk in headless Chrome and play it.
-//   node verify.mjs            (after npm ci at the repository root, with current Google Chrome)
+//   node verify.mjs            (after pnpm install --frozen-lockfile at the repository root, with current Google Chrome)
 // CHROMIUM_PATH=/path/to/chrome uses another Chromium build, subject to the version guard.
 // Covers: loading with no network and no errors; the map and locking; every
 // level played to its lesson card with real mouse clicks on the page's own
