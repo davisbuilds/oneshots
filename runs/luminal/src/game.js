@@ -67,6 +67,8 @@
       dpr = Math.min(window.devicePixelRatio || 1, G.lowRes ? 1 : 2);
       const w = Math.floor(innerWidth * dpr), h = Math.floor(innerHeight * dpr);
       W = w; H = h;
+      // An embedding frame may load before its host gives it a viewport.
+      if (W <= 0 || H <= 0) return;
       renderer.resize(w, h);
       renderer.scale = dpr;
       canvas.style.width = innerWidth + 'px';
@@ -424,6 +426,7 @@
     }
 
     function draw(dtf) {
+      if (W <= 0 || H <= 0) return;
       updateVisuals(dtf);
       const s = G.s;
       const t = s ? s.t : (performance.now() / 1000) % 30;
@@ -514,12 +517,17 @@
       }
     }
 
+    function focusButton(button) {
+      // An embedded game must wait for a gesture before moving input focus.
+      if (button && (window.top === window || navigator.userActivation?.isActive)) button.focus({ preventScroll: true });
+    }
+
     function showScreen(name) {
       for (const id of ['title', 'pause', 'complete']) $(id).hidden = id !== name;
       if (name === 'title') renderTitleStats();
       if (name) {
         const first = $(name).querySelector('button.primary');
-        if (first) first.focus({ preventScroll: true });
+        focusButton(first);
       }
     }
 
@@ -625,7 +633,7 @@
     const enable = () => {
       G.state = 'title';
       $('playBtn').disabled = false; $('practiceBtn').disabled = false; $('watchBtn').disabled = false;
-      $('playBtn').focus({ preventScroll: true });
+      focusButton($('playBtn'));
       document.body.classList.add('ready');
     };
     L.renderSong(chunk => {
