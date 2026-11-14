@@ -70,4 +70,4 @@
 
 > can you checkout my oneshots @GitHub repo and commit this work as a PR there? read the conventions and adopt the structure required
 
-Two human turns are recorded: the creative brief and this later repository request. There were no human revisions during artwork creation. Plugin selections and automated context are not counted.
+Two human messages are recorded: the creative brief and this later repository request, which came after delivery, so one counts as a human turn. There were no human revisions during artwork creation. Plugin selections and automated context are not counted.
