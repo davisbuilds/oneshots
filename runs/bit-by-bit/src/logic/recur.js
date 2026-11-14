@@ -150,7 +150,7 @@
       for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (s.best[r][c] == null) {
         const up = r ? s.best[r - 1][c] : null, left = c ? s.best[r][c - 1] : null;
         const note = up == null && left == null ? 'The start square: its best total is just its own value.' : `Best way in is from ${left == null || (up != null && up > left) ? 'above' : 'the left'} (${Math.max(up || 0, left || 0)}). Add this square's ${g[r][c]}.`;
-        return { a: { t: 'solve', r, c }, note, line: 4 };
+        return { a: { t: 'solve', r, c }, note, line: 7 };
       }
       return null;
     },

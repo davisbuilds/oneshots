@@ -67,7 +67,7 @@
       intro: ['Here is the idea that breaks the n² barrier.', 'If two rows are each already sorted, combining them is easy: the smallest tile of all must be at the front of one row or the other. Compare the two fronts, take the smaller, repeat.', 'And a row of one tile is already sorted.'],
       goal: 'Merge two sorted rows, then merge-sort a jumbled one.',
       win: { name: 'Merge sort', big: 'O(n log n)', insight: 'Merging n tiles takes at most n−1 comparisons, and a row of n can only be halved log n times. So the whole sort is about **n log n** comparisons: for a million items, 20 million instead of the half-trillion bubble sort would need. Split, solve the halves, combine: **divide and conquer**.',
-        code: ['def merge(left, right):', '    out = []', '    while left and right:', '        if left[0] <= right[0]: out.append(left.pop(0))', '        else: out.append(right.pop(0))', '    return out + left + right', '', 'def merge_sort(a):', '    if len(a) < 2: return a', '    mid = len(a) // 2', '    return merge(merge_sort(a[:mid]), merge_sort(a[mid:]))'] } },
+        code: ['def merge(left, right):', '    out, i, j = [], 0, 0', '    while i < len(left) and j < len(right):', '        if left[i] <= right[j]: out.append(left[i]); i += 1', '        else: out.append(right[j]); j += 1', '    return out + left[i:] + right[j:]', '', 'def merge_sort(a):', '    if len(a) < 2: return a', '    mid = len(a) // 2', '    return merge(merge_sort(a[:mid]), merge_sort(a[mid:]))'] } },
     { id: '2-5', title: 'Pick a Pivot', type: 'pivot', cfg: { n: 15 },
       intro: ['Quicksort divides differently. Pick one tile as the **pivot**: everything smaller steps to its left, everything bigger to its right. The pivot is now exactly where it belongs, and you repeat on each side.', 'Splitting a group of k tiles costs k−1 comparisons whatever you pick. What the pivot decides is how _evenly_ the group splits.'],
       goal: 'Sort 15 tiles in 34 comparisons or fewer.',
@@ -219,7 +219,7 @@
       intro: ['Last one. A grid of coins. Walk from the top-left corner to the bottom-right, moving only right or down, and collect as much as you can.', 'There are 35 different paths. Go on instinct first.'],
       goal: 'Find the richest path, and prove it.',
       win: { name: 'Dynamic programming', big: 'O(rows × columns)', insight: 'Grabbing the bigger neighbour at each step is **greedy**, and it walks into Murphy\'s trap. Checking every path works but explodes: a 20 by 20 grid has 35 billion. The table needed one small sum per square, because the best way to reach a square depends only on the best ways to reach the two before it. Find the overlapping sub-problems, solve each once, in the right order: **dynamic programming**.',
-        code: ['def best_path(grid):', '    best = copy(grid)', '    for r, c in every_square_in_reading_order:', '        best[r][c] += max(best[r - 1][c], best[r][c - 1])', '    return best[-1][-1]'] } },
+        code: ['def best_path(grid):', '    best = [row[:] for row in grid]', '    for r in range(len(grid)):', '        for c in range(len(grid[0])):', '            up = best[r - 1][c] if r > 0 else 0', '            left = best[r][c - 1] if c > 0 else 0', '            best[r][c] += max(up, left)', '    return best[-1][-1]'] } },
   ];
 
   levels.forEach((lv, i) => { lv.world = +lv.id[0]; lv.seed = lv.seed || 1000 + i * 37; lv.index = i; });

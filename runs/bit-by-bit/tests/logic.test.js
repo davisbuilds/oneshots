@@ -322,3 +322,57 @@ print("ok")
   const r = spawnSync('python3', ['-c', py], { encoding: 'utf8' });
   assert.equal(r.stdout.trim(), 'ok', r.stderr);
 });
+
+test('the merge sort listing sorts, and merges in linear time as its O(n log n) label says', () => {
+  const { spawnSync } = require('node:child_process');
+  const listing = BB.level('2-4').win.code.join('\n');
+  const py = `
+${listing}
+import random, time
+random.seed(11)
+for n in range(0, 60):
+    a = [random.randrange(50) for _ in range(n)]
+    assert merge_sort(a) == sorted(a), (n, a)
+# Two interleaved runs of 200,000: front-removal from a Python list shifts
+# every remaining item, which takes seconds; a linear merge takes milliseconds.
+left, right = list(range(0, 400000, 2)), list(range(1, 400000, 2))
+t = time.perf_counter()
+assert merge(left, right) == list(range(400000))
+took = time.perf_counter() - t
+assert took < 2.0, f"merging 400,000 items took {took:.1f} s"
+print("ok")
+`;
+  const r = spawnSync('python3', ['-c', py], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(r.stdout.trim(), 'ok', r.stderr);
+});
+
+test('the best-path listing agrees with the puzzle on every grid, edges included', () => {
+  const { spawnSync } = require('node:child_process');
+  const listing = BB.level('9-3').win.code.join('\n');
+  const rnd = BB.rng(5);
+  const grids = [[[1, 2], [3, 4]], [[7]], [[1, 2, 3]], [[1], [2], [3]]];
+  for (let k = 0; k < 40; k++) {
+    const R = rnd.int(1, 6), C = rnd.int(1, 6);
+    grids.push(Array.from({ length: R }, () => Array.from({ length: C }, () => rnd.int(0, 9))));
+  }
+  const want = grids.map((g) => { const b = BB.gridBest(g); return b[b.length - 1][b[0].length - 1]; });
+  // Stand-ins for the names the original listing left undefined, so it is
+  // judged on its arithmetic rather than on a NameError.
+  const py = `
+import json, sys
+from copy import deepcopy as copy
+GRID = None
+class _Order:
+    def __iter__(self): return ((r, c) for r in range(len(GRID)) for c in range(len(GRID[0])))
+every_square_in_reading_order = _Order()
+${listing}
+grids, want = json.loads(sys.argv[1]), json.loads(sys.argv[2])
+for g, w in zip(grids, want):
+    GRID = g
+    got = best_path(g)
+    assert got == w, (g, got, w)
+print("ok")
+`;
+  const r = spawnSync('python3', ['-c', py, JSON.stringify(grids), JSON.stringify(want)], { encoding: 'utf8' });
+  assert.equal(r.stdout.trim(), 'ok', r.stderr);
+});

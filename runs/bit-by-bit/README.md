@@ -137,3 +137,22 @@ told. Graph levels other than the two searches and the spanning tree use one
 fixed graph each. Big-O is taught by feel and by one table, without any
 formal definition. There is no level on tries, union-find, balanced-tree
 insertion or backtracking.
+
+## Corrections after delivery
+
+Made in a later session, not by the run's agent. A second automated review
+found two lesson-card listings that didn't do what the card claimed:
+
+- **Merge sort** removed items with `pop(0)`, which shifts the whole Python
+  list each time, so the listing ran in quadratic time under its
+  O(n log n) label. It now merges by index.
+- **The best path** read `best[r - 1]` and `best[r][c - 1]` on the first row
+  and column, where Python's negative indices wrap to the far edge, and it
+  relied on two undefined names. It now spells out both loops and treats a
+  missing neighbour as 0. The demo highlights the new line that fills a
+  square.
+
+`tests/logic.test.js` runs both listings under python3: merge sort on random
+lists plus a 400,000-item merge timed against a linear bound, and the best
+path against the puzzle's own table on 44 grids, single rows and columns
+included. Both tests failed on the old listings.
