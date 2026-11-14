@@ -17,7 +17,7 @@ harness = "Claude Code (cloud session)"
 
 [run]
 brief = "brief.md"
-human_turns = 3
+human_turns = 2                   # the brief and one approval; a later message came after delivery (see brief.md)
 wall_clock_minutes = 992
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"

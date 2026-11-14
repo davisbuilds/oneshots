@@ -17,7 +17,7 @@ reasoning = "medium"
 
 [run]
 brief = "brief.md"
-human_turns = 2
+human_turns = 1                   # the repository import came after delivery
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 

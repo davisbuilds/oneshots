@@ -17,7 +17,7 @@ reasoning = "xhigh"
 
 [run]
 brief = "brief.md"
-human_turns = 3
+human_turns = 2                   # message 3 came after delivery (see brief.md)
 wall_clock_minutes = 64
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"

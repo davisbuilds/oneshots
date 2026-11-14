@@ -28,7 +28,7 @@ into this repository or open a PR, still go in `brief.md`. Put a line reading
 exactly `<!-- after delivery -->` before the first of them, once per brief and
 outside any code block. It doesn't render on GitHub; pages that show the run,
 such as davisbuilds.net, show the brief up to that line and link to the full
-file.
+file. Those later messages don't count toward `human_turns`.
 
 ## What goes in git and what doesn't
 
@@ -79,7 +79,7 @@ reasoning = "xhigh"                     # effort setting, if known (optional)
 
 [run]
 brief = "brief.md"                      # or "unrecorded"
-human_turns = 1                         # messages from a person during the run, brief included
+human_turns = 1                         # messages from a person before delivery, brief included
 wall_clock_minutes = 85                 # optional
 log = "process/PROGRESS.md"             # required for long-horizon runs
 snapshots = "process/snapshots"         # optional
