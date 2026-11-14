@@ -154,6 +154,9 @@
     hint(s) {
       const g = s.gap, c = s.cells;
       if (g > 0 && c[g - 1] > s.x) return { a: { t: 'shift', i: g - 1 }, note: `${c[g - 1]} is bigger than ${s.x}, so it has to move one slot right.`, line: 4 };
+      // Off the textbook path: the gap was slid past the spot, so a smaller
+      // tile sits to its right. Slide it back; there's no listing line for that.
+      if (g < c.length - 1 && c[g + 1] != null && c[g + 1] < s.x) return { a: { t: 'shift', i: g + 1 }, note: `${c[g + 1]} is smaller than ${s.x}, so the gap went too far. Slide ${c[g + 1]} back left.` };
       return { a: { t: 'place' }, note: `Everything to the left is smaller than ${s.x}. Drop it in.`, line: 6 };
     },
   };

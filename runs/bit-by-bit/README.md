@@ -140,8 +140,9 @@ insertion or backtracking.
 
 ## Corrections after delivery
 
-Made in a later session, not by the run's agent. A second automated review
-found two lesson-card listings that didn't do what the card claimed:
+Made in a later session, not by the run's agent. Two further automated
+reviews found two lesson-card listings that didn't do what the card claimed,
+and one hint that led to a strike:
 
 - **Merge sort** removed items with `pop(0)`, which shifts the whole Python
   list each time, so the listing ran in quadratic time under its
@@ -152,7 +153,14 @@ found two lesson-card listings that didn't do what the card claimed:
   missing neighbour as 0. The demo highlights the new line that fills a
   square.
 
+- **Make Room (1-5)**: after sliding the gap past the right spot, the hint
+  said to drop the value in, which costs a strike; following it repeatedly
+  lost the level. The hint now says to slide the smaller tile back left.
+
 `tests/logic.test.js` runs both listings under python3: merge sort on random
 lists plus a 400,000-item merge timed against a linear bound, and the best
 path against the puzzle's own table on 44 grids, single rows and columns
-included. Both tests failed on the old listings.
+included. A third test overshoots the gap by every amount on 40 seeds and
+then follows only the hints, which must win without a strike. All three
+failed before their fixes. Other levels' hints were not audited for the
+same kind of off-path state.

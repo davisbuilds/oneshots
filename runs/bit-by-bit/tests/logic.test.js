@@ -376,3 +376,25 @@ print("ok")
   const r = spawnSync('python3', ['-c', py, JSON.stringify(grids), JSON.stringify(want)], { encoding: 'utf8' });
   assert.equal(r.stdout.trim(), 'ok', r.stderr);
 });
+
+test('1-5 Make Room: after sliding the gap too far left, the hints lead back without a strike', () => {
+  const lv = BB.level('1-5');
+  let overshoots = 0;
+  for (let k = 0; k < SEEDS; k++) {
+    for (let extra = 1; extra <= lv.cfg.n; extra++) {
+      const s = BB.init(lv.type, lv.cfg, 7919 * k + 1);
+      // Slide every tile the gap can reach to its right, `extra` past the
+      // point where the hint would stop, then hand over to the hints.
+      let pushed = 0;
+      while (s.gap > 0 && pushed < extra) {
+        if (!(s.cells[s.gap - 1] > s.x)) pushed++;
+        BB.act(s, { t: 'shift', i: s.gap - 1 });
+      }
+      if (pushed) overshoots++;
+      for (let guard = 0; s.status === 'play' && guard < 200; guard++) BB.act(s, BB.logic.shift.hint(s).a);
+      assert.equal(s.status, 'won', `seed ${7919 * k + 1}, ${extra} past: ${s.why}`);
+      assert.equal(s.strikes, 0, `seed ${7919 * k + 1}, ${extra} past: following the hints earned a strike`);
+    }
+  }
+  assert.ok(overshoots > 100, 'the test really overshoots');
+});
