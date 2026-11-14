@@ -235,6 +235,9 @@
   // ── rewire: change next-pointers without losing the list ───────────────
   // Anything no variable can reach is garbage collected on the spot.
   const listFrom = (s, id) => { const out = [], seen = new Set(); while (id != null && !seen.has(id)) { seen.add(id); const nd = s.nodes.find((x) => x.id === id); out.push(nd.v); id = nd.next; } return out; };
+  // A finished list ends at null; listFrom stops at a repeat too, so a loop
+  // can read back the right values without being a list at all.
+  const endsAtNull = (s, id) => { const seen = new Set(); while (id != null) { if (seen.has(id)) return false; seen.add(id); id = s.nodes.find((x) => x.id === id).next; } return true; };
   const rewireRound = (s) => {
     const r = s.plan[s.round], base0 = s.round * 10, n = r.list.length;
     const id = (i) => (i >= 0 && i < n ? base0 + i : null);
@@ -319,7 +322,7 @@
         }
         say = { who: 'bit', text: `Nothing points at ${dead[0].v} now, so memory reclaims it. That is all deleting is.` };
       }
-      if (JSON.stringify(listFrom(s, s.vars.head)) === JSON.stringify(s.goal)) {
+      if (endsAtNull(s, s.vars.head) && JSON.stringify(listFrom(s, s.vars.head)) === JSON.stringify(s.goal)) {
         s.round++;
         if (s.round >= s.rounds) s.status = 'won'; else rewireRound(s);
         ev.push({ t: 'good', v: s.round / s.rounds });

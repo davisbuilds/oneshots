@@ -484,3 +484,20 @@ V = 2 + 2 * k
 assert SCANS[0] <= V, f"{SCANS[0]} road scans for {V} vertices"
 `);
 });
+
+test('4-3 About Face: a reversal that loops forever is not a win', () => {
+  const lv = BB.level('4-3');
+  const s = BB.init(lv.type, lv.cfg, lv.seed);
+  const ids = s.nodes.map((nd) => nd.id), n = ids.length;
+  // Bookmark the tail, turn every arrow except the first node's, then point
+  // head at the old tail: the values read back reversed, but 0 and 1 point
+  // at each other, so walking the list never reaches null.
+  BB.act(s, { t: 'var', name: 'a', to: ids[n - 1] });
+  for (let i = n - 1; i >= 1; i--) BB.act(s, { t: 'ptr', from: ids[i], to: ids[i - 1] });
+  BB.act(s, { t: 'var', name: 'head', to: ids[n - 1] });
+  assert.equal(s.round, 0, 'the cyclic list must not complete the round');
+  assert.notEqual(s.status, 'won');
+  // Control: turning the first node's arrow to null finishes the job.
+  BB.act(s, { t: 'ptr', from: ids[0], to: null });
+  assert.equal(s.round, 1, 'the real reversal completes the round');
+});

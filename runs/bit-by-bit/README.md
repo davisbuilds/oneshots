@@ -141,8 +141,8 @@ insertion or backtracking.
 ## Corrections after delivery
 
 Made in a later session, not by the run's agent. Automated reviews found
-lesson-card listings that didn't do what their cards claimed and one hint
-that led to a strike. After the third such review, every listing was audited
+lesson-card listings that didn't do what their cards claimed, one hint
+that led to a strike, and one win check that accepted a broken list. After the third such review, every listing was audited
 by hand, which found three more.
 
 - **Merge sort** removed items with `pop(0)`, which shifts the whole Python
@@ -164,6 +164,10 @@ by hand, which found three more.
   It now skips them and defines its bracket pairs.
 - **Depth-first search** (audit) tested `if u:`, so a vertex numbered 0
   counted as no vertex. It now tests `is not None`.
+- **About Face (4-3)**: a "reversal" that left the first two nodes pointing
+  at each other read back the right values and won with three stars,
+  though the list never reached null. Every rewire level now requires the
+  list to end at null.
 - **Make Room (1-5)**: after sliding the gap past the right spot, the hint
   said to drop the value in, which costs a strike; following it repeatedly
   lost the level. The hint now says to slide the smaller tile back left.
@@ -172,7 +176,7 @@ by hand, which found three more.
 only the helpers the card leaves abstract: random inputs against Python's
 own results, plus a 400,000-item merge and a 400,000-leaf star timed against
 linear bounds, and a count of Dijkstra's road scans on a graph built to
-produce stale entries. Another test overshoots the Make Room gap by every
+produce stale entries. A test builds that looping reversal from legal moves and requires it not to win. Another overshoots the Make Room gap by every
 amount on 40 seeds and requires the hints alone to win without a strike.
 Each test failed on the old code; for BFS and Dijkstra that was checked
 with only the missing `return` added. Listings that call abstract helpers
