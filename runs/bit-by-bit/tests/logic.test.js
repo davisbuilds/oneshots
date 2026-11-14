@@ -398,3 +398,89 @@ test('1-5 Make Room: after sliding the gap too far left, the hints lead back wit
   }
   assert.ok(overshoots > 100, 'the test really overshoots');
 });
+
+// Lesson-card listings, run as the Python they claim to be. Each prelude
+// supplies only the helpers the card leaves abstract (and, for the old
+// listings, the names they assumed), so a failure is the listing's own.
+const runPy = (prelude, id, check, args = []) => {
+  const { spawnSync } = require('node:child_process');
+  const py = `${prelude}\n${BB.level(id).win.code.join('\n')}\n${check}\nprint("ok")\n`;
+  const r = spawnSync('python3', ['-c', py, ...args], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(r.stdout.trim(), 'ok', r.stderr);
+};
+
+test('the quicksort listing keeps repeated values', () => {
+  runPy('import random', '2-5', `
+random.seed(3)
+for n in range(0, 40):
+    a = [random.randrange(6) for _ in range(n)]
+    assert quicksort(a) == sorted(a), (a, quicksort(a))
+`);
+});
+
+test('the bracket listing ignores everything that is not a bracket', () => {
+  runPy('partner = {")": "(", "]": "[", "}": "{"}', '3-2', `
+for text, want in [("f(x[1]) {y}", True), ("(]", False), ("(", False), (")", False), ("a)", False), ("abc", True), ("", True), ("{[()()]}", True)]:
+    assert balanced(text) == want, (text, want)
+`);
+});
+
+test('the breadth-first listing finds distances in linear time, even on a star', () => {
+  runPy(`
+from collections import deque
+import time
+ADJ = {}
+def neighbours(v): return ADJ[v]
+`, '8-1', `
+ADJ = {0: [1, 2], 1: [0, 3], 2: [0, 3], 3: [1, 2, 4], 4: [3]}
+assert bfs(0) == {0: 0, 1: 1, 2: 1, 3: 2, 4: 3}
+# One hub joined to 400,000 leaves: popping the front of a Python list
+# shifts every queued leaf, about 9 s here; a deque takes milliseconds.
+V = 400000
+ADJ = {0: list(range(1, V))}
+for v in range(1, V): ADJ[v] = [0]
+t = time.perf_counter(); d = bfs(0); took = time.perf_counter() - t
+assert len(d) == V and d[V - 1] == 1
+assert took < 3.0, f"a star of {V} took {took:.1f} s"
+`);
+});
+
+test('the depth-first listing explores a vertex numbered 0', () => {
+  // The listing's seen-set is local, so the helper reads it from its caller.
+  runPy(`
+import sys
+ADJ = {}
+REACHED = set()
+def unseen_neighbour(v):
+    seen = sys._getframe(1).f_locals["seen"]
+    REACHED.update(seen)
+    return next((u for u in ADJ[v] if u not in seen), None)
+`, '8-2', `
+ADJ = {5: [0, 7], 0: [5, 3], 3: [0], 7: [5]}
+dfs(5)
+assert REACHED == {5, 0, 3, 7}, REACHED
+`);
+});
+
+test("the Dijkstra listing scans each vertex's roads once, however often its distance improves", () => {
+  runPy(`
+import heapq
+from math import inf
+pop, push = heapq.heappop, heapq.heappush
+G = {}
+SCANS = [0]
+def roads(v):
+    SCANS[0] += 1
+    return G.get(v, [])
+`, '8-3', `
+# Settling a1, a2, ... in turn improves every b, so each b is pushed k times.
+k = 40
+G = {"s": [(f"a{i}", i) for i in range(1, k + 1)]}
+for i in range(1, k + 1): G[f"a{i}"] = [(f"b{j}", 3 * (k - i) + j) for j in range(k)]
+for j in range(k): G[f"b{j}"] = [("t", 1)]
+dist = dijkstra("s")
+assert dist["t"] == k + 1, dist["t"]   # via a_k, b_0
+V = 2 + 2 * k
+assert SCANS[0] <= V, f"{SCANS[0]} road scans for {V} vertices"
+`);
+});

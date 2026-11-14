@@ -140,27 +140,41 @@ insertion or backtracking.
 
 ## Corrections after delivery
 
-Made in a later session, not by the run's agent. Two further automated
-reviews found two lesson-card listings that didn't do what the card claimed,
-and one hint that led to a strike:
+Made in a later session, not by the run's agent. Automated reviews found
+lesson-card listings that didn't do what their cards claimed and one hint
+that led to a strike. After the third such review, every listing was audited
+by hand, which found three more.
 
 - **Merge sort** removed items with `pop(0)`, which shifts the whole Python
-  list each time, so the listing ran in quadratic time under its
-  O(n log n) label. It now merges by index.
+  list each time, so it ran in quadratic time under its O(n log n) label. It
+  now merges by index.
+- **Breadth-first search** had the same `pop(0)` on its queue, quadratic on a
+  wide graph; it now uses a deque. It also never returned `dist`.
+- **Dijkstra** rescanned a vertex's roads for every stale heap entry, up to
+  V·E scans; it now skips stale entries. It also never returned `dist`.
 - **The best path** read `best[r - 1]` and `best[r][c - 1]` on the first row
   and column, where Python's negative indices wrap to the far edge, and it
   relied on two undefined names. It now spells out both loops and treats a
   missing neighbour as 0. The demo highlights the new line that fills a
   square.
-
+- **Quicksort** (found in the audit) dropped repeated values: `[2, 2, 1]`
+  came back as `[1, 2]`. It now keeps everything equal to the pivot.
+- **Bracket matching** (audit) returned False for any text with a
+  non-bracket character, despite being introduced as what code editors do.
+  It now skips them and defines its bracket pairs.
+- **Depth-first search** (audit) tested `if u:`, so a vertex numbered 0
+  counted as no vertex. It now tests `is not None`.
 - **Make Room (1-5)**: after sliding the gap past the right spot, the hint
   said to drop the value in, which costs a strike; following it repeatedly
   lost the level. The hint now says to slide the smaller tile back left.
 
-`tests/logic.test.js` runs both listings under python3: merge sort on random
-lists plus a 400,000-item merge timed against a linear bound, and the best
-path against the puzzle's own table on 44 grids, single rows and columns
-included. A third test overshoots the gap by every amount on 40 seeds and
-then follows only the hints, which must win without a strike. All three
-failed before their fixes. Other levels' hints were not audited for the
-same kind of off-path state.
+`tests/logic.test.js` runs each of these listings under python3, supplying
+only the helpers the card leaves abstract: random inputs against Python's
+own results, plus a 400,000-item merge and a 400,000-leaf star timed against
+linear bounds, and a count of Dijkstra's road scans on a graph built to
+produce stale entries. Another test overshoots the Make Room gap by every
+amount on 40 seeds and requires the hints alone to win without a strike.
+Each test failed on the old code; for BFS and Dijkstra that was checked
+with only the missing `return` added. Listings that call abstract helpers
+(`neighbours`, `roads`, `connected`) are correct only if those helpers are,
+and other levels' hints were not audited for off-path states.
