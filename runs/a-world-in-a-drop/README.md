@@ -10,7 +10,7 @@ connects the six worlds.
 | | |
 | :-- | :-- |
 | Model | GPT-6, Codex cloud session; exact model identifier and reasoning setting unrecorded |
-| Human turns | 3: brief, eye revision, repository import |
+| Human turns | 2: brief and eye revision; a later repository-import message came after delivery |
 | Brief | [Verbatim messages](brief.md) |
 | Process | [Agent account](process/PROGRESS.md), [snapshots](process/snapshots/), [studies](process/studies/) |
 | Production | 10 October 2026, approximately 12:28–17:44 UTC, including rendering and review |

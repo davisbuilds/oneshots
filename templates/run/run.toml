@@ -17,7 +17,7 @@ harness = "unrecorded"
 
 [run]
 brief = "brief.md"
-human_turns = 1
+human_turns = 1                  # messages before delivery, brief included
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 

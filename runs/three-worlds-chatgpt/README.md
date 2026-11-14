@@ -15,7 +15,7 @@ replaces the other.
 | Run date | 26 September 2026 |
 | Model | GPT-6 Astra, medium reasoning; exact API identifier unrecorded |
 | Harness | ChatGPT Work, cloud session |
-| Human turns | 2: initial brief, then repository import; no mid-artwork intervention |
+| Human turns | 1: the initial brief, with no mid-artwork intervention; a later repository-import request came after delivery |
 | Brief | [Verbatim requests](brief.md) |
 | Process | [Original agent log](process/PROGRESS.md), [import notes](process/IMPORT.md), [snapshots](process/snapshots/), [studies](process/studies/) |
 | Source account | [Original delivery README](process/ORIGINAL-README.md), preserved as historical evidence |
