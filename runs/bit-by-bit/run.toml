@@ -1,0 +1,30 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "bit-by-bit"
+title = "Bit by Bit"
+summary = "A puzzle game that teaches data structures and algorithms by making you the algorithm: 34 hand-played levels from array indexing to dynamic programming, against an adversary who always arranges the worst case, each one naming and showing the code for what you just did."
+date = 2026-11-11
+kind = "long-horizon"
+medium = ["web", "svg", "game", "puzzle", "education", "interactive"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Claude Fable 5.2"
+model_id = "claude-fable-5-2"
+harness = "Claude Code (cloud session)"
+reasoning = "medium"
+
+[run]
+brief = "brief.md"
+human_turns = 7                    # the brief, then six after delivery (see brief.md)
+wall_clock_minutes = 60            # about 60 working minutes: 19:15 to 19:50 UTC, then 00:08 to 00:35 after the session's worker restarted
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+# Nothing to build: the page runs from the committed files. The verifier needs
+# the repository's pnpm tooling and current Chrome (see the root README).
+verify = "node --test tests/*.test.js && (cd ../.. && pnpm install --frozen-lockfile) && node verify.mjs"
+timeout_minutes = 15

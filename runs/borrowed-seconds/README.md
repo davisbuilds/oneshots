@@ -99,7 +99,7 @@ than displaying a video of it.
 From the repository root, using its locked optional browser tooling:
 
 ```bash
-npm ci
+pnpm install --frozen-lockfile
 # Install current Google Chrome separately; see the root README.
 node runs/borrowed-seconds/verify.mjs
 ```

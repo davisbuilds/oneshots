@@ -28,16 +28,17 @@ python3 runs/artemis-ii/src/test_build_all.py
 python3 runs/a-world-in-a-drop/src/test_checksums.py
 node --test runs/gate-to-game/tests/*.test.js
 node --test runs/luminal/tests/*.test.js
+node --test runs/bit-by-bit/tests/*.test.js
 ```
 
 Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser
 verification uses Node 24 (`.nvmrc`; CI installs it with `actions/setup-node`)
-and the locked npm tooling:
+and the locked pnpm tooling (the version is pinned in `package.json`; `corepack enable` provides it):
 
 ```bash
-npm ci
+pnpm install --frozen-lockfile
 # Install current Google Chrome separately; see the root README.
-npm run verify:browser
+pnpm run verify:browser
 ```
 
 Use each renderer's documented Python version and its own virtual environment
@@ -69,7 +70,7 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
 - Run the collection checks above for metadata/tooling changes. Publication
   hygiene scans the Git index: stage the intended files before the final check.
 - Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
-  eight runs; do not claim they cover the whole collection. Screenshots are local
+  nine runs; do not claim they cover the whole collection. Screenshots are local
   evidence, not portable visual baselines.
 - For rendering changes, use the run's build/verify commands. A manifest check
   does not prove a render works; state when a costly full build was not rerun.

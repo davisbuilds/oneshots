@@ -40,8 +40,9 @@ jobs:
 
       - name: Test browser version policy
         run: |
-          npm ci --ignore-scripts
-          npm run test:browser-policy
+          corepack enable
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm run test:browser-policy
 
       - name: Provision the locked render browser
         run: bash scripts/install-ci-chrome.sh
@@ -61,3 +62,6 @@ jobs:
         run: |
           node --test runs/luminal/tests/*.test.js
           node runs/luminal/tools/solve.js --check
+
+      - name: Test Bit by Bit's puzzle logic
+        run: node --test runs/bit-by-bit/tests/*.test.js

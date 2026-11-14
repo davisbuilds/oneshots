@@ -78,8 +78,9 @@ jobs:
       - name: Provision locked upstream Chromium for browser renders
         if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "tideline"]'), inputs.run)
         run: |
-          npm ci --ignore-scripts
-          npx --no-install playwright install-deps chromium
+          corepack enable
+          pnpm install --frozen-lockfile --ignore-scripts
+          pnpm exec playwright install-deps chromium
           bash scripts/install-ci-chrome.sh
 
       - name: Build

@@ -137,7 +137,7 @@ node runs/luminal/tools/solve.js --check     # the stored route still finishes t
 node runs/luminal/verify.mjs                 # the real page in headless Chromium (about 3 min)
 ```
 
-`verify.mjs` (with current Google Chrome installed and after `npm ci` at the
+`verify.mjs` (with current Google Chrome installed and after `pnpm install --frozen-lockfile` at the
 repository root) loads the page from disk and checks: the first music chunk
 arrives and Play enables; the whole soundtrack renders, peaks below full scale,
 and the drop is more than 6 dB louder than the opening; Space, the mouse and

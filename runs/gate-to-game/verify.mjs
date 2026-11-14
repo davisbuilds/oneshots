@@ -1,6 +1,6 @@
 // verify.mjs: open index.html from disk in headless Chromium and check that
 // the computer runs, the game plays, and the zoom goes all the way down.
-//   node verify.mjs            (after npm ci and installing current Google Chrome)
+//   node verify.mjs            (after pnpm install --frozen-lockfile and installing current Google Chrome)
 // CHROMIUM_PATH=/path/to/chrome node verify.mjs uses another Chromium build, subject to the version guard.
 import assert from 'node:assert/strict';
 import { mkdir, stat } from 'node:fs/promises';

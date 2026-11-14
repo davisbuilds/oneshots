@@ -1,5 +1,5 @@
 // Headless check of the Antikythera Engine page.
-//   node runs/antikythera-engine/verify.mjs      (from the repository root, after npm ci)
+//   node runs/antikythera-engine/verify.mjs      (from the repository root, after pnpm install --frozen-lockfile)
 // Checks: the page renders without errors; the JavaScript ephemeris and the
 // brass angles agree with src/fixture.py (exact Python arithmetic on the tooth
 // counts); every wheel of design.json is on stage; the cut sheets are a

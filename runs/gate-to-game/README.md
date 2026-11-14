@@ -154,7 +154,7 @@ node tools/shot.js 600 output/shot.ppm   # play 10 s headless, write the screen
 ```
 
 The browser verifier and the film need the repository's locked Playwright
-(`npm ci` and current Google Chrome installed at the repository root):
+(`pnpm install --frozen-lockfile` and current Google Chrome installed at the repository root):
 
 ```bash
 node verify.mjs                 # real-browser checks; screenshots in output/playwright/

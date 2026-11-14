@@ -6,7 +6,7 @@ set -euo pipefail
 : "${GITHUB_ENV:?GITHUB_ENV is required}"
 export PLAYWRIGHT_BROWSERS_PATH
 PLAYWRIGHT_BROWSERS_PATH=$(mktemp -d "$RUNNER_TEMP/playwright-browser.XXXXXX")
-npx --no-install playwright install chromium
+pnpm exec playwright install chromium
 browser=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
 printf 'PLAYWRIGHT_BROWSERS_PATH=%s\nCHROMIUM_PATH=%s\n' "$PLAYWRIGHT_BROWSERS_PATH" "$browser" >> "$GITHUB_ENV"
 "$browser" --version

@@ -1,7 +1,7 @@
 # Only the release film needs anything installed. Everything else (the page,
 # the tests, the tools) is plain JavaScript with no dependencies.
 #
-# tools/film.mjs: Node 24 (.nvmrc), the locked @playwright/test (npm ci at
+# tools/film.mjs: Node 24 (.nvmrc), the locked @playwright/test (pnpm install --frozen-lockfile at
 # the repository root), current Google Chrome (see the root README), and
 # an FFmpeg with libx264, taken from this wheel:
 imageio-ffmpeg==0.6.0
