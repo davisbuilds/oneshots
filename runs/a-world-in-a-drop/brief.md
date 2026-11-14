@@ -33,4 +33,5 @@ Exact message time unrecorded.
 > Read the oneshots project conventions and submit a PR to the repo
 
 Three human messages are recorded: the creative request, eye feedback, and
-repository request. Automatically supplied environment context is not counted.
+repository request. The repository request came after delivery, so two count
+as human turns. Automatically supplied environment context is not counted.
