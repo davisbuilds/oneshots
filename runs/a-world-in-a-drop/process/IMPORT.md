@@ -31,3 +31,10 @@ renders, original score synthesis and the editable timeline. No second complete
 film render or release publication is claimed. The initial production archive
 and working files are retained. Publication should use the documented manual
 upload and verify downloads before any recovery storage is removed.
+
+## Curator clarification — 16 November 2026
+
+The curator identified the model as GPT-6 Astra. The manifest and current run
+README now use that display name; the exact model identifier and reasoning
+setting remain unrecorded. The import account above records what was known at
+the time.

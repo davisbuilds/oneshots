@@ -9,7 +9,7 @@ connects the six worlds.
 
 | | |
 | :-- | :-- |
-| Model | GPT-6, Codex cloud session; exact model identifier and reasoning setting unrecorded |
+| Model | GPT-6 Astra, Codex cloud session; exact model identifier and reasoning setting unrecorded |
 | Human turns | 2: brief and eye revision; a later repository-import message came after delivery |
 | Brief | [Verbatim messages](brief.md) |
 | Process | [Agent account](process/PROGRESS.md), [snapshots](process/snapshots/), [studies](process/studies/) |
