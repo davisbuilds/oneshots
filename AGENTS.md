@@ -80,15 +80,11 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
   does not prove a render works; state when a costly full build was not rerun.
 - Update the owning docs when a procedure or boundary changes. Reconcile an
   affected run's lineage or manifest with the result.
-- **Plan and hand off work.** Use the accepted conversation or task as the
-  contract when it gives enough detail. Save a design, spec, or plan when it
-  helps people coordinate, agree on acceptance criteria, or sequence execution.
-  For unfinished work changing agents, sessions, or devices, leave a concise
-  handoff when the receiving context is incomplete. Commit audience-appropriate
-  documents needed for shared execution and keep their status current.
-  Before retiring execution docs, preserve lasting decisions and open work in
-  maintained references and repair incoming links.
-  Preserve each run’s recorded lineage under `runs/<slug>/`.
+- **Plan and hand off work.** Reuse clear task context. Save planning docs when
+  decisions, acceptance, or coordination need persistence. Leave a brief
+  handoff only when needed to resume unfinished work. Commit shared docs and
+  keep status current. Before archiving, preserve lasting decisions and open
+  work in maintained docs and repair links.
 - Keep commits coherent and preserve unrelated work. Push, publish, merge, or
   remove remote branches only when requested or already authorized.
 - History policy: PRs into `main`, merged by squash or rebase (merge commits are
