@@ -67,6 +67,15 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
 
 ## Testing and working agreement
 
+- **Plan and hand off work.** Use the accepted conversation or task as the
+  contract when it gives enough detail. Save a design, spec, or plan when it
+  helps people coordinate, agree on acceptance criteria, or sequence execution.
+  For unfinished work changing agents, sessions, or devices, leave a concise
+  handoff when the receiving context is incomplete. Commit audience-appropriate
+  documents needed for shared execution and keep their status current.
+  Before retiring execution docs, preserve lasting decisions and open work in
+  maintained references and repair incoming links.
+  Preserve each run’s recorded lineage under `runs/<slug>/`.
 - Run the collection checks above for metadata/tooling changes. Publication
   hygiene scans the Git index: stage the intended files before the final check.
 - Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
