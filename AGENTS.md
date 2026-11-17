@@ -67,6 +67,19 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
 
 ## Testing and working agreement
 
+- Clarify material ambiguity.
+- Prefer behavioral tests and real dependencies. For substantial changes use
+  red/green testing, with a red step that fails for the behavior being fixed.
+  Smaller changes need the relevant checks, not a mandatory spec/plan.
+- Run the collection checks above for metadata/tooling changes. Publication
+  hygiene scans the Git index: stage the intended files before the final check.
+- Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
+  nine runs; do not claim they cover the whole collection. Screenshots are local
+  evidence, not portable visual baselines.
+- For rendering changes, use the run's build/verify commands. A manifest check
+  does not prove a render works; state when a costly full build was not rerun.
+- Update the owning docs when a procedure or boundary changes. Reconcile an
+  affected run's lineage or manifest with the result.
 - **Plan and hand off work.** Use the accepted conversation or task as the
   contract when it gives enough detail. Save a design, spec, or plan when it
   helps people coordinate, agree on acceptance criteria, or sequence execution.
@@ -76,19 +89,8 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
   Before retiring execution docs, preserve lasting decisions and open work in
   maintained references and repair incoming links.
   Preserve each run’s recorded lineage under `runs/<slug>/`.
-- Run the collection checks above for metadata/tooling changes. Publication
-  hygiene scans the Git index: stage the intended files before the final check.
-- Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
-  nine runs; do not claim they cover the whole collection. Screenshots are local
-  evidence, not portable visual baselines.
-- For rendering changes, use the run's build/verify commands. A manifest check
-  does not prove a render works; state when a costly full build was not rerun.
-- Prefer behavioral tests and real dependencies. For substantial changes use
-  red/green testing, with a red step that fails for the behavior being fixed.
-  Smaller changes need the relevant checks, not a mandatory spec/plan.
-- Update the owning docs when a procedure or boundary changes. Clarify material
-  ambiguity; reconcile an affected run's lineage or manifest with the result;
-  keep commits coherent and preserve unrelated work.
+- Keep commits coherent and preserve unrelated work. Push, publish, merge, or
+  remove remote branches only when requested or already authorized.
 - History policy: PRs into `main`, merged by squash or rebase (merge commits are
   disabled; rebase keeps a run's coherent commits, squash suits a single change).
   GitHub deletes the head branch after merge. Request Codex review for PRs that
@@ -96,5 +98,4 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
   instructions (skip only prose docs), resolve review threads, and require green
   applicable checks before an authorized merge.
   Query GitHub for effective settings rather than assuming they enforce this.
-- Push, publish, merge, or remove remote branches only when requested or already
-  authorized. After compaction, re-ground in source and recent changes.
+- After compaction, re-ground in source and recent changes.
