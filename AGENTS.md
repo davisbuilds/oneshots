@@ -7,7 +7,7 @@ separate repository or a component of one application.
 ## Documentation map
 
 - [README.md](README.md): collection index, setup, and viewing the results.
-- [RUNS.md](RUNS.md): run layout, lineage, manifests, and release assets.
+- [RUNS.md](RUNS.md): run layout, lineage, manifests, size caps, and release assets.
 - `runs/<slug>/README.md`: the run's dependencies, reproduction, and limitations.
 - `runs/<slug>/run.toml`: metadata and executable build/verification commands.
 - `templates/run/`: starting point for a new run.
@@ -15,42 +15,30 @@ separate repository or a component of one application.
 Keep guidance here and `CLAUDE.md` as a relative symlink to this file. This
 collection does not need separate `docs/project/` or `docs/system/` trees.
 
-## Command quickstart
+## Verification
 
-Collection tooling uses Python 3.11+ and the standard library:
-
-```bash
-python3 scripts/build_index.py
-python3 scripts/validate_runs.py
-python3 scripts/check_publication_hygiene.py
-python3 runs/three-worlds/src/test_build.py
-python3 runs/artemis-ii/src/test_build_all.py
-python3 runs/a-world-in-a-drop/src/test_checksums.py
-node --test runs/gate-to-game/tests/*.test.js
-node --test runs/luminal/tests/*.test.js
-node --test runs/bit-by-bit/tests/*.test.js
-```
-
-Open HTML runs directly: `open runs/<slug>/index.html` on macOS. Optional browser
-verification uses Node 24 (`.nvmrc`; CI installs it with `actions/setup-node`)
-and the locked pnpm tooling (the version is pinned in `package.json`; `corepack enable` provides it):
-
-```bash
-pnpm install --frozen-lockfile
-# Install current Google Chrome separately; see the root README.
-pnpm run verify:browser
-```
-
-Use each renderer's documented Python version and its own virtual environment
-and requirements. There is no shared renderer environment or root Python package.
-Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
+- **Collection gate** (CI's Validate Runs and Publication Hygiene jobs):
+  `pnpm install --frozen-lockfile`, then `pnpm run check && pnpm test`
+  (Python 3.11+ standard library and Node 24). CI also runs
+  `node runs/luminal/tools/solve.js --check` and a Linux browser route;
+  `.github/workflows/runs.yml` owns the full list.
+- **Publication hygiene scans the Git index:** stage the intended files before
+  the final `python3 scripts/check_publication_hygiene.py`.
+- **Browser checks:** `pnpm run verify:browser` (current Google Chrome; see
+  README) for changed HTML/JS behavior. It covers only some runs, so don't
+  claim it covers the collection. Screenshots are local evidence, not portable
+  visual baselines.
+- **Rendering changes:** use the run's own build/verify commands and
+  environment; there is no shared renderer environment. A manifest check does
+  not prove a render works; state when a costly full build was not rerun.
 
 ## Implementation guardrails
 
 - Keep a change scoped to the requested run or collection tooling. Preserve
   direct HTML execution and each run's established rendering approach.
-- Read RUNS.md before adding a run. Regenerate the README index after changing
-  manifest metadata; do not edit generated rows by hand.
+- Read RUNS.md before adding a run. Regenerate the README index with
+  `python3 scripts/build_index.py` after changing manifest metadata; do not
+  edit generated rows by hand.
 - Preserve verbatim briefs and the agent's historical account. Record only known
   model/harness metadata; use `unrecorded` for gaps. The curator's verdict comes
   from the human, not the agent.
@@ -62,36 +50,43 @@ Fetch published assets with `python3 scripts/fetch_assets.py <slug>`.
   mean disposable; confirm preservation before deleting an archive branch.
 - Use Run assets only when the build fits its runner, dependencies, and timeout.
   Otherwise upload the original assets and SHA256SUMS manually, documenting their
-  provenance and verifying downloads before removing temporary storage.
+  provenance and verifying downloads before removing temporary storage. Fetch
+  published assets with `python3 scripts/fetch_assets.py <slug>`.
 - Pin Actions to full SHAs and keep version comments accurate when updating them.
 
-## Testing and working agreement
+## Working agreement
 
-- Clarify material ambiguity.
-- Prefer behavioral tests and real dependencies. For substantial changes use
-  red/green testing, with a red step that fails for the behavior being fixed.
-  Smaller changes need the relevant checks, not a mandatory spec/plan.
-- Run the collection checks above for metadata/tooling changes. Publication
-  hygiene scans the Git index: stage the intended files before the final check.
-- Use real-browser checks for changed HTML/JS behavior. Existing verifiers cover
-  nine runs; do not claim they cover the whole collection. Screenshots are local
-  evidence, not portable visual baselines.
-- For rendering changes, use the run's build/verify commands. A manifest check
-  does not prove a render works; state when a costly full build was not rerun.
-- Update the owning docs when a procedure or boundary changes. Reconcile an
-  affected run's lineage or manifest with the result.
+- **Clarify before building** when a request is vague, contradictory, or skips a
+  key decision; clear, well-scoped requests need no interview.
+- **Fix small issues now; record the rest.** Fix simple, quick, or blocking
+  issues in this repo as part of the current change and call them out. There
+  is no backlog file: note what can't be finished now, or needs the
+  maintainer's decision, in the PR or the run's README limitations.
+- **Keep docs current** when a change makes a documented contract, boundary,
+  procedure, or direction stale, and reconcile an affected run's lineage or
+  manifest with the result.
 - **Plan and hand off work.** Reuse clear task context. Save planning docs when
   decisions, acceptance, or coordination need persistence. Leave a brief
   handoff only when needed to resume unfinished work. Commit shared docs and
   keep status current. Before archiving, preserve lasting decisions and open
   work in maintained docs and repair links.
-- Keep commits coherent and preserve unrelated work. Push, publish, merge, or
-  remove remote branches only when requested or already authorized.
-- History policy: PRs into `main`, merged by squash or rebase (merge commits are
-  disabled; rebase keeps a run's coherent commits, squash suits a single change).
-  GitHub deletes the head branch after merge. Request Codex review for PRs that
-  change runtime or agent behavior, including version pins, CI config and agent
-  instructions (skip only prose docs), resolve review threads, and require green
-  applicable checks before an authorized merge.
-  Query GitHub for effective settings rather than assuming they enforce this.
-- After compaction, re-ground in source and recent changes.
+- **Commit and push.** Commit coherent chunks, staging by explicit path. Push
+  your task branch and open a PR once the work is complete and the local gate
+  passes; don't push directly to `main`.
+- **Merge** only under the standing merge authority in the maintainer's
+  workspace instructions, or when the maintainer asks. Without those
+  instructions in context, leave the PR for the maintainer. Publish release
+  assets or remove remote branches only when requested.
+- **Re-ground after compaction** in source, this file, the owning docs, and
+  recent commits. A summary and your own earlier proposals are not user approval.
+
+## Git
+
+PRs into `main`, merged by squash or rebase (merge commits are disabled; rebase
+keeps a run's coherent commits, squash suits a single change). GitHub deletes
+the head branch after merge. `main` is the public collection, so **a merge
+publishes**: review the diff and PR text against the self-contained rule above
+first. Request Codex review for PRs that change runtime or agent behavior,
+including pins, CI and agent instructions (skip only prose docs); resolve
+review threads and require green checks before merging. Query GitHub for
+effective settings rather than assuming they enforce this.
