@@ -21,7 +21,7 @@
 
 ## What evolves
 
-Ninety-six founders receive independently sampled genomes. A body’s size sets its reserve capacity. Tail length, aspect, fins and armor change propulsion, drag and turning. Gut chemistry changes the uptake efficiency of the two substrates. Jaws alter the trade-off between grazing and grabbing tissue. Armor and spines reduce the amount extractable on contact.
+Ninety-six founders receive independently sampled genomes, energy reserves and age offsets. Tick zero records their entry into the chamber. A body’s size sets its reserve capacity. Tail length, aspect, fins and armor change propulsion, drag and turning. Gut chemistry changes the uptake efficiency of the two substrates. Jaws alter the trade-off between grazing and grabbing tissue. Armor and spines reduce the amount extractable on contact.
 
 At each tick an individual samples local chemistry, a left–right gradient, hunger and the closest neighbor's bearing and proximity. Signed inherited weights map these inputs to turning, thrust, grazing and grasping effort. Two organisms sensing the same neighbor can turn in opposite directions. Motion is continuous on a 960 × 600 torus. A spatial grid limits neighbor searches. The rendering samples actual positions, orientations, morphology and resource stocks.
 

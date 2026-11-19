@@ -14,6 +14,8 @@
 | 09:55–10:03 | Local review found stale family selection when crossing from a past state to the live atlas and DOM updates that could discard keyboard focus on ancestry buttons. Repaired those paths. Browser tests now select a point or body, move between generations, watch an event, split the chamber, download the record, and replay both arms in Node. Opened the balanced mosaic experiment from the guide and compared its population and habitat statistic against its measured receipt. |
 | 10:03 onward | Inspected the final images. The microscope, phylogeny, ecology, cinematic camera, phone layout and deep mosaic study are recorded below. A 120-frame active cinematic sample at a 1440-pixel desktop viewport measured 16.7 ms median and p95 frame intervals on the test display. Frame timing includes the interface and rasterization cadence of that browser session. |
 
+The first PR scan flagged the packager’s matching of HTML script end tags. The revised packager reads local asset declarations one line at a time and fails on an unexpected script declaration. Rebuilt the standalone page and exercised it through the offline browser route.
+
 ## Numbered observations
 
 1. [First integrated instrument](snapshots/01-instrument.webp) — early optical plate and census.
