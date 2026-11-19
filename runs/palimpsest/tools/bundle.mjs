@@ -6,8 +6,8 @@ const root = new URL('../', import.meta.url),
 const html = read('index.html')
   .replace(/<link rel="stylesheet" href="([^"]+)"\s*\/?>/g, (_, file) => '<style>' + read(file) + '</style>')
   .replace(
-    /<script src="([^"]+)"><\/script>/g,
-    (_, file) => '<script>' + read(file).replace(/<\/script/gi, '<\\/script') + '</script>',
+    /<script src="([^"]+)">/g,
+    (_, file) => '<script>' + read(file).replace(/<\/script/gi, '<\\/script'),
   );
 const bundle = html.replace(
   '<head>',
