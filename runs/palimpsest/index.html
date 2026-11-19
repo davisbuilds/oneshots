@@ -1,0 +1,3 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Palimpsest</title>
+<style>*{box-sizing:border-box}body{background:#191b18;color:#fff}#viewport{height:75vh;width:78vw;position:relative}canvas{width:100%;height:100%}</style><h1>Tell Ashara</h1><div id="viewport"></div><button id="dig">Excavate court</button>
+<script src="vendor/three.min.js"></script><script src="src/history.js"></script><script src="src/model.js"></script><script src="src/view.js"></script><script>let site=simulate(1842),ids=[],v=makeView(document.querySelector('#viewport'),[],()=>{});v.load(site,ids);dig.onclick=()=>{let f=site.finds.filter(f=>f.zone===0&&!ids.includes(f.id)).pop();if(f){ids.push(f.id);v.load(site,ids);dig.textContent=specimens[f.kind][0]}}</script></html>
