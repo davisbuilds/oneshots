@@ -227,7 +227,9 @@ portal is where the renderer's virtual camera stood in it.
 **Persistence.** Generation never stores anything; everything you change or
 discover (lodestones woken, the instrument taken, worlds visited, landmarks
 seen, photographs, your position) is a separate overlay in local storage,
-applied when a world is built.
+applied when a world is built. Each universe seed keeps its own overlay, since
+the same address is a different world in each, and `?bench` keeps an empty one
+in memory so that measuring never moves a saved journey.
 
 ## What "infinite" means here
 
@@ -294,7 +296,9 @@ and in `output/verify/report.txt` when you run it:
   rights you onto its floor.
 - *Persistence.* Take the instrument, wake a lodestone, visit the desert,
   reload: position, lodestone, instrument and visits are restored, and the
-  regenerated platform shows its lodestone lit.
+  regenerated platform shows its lodestone lit. `?universe=2` in the same
+  browser starts a journey of its own, *Forget everything* there keeps the
+  universe, and neither it nor a `?bench` page changes the first journey.
 - *Streaming.* Teleporting through 30 worlds built 77 world views and disposed
   67, never holding more than 10.
 - *Budgets and extreme views.* Live depth and render budgets hold from (1, 2)
@@ -302,7 +306,8 @@ and in `output/verify/report.txt` when you run it:
   and straight down at a threshold from both sides leave no black or NaN
   pixels.
 - *The demo* finishes in about 54 s with six real crossings through five
-  worlds.
+  worlds. Started from the pause screen, it is not hidden behind the pause
+  panel, and a click on the picture hands back control.
 
 ## Performance
 

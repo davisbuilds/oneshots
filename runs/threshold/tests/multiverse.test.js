@@ -9,7 +9,7 @@ import { pairXf, makePortal } from '../src/core/portal.js';
 import { xmul, len, qangle } from '../src/core/math.js';
 import { Space } from '../src/core/space.js';
 import { scatterChunk, ScatterCache } from '../src/core/scatter.js';
-import { Save } from '../src/game/save.js';
+import { Save, saveKey } from '../src/game/save.js';
 import { hash32 } from '../src/core/rng.js';
 
 // A stable fingerprint of a descriptor's generated content (functions excluded).
@@ -103,6 +103,12 @@ test('player changes persist independently of generation, across unloading', () 
   assert.deepEqual(again.data.pos.feet, [1, 2, 3]);
   assert.equal(fingerprint(describe('1,0')).h, before.h, 'the baseline world is unchanged by the overlay');
   // a corrupt store falls back to a fresh save instead of throwing
+  // another universe in the same browser has its own journey; the default keeps the plain key
+  assert.equal(saveKey(UNIVERSE), 'threshold.save.v1');
+  const other = new Save(storage, saveKey(2));
+  assert.ok(!other.isLit('1,0') && other.data.pos === null, 'universe 2 does not see this journey');
+  other.light('1,0'); other.setPos('0,0', [0, 60, 0], [0, 0, 0, 1]); other.flush();
+  assert.deepEqual(new Save(storage).data.pos.feet, [1, 2, 3], 'nor does it overwrite it');
   store.set('threshold.save.v1', '{not json');
   assert.equal(new Save(storage).data.v, 1);
 });

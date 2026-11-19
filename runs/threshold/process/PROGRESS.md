@@ -363,3 +363,31 @@ ambient, more contrast).
 Two interface bugs fixed on review: the pause screen said "click to return"
 but swallowed the click before it reached the canvas, and the demo could not
 be interrupted (Esc, Enter or a click now hand over control).
+
+## 19:55 After delivery: review findings
+
+Codex reviewed the PR and found three bugs, all real; the curator also pointed
+at a failing check. I wrote a browser check for each bug first and watched it
+fail on the delivered code, then fixed it:
+
+- **Saves were shared across universes.** `?universe=2` loaded the default
+  universe's save, so it restored a position and lodestones from different
+  worlds at the same addresses. Each universe now has its own save; the
+  default universe keeps the plain key. The check also caught a fourth bug:
+  *Forget everything* reloaded with `?fresh` and dropped `?universe`, which
+  wiped the default universe's journey. It now keeps the universe.
+- **`?bench` overwrote the journey.** The benchmark teleports through fixed
+  scenes, and the autosave stored those poses and the visits. Benchmark pages
+  now keep an empty save in memory and never write it.
+- **The demo played behind the pause panel** when started from the pause
+  screen, and the panel swallowed the click meant to stop it. Starting the
+  demo now hides the panel.
+
+The failing check is CodeQL. Its one alert, "insecure randomness", is in the
+vendored three.js: `generateUUID()` uses `Math.random()` to name objects.
+This run never uses those IDs, and they are not secrets, so the alert is a
+false positive in third-party code. I left three.js byte-identical to the npm
+package. Avoiding the alert would mean minifying it myself, since CodeQL skips
+`*.min.js` and 0.187.0 no longer ships a minified build. That would also hide
+the library from scanning, so the choice is the maintainer's: dismissing the
+alert as a false positive is the clean fix.

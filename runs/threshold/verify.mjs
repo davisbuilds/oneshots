@@ -22,8 +22,8 @@ const server = await startServer({ port: 0, quiet: true });
 const browser = await launchBrowser({ headless: true, args: GL_ARGS });
 const errors = [], requests = [];
 
-async function open(query, { width = 1280, height = 720 } = {}) {
-  const page = await browser.newPage({ viewport: { width, height } });
+async function open(query, { width = 1280, height = 720, context = null } = {}) {
+  const page = context ? await context.newPage() : await browser.newPage({ viewport: { width, height } });
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error' && !/favicon|404/.test(m.text())) errors.push(m.text()); });
   page.on('request', (r) => { const u = r.url(); if (!u.startsWith(server.url) && !u.startsWith('data:') && !u.startsWith('blob:')) requests.push(u); });
@@ -252,7 +252,9 @@ try {
   }
   // ── 3. Discovery and persistence across a reload ────────────────────────
   if (want('persistence')) {
-    const page = await open('play&nolock&fresh&quality=2');
+    // one browser context, so later pages share this page's local storage
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const page = await open('play&nolock&fresh&quality=2', { context: ctx });
     // take the instrument from the pedestal with E, raise it with Q
     await page.evaluate(() => { const p = THR.app.descs.get('0,0').instrument.p; THR.place('0,0', [p[0], p[1] - 1.45, p[2] + 2.6], 0, -0.4); });
     await render(page, 4);
@@ -293,7 +295,34 @@ try {
     await render(page, 6);
     const lit = await page.evaluate(() => THR.app.views.get('0,0').lodestone.lit);
     assert.ok(lit, 'the regenerated Threshold shows its lodestone awake');
-    await page.close();
+    // measuring performance leaves the journey alone: ?bench keeps its own save in memory
+    const home = page.url();
+    const bench = await ctx.newPage();
+    bench.on('pageerror', (e) => errors.push(e.message));
+    await bench.goto(server.url + 'index.html?bench=fast&quality=1');
+    await bench.waitForFunction(() => window.THR && window.THR.ready, null, { timeout: 120000 });
+    const benchSave = await bench.evaluate(() => {
+      const s = THR.app.save, fresh = !Object.keys(s.data.visited).length && !s.data.instrument;
+      s.setPos('9,9', [0, 0, 0], [0, 0, 0, 1]); s.light('9,9'); s.flush();
+      return { fresh, persisted: !!s.storage };
+    });
+    await bench.close();
+    assert.ok(benchSave.fresh && !benchSave.persisted, 'the benchmark starts from an empty save that is never written');
+    // another universe has its own journey: the same addresses are other worlds there
+    await page.goto(home + '&universe=2');
+    await page.waitForFunction(() => window.THR && window.THR.ready, null, { timeout: 120000 });
+    const u2 = await page.evaluate(() => { THR.app.manual = true; const s = THR.app.save.data; return { w: THR.app.player.world, f: THR.app.player.feet, visited: Object.keys(s.visited), lit: Object.keys(s.lit), inst: s.instrument }; });
+    log(`persistence: universe 2 starts at ${u2.w} ${u2.f.map((v) => v.toFixed(1))}; visited ${u2.visited.join(' ') || 'nothing'}; lit ${u2.lit.length}`);
+    assert.ok(u2.w === '0,0' && !u2.visited.includes('1,0') && !u2.lit.length && !u2.inst, 'another universe does not inherit this journey');
+    // forgetting everything there stays in that universe and leaves this one alone
+    await Promise.all([page.waitForURL(/fresh/), page.evaluate(() => THR.app.action('reset'))]);
+    assert.match(page.url(), /universe=2/, 'reset keeps the universe');
+    await page.goto(home);
+    await page.waitForFunction(() => window.THR && window.THR.ready, null, { timeout: 120000 });
+    const back = await page.evaluate(() => { THR.app.manual = true; const s = THR.app.save.data; return { pos: s.pos, lit: Object.keys(s.lit), inst: s.instrument, visited: Object.keys(s.visited) }; });
+    assert.equal(back.pos.world, pos.w, 'the benchmark did not move the saved position');
+    assert.ok(back.inst && back.lit.includes('0,0') && !back.lit.includes('9,9') && back.visited.includes('1,0'), 'this journey survives the other universe and the benchmark');
+    await ctx.close();
   }
 
   // ── 4. Streaming stays bounded while travelling through many worlds ──────
@@ -369,6 +398,18 @@ try {
     assert.ok(r.done && r.t >= 45 && r.t <= 62, 'a 45 to 60 second journey');
     assert.ok(r.crossings >= 5 && r.worlds.length >= 5);
     await page.close();
+    // "Watch the journey" from the pause screen: the film is not hidden behind
+    // the pause panel, and a click on the picture hands control back
+    const p2 = await open('play&nosave&nolock&quality=1');
+    await p2.evaluate(() => THR.app.hud.showPause(true)); // what releasing the pointer lock does
+    await p2.click('.pause [data-act="demo"]');
+    const during = await p2.evaluate(() => ({ demo: THR.app.demo.active, paused: document.querySelector('.pause').classList.contains('on') }));
+    await p2.mouse.click(640, 360);
+    const after = await p2.evaluate(() => ({ demo: THR.app.demo.active, paused: document.querySelector('.pause').classList.contains('on') }));
+    log(`demo from pause: playing ${during.demo}, pause panel ${during.paused ? 'shown' : 'hidden'}; after a click playing ${after.demo}`);
+    assert.ok(during.demo && !during.paused, 'the cinematic is not covered by the pause panel');
+    assert.ok(!after.demo && !after.paused, 'a click on the picture ends the cinematic');
+    await p2.close();
   }
 } finally {
   await writeFile(OUT + 'report.txt', report.join('\n') + '\n');

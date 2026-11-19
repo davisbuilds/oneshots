@@ -252,3 +252,10 @@ session paused when the usage limit ran out and was resumed at 19:16 UTC with
 > Make it technically real, visually unforgettable, and genuinely fun to explore.
 >
 > Build the impossible.
+
+<!-- after delivery -->
+
+**2026-11-19 about 19:55 UTC**, after delivery, once Codex had reviewed the PR;
+it led to fixes from the review, not new work:
+
+> codex came back with some findings, also it looks like one CI stage is failing

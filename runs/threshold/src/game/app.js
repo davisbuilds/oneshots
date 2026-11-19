@@ -9,7 +9,7 @@ import { Traveller } from '../core/physics.js';
 import { describe } from '../core/worlds/index.js';
 import { DescCache, ViewCache } from './worlds.js';
 import { Input } from './input.js';
-import { Save } from './save.js';
+import { Save, saveKey } from './save.js';
 import { Hud } from '../ui/hud.js';
 import { Instrument } from './instrument.js';
 import { Demo } from './demo.js';
@@ -54,7 +54,10 @@ export class App {
     this.space = new Space((k) => this.descs.get(k), { capacity: 32 });
     this.views = new ViewCache(this.ctx, this.descs, Number(params.get('views') || 10));
     this.views.onBuild = (v) => this.applyPersistent(v);
-    this.save = new Save(params.has('nosave') ? null : window.localStorage);
+    // ?bench teleports through fixed scenes: it keeps an empty save in memory so
+    // measuring never changes the journey stored in this browser
+    const persist = !params.has('nosave') && !params.has('bench');
+    this.save = new Save(persist ? window.localStorage : null, saveKey(this.universe));
     if (params.has('fresh')) this.save.reset();
     this.input = new Input(canvas);
     this.input.assumeLocked = params.has('nolock');
@@ -136,10 +139,11 @@ export class App {
     else if (a === 'demo') { this.start(true); }
     else if (a === 'journal') { this.toggleJournal(true); }
     else if (a === 'resume') { this.hud.showPause(false); this.input.lock(); }
-    else if (a === 'reset') { this.save.reset(); location.search = '?fresh'; }
+    else if (a === 'reset') { this.save.reset(); location.search = '?fresh' + (this.universe !== UNIVERSE ? '&universe=' + this.universe : ''); }
   }
   start(demo) {
     this.hud.fadeTitle();
+    this.hud.showPause(false); // "Watch the journey" is also on the pause screen
     this.state = 'play';
     this.sound.start();
     if (demo) this.demo.start(); else if (!this.input.assumeLocked) this.input.lock();

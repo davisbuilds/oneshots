@@ -2,7 +2,12 @@
 // generation: worlds are regenerated from their seeds and this overlay is
 // applied on top (lodestones woken, the instrument taken, worlds visited,
 // journal entries, photographs, the last position).
+import { UNIVERSE } from '../core/multiverse.js';
+
 export const SAVE_KEY = 'threshold.save.v1';
+// Each universe seed is a different multiverse (the same address is another
+// world in each), so each keeps its own journey. The default keeps the plain key.
+export const saveKey = (universe = UNIVERSE) => ((universe >>> 0) === UNIVERSE ? SAVE_KEY : `${SAVE_KEY}:${universe >>> 0}`);
 
 export function emptySave() {
   return { v: 1, visited: {}, lit: {}, seen: {}, instrument: false, journal: [], photos: {}, pos: null, hints: {}, created: Date.now() };
