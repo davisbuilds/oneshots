@@ -71,7 +71,6 @@ export function partGeometry(part) {
     case 'lathe': g = new THREE.LatheGeometry(part.points.map((p) => new THREE.Vector2(p[0], p[1])), part.seg || 24); break;
     default: throw new Error('unknown part kind ' + part.kind);
   }
-  if (g.index === null) g = g.toNonIndexed();
   if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
   if (part.color) tint(g, part.color);
   g.applyMatrix4(matFromXf(part.xf, _m));

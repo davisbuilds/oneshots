@@ -86,6 +86,18 @@ export function pathDistance(path, x, z) {
   return m;
 }
 
+// Place doorways for every lattice link around a centre, arrival (W) near it,
+// others further out along their bearings. yAt gives the floor height.
+export function ringDoors(d, ctx, R, yAt, { near = 30, far = [90, 160], jitter = 0.3, center = [0, 0, 0], siteR = 8, blend = 14, lift = 0.4 } = {}) {
+  for (const link of ctx.links) {
+    const b = (BEARING[link.slot] ?? R.range(-Math.PI, Math.PI)) + R.range(-jitter, jitter);
+    const dist = link.slot === 'W' ? near : R.range(far[0], far[1]);
+    const v = bearingVec(b);
+    const x = center[0] + v[0] * dist, z = center[2] + v[2] * dist;
+    addDoor(d, link, [x, yAt(x, z) + lift, z], [center[0], yAt(x, z) + lift, center[2]], { siteR, blend });
+  }
+}
+
 // Finish a descriptor: terrain, colliders, and the portal plinths.
 export function finish(desc, baseHeight) {
   if (baseHeight) {

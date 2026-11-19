@@ -9,7 +9,8 @@ import * as THREE from '../../vendor/three/three.module.js';
 const ROOT = 1024, MIN = 64, SPLIT = 1.35, N = 32, ROOTS = 1, CAPACITY = 160;
 
 export class Terrain {
-  constructor(heightAt, material, { castShadow = false } = {}) {
+  constructor(heightAt, material, { castShadow = false, flip = false } = {}) {
+    this.flip = flip;
     this.h = heightAt;
     this.material = material;
     this.group = new THREE.Group();
@@ -64,7 +65,7 @@ export class Terrain {
     // skirts: one ring of vertices dropped below each edge
     const edge = (list) => {
       const base = k;
-      for (const [i, j] of list) put(x0 + i * step, hv(i, j) - skirt, z0 + j * step, i, j);
+      for (const [i, j] of list) put(x0 + i * step, hv(i, j) + (this.flip ? skirt : -skirt), z0 + j * step, i, j);
       for (let t = 0; t + 1 < list.length; t++) {
         const [i0, j0] = list[t], [i1, j1] = list[t + 1];
         const a = j0 * V + i0, b = j1 * V + i1, c = base + t, d = base + t + 1;
@@ -73,6 +74,10 @@ export class Terrain {
     };
     const row = (fn) => Array.from({ length: V }, (_, t) => fn(t));
     edge(row((t) => [t, 0])); edge(row((t) => [t, N])); edge(row((t) => [0, t])); edge(row((t) => [N, t]));
+    if (this.flip) {
+      for (let t = 0; t < idx.length; t += 3) { const b = idx[t + 1]; idx[t + 1] = idx[t + 2]; idx[t + 2] = b; }
+      for (let t = 0; t < k * 3; t++) nor[t] = -nor[t];
+    }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0, k * 3), 3));
     g.setAttribute('normal', new THREE.BufferAttribute(nor.subarray(0, k * 3), 3));

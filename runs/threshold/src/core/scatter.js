@@ -5,7 +5,8 @@
 // (colliders near the traveller) and rendering (instances per chunk), so what
 // you see is what you bump into, and both are reproducible from the seed.
 import { hash32, unit } from './rng.js';
-import { capsuleCollider } from './physics.js';
+import { capsuleCollider, boxCollider } from './physics.js';
+import { xyaw } from './math.js';
 
 export const CHUNK = 64;
 
@@ -23,7 +24,7 @@ export function scatterChunk(desc, spec, cx, cz) {
     if (spec.mask) p *= spec.mask(x, z);
     if (r0 >= p) continue;
     if (spec.clear && desc.clearance && desc.clearance(x, z) < spec.clear) continue;
-    const y = desc.heightAt ? desc.heightAt(x, z) : 0;
+    const y = spec.ceiling ? desc.ceilingAt(x, z) : desc.heightAt ? desc.heightAt(x, z) : 0;
     const s = spec.scale[0] + (spec.scale[1] - spec.scale[0]) * r3 * r3;
     out.push({ x, y, z, yaw: r4 * Math.PI * 2, s, v: hash32(h, 5) % (spec.variants || 1), h: unit(hash32(h, 6)) });
   }
@@ -46,10 +47,18 @@ export class ScatterCache {
   colliders(c, r, out) {
     for (const spec of this.desc.scatter) {
       if (!spec.collide) continue;
-      const x0 = Math.floor((c[0] - r - 8) / CHUNK), x1 = Math.floor((c[0] + r + 8) / CHUNK);
-      const z0 = Math.floor((c[2] - r - 8) / CHUNK), z1 = Math.floor((c[2] + r + 8) / CHUNK);
+      const m = spec.reach || 8;
+      const x0 = Math.floor((c[0] - r - m) / CHUNK), x1 = Math.floor((c[0] + r + m) / CHUNK);
+      const z0 = Math.floor((c[2] - r - m) / CHUNK), z1 = Math.floor((c[2] + r + m) / CHUNK);
       for (let cx = x0; cx <= x1; cx++) for (let cz = z0; cz <= z1; cz++) {
         for (const o of this.get(spec, cx, cz)) {
+          if (spec.collide.box) {
+            const b = spec.collide.box[o.v % spec.collide.box.length];
+            const he = [b[0] * o.s, b[1] * o.s, b[2] * o.s];
+            if (Math.abs(o.x - c[0]) > r + Math.hypot(he[0], he[2]) + 1 || Math.abs(o.z - c[2]) > r + Math.hypot(he[0], he[2]) + 1) continue;
+            out.push(boxCollider(xyaw([o.x, o.y + he[1] + (b[3] || 0) * o.s, o.z], o.yaw), he));
+            continue;
+          }
           const rr = spec.collide.r * o.s;
           if (Math.abs(o.x - c[0]) > r + rr + 1 || Math.abs(o.z - c[2]) > r + rr + 1) continue;
           const h = spec.collide.h * o.s, y0 = o.y + (spec.collide.y0 || 0) * o.s;

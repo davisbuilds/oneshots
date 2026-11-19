@@ -225,4 +225,47 @@ export function shafts(view, f) {
   }
 }
 
-export const FEATURES = { ocean, particles, ring, stacks, mesas, floaters, pool, elder, shafts };
+// A floating island: a grassy disc on a rock mass tapering to a ragged point.
+export function island(view, f) {
+  const R = rng(f.seed);
+  const pts = [new THREE.Vector2(0.01, -f.depth)];
+  for (let i = 1; i <= 12; i++) { const t = i / 12; pts.push(new THREE.Vector2(f.r * Math.pow(t, 0.62) * (0.9 + 0.2 * R.next()), -f.depth * (1 - t) - 0.6)); }
+  pts.push(new THREE.Vector2(f.r * 1.01, -0.3));
+  const rock = new THREE.LatheGeometry(pts, 18);
+  const p = rock.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 1 + 0.18 * Math.sin(Math.atan2(z, x) * 5 + f.seed % 7) + 0.1 * Math.sin(y * 0.3 + x * 0.1);
+    p.setXYZ(i, x * k, y, z * k);
+  }
+  rock.computeVertexNormals();
+  rock.translate(...f.p);
+  addMesh(view, rock, view.materialFor(f.mat));
+  const top = new THREE.CylinderGeometry(f.r * 1.02, f.r * 0.98, 0.6, 18, 1);
+  top.translate(f.p[0], f.p[1] - 0.3, f.p[2]);
+  addMesh(view, top, view.materialFor(f.top));
+}
+
+// A sea of cloud far below: soft noise on a plane, lit from the sun.
+export function cloudsea(view, f) {
+  const geo = view.track(new THREE.CircleGeometry(9000, 48).rotateX(-Math.PI / 2));
+  const mat = view.track(new THREE.ShaderMaterial({
+    uniforms: { ...view.uniforms, tNoise: { value: noiseTexture() }, uCloud: { value: new THREE.Color(...f.color) } },
+    clipping: true,
+    vertexShader: `${CLIP_V}\nvarying vec3 vWorldP;\nvoid main() { vec4 w = modelMatrix * vec4(position, 1.0); vWorldP = w.xyz; vec4 mvPosition = viewMatrix * w; gl_Position = projectionMatrix * mvPosition;\n#include <clipping_planes_vertex>\n}`,
+    fragmentShader: `${CLIP_F}\n${FOG_PARS}\nuniform sampler2D tNoise; uniform vec3 uCloud; varying vec3 vWorldP;
+      void main() {
+        #include <clipping_planes_fragment>
+        vec2 q = vWorldP.xz * 0.004 + vec2(uTime * 0.002, uTime * 0.001);
+        float n = texture2D(tNoise, q).r * 0.55 + texture2D(tNoise, q * 3.1).g * 0.3 + texture2D(tNoise, q * 9.0).r * 0.15;
+        float lit = 0.75 + 0.5 * (n - 0.5) + 0.25 * max(uSunDir.y, 0.0);
+        vec3 col = uCloud * lit + uSunColor * 0.08 * smoothstep(0.5, 0.8, n);
+        gl_FragColor = vec4(applyFog(col, vWorldP), 1.0);
+      }`,
+  }));
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  mesh.onBeforeRender = (r, s, cam) => { mesh.position.set(Math.round(cam.position.x / 100) * 100, f.y, Math.round(cam.position.z / 100) * 100); mesh.updateMatrixWorld(); };
+  view.scene.add(mesh);
+}
+
+export const FEATURES = { ocean, particles, ring, stacks, mesas, floaters, pool, elder, shafts, island, cloudsea };

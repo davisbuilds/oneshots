@@ -154,6 +154,75 @@ export function reedGeo(v) {
   return mergeSimple(list);
 }
 
+export function treeGeo(v) {
+  const R = rng(5101 + v), trunk = [], crown = [];
+  const h = R.range(3.2, 5.5);
+  const t = new THREE.CylinderGeometry(0.16, 0.32, h, 7); t.translate(0, h / 2, 0); trunk.push(t);
+  for (let k = 0; k < 4 + R.int(3); k++) {
+    const r = R.range(1.2, 2.2), g = rockGeo(k + v * 7, 1).scale(r, r * 0.8, r);
+    g.translate(R.range(-1.2, 1.2), h + R.range(-0.6, 1.4), R.range(-1.2, 1.2)); crown.push(g);
+  }
+  return { trunk: mergeSimple(trunk), caps: mergeSimple(crown) };
+}
+export function cypressGeo(v) {
+  const R = rng(6101 + v), h = R.range(7, 12);
+  const t = new THREE.CylinderGeometry(0.12, 0.25, 2.4, 6); t.translate(0, 1.2, 0);
+  const pts = []; for (let i = 0; i <= 10; i++) { const s = i / 10; pts.push(new THREE.Vector2(Math.max(0.02, Math.sin(Math.PI * Math.pow(s, 0.7)) * R.range(0.9, 1.15) * (1 - s * 0.3)), 1.2 + s * h)); }
+  const c = new THREE.LatheGeometry(pts, 9);
+  const p = c.attributes.position;
+  for (let i = 0; i < p.count; i++) { const k = 0.85 + 0.3 * vnoise3(p.getX(i) * 2, p.getY(i) * 1.5, p.getZ(i) * 2, v); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); }
+  return { trunk: mergeSimple([t]), caps: mergeSimple([c]) };
+}
+export function grassGeo(v) {
+  const R = rng(7101 + v), list = [];
+  for (let k = 0; k < 7 + R.int(6); k++) {
+    const h = R.range(0.25, 0.7), a = R.range(0, Math.PI * 2), lean = R.range(-0.2, 0.2);
+    const b = new THREE.PlaneGeometry(0.06, h, 1, 2);
+    const p = b.attributes.position;
+    for (let i = 0; i < p.count; i++) { const t = (p.getY(i) + h / 2) / h; p.setX(i, p.getX(i) * (1 - t * 0.9) + lean * t * t); }
+    b.translate(0, h / 2, 0); b.rotateY(a); b.translate(R.range(-0.3, 0.3), 0, R.range(-0.3, 0.3));
+    list.push(b);
+  }
+  return mergeSimple(list);
+}
+export function stalagmiteGeo(v, down = false) {
+  const R = rng(8101 + v + (down ? 50 : 0)), list = [];
+  for (let k = 0; k < 1 + R.int(3); k++) {
+    const h = R.range(2.5, 7), r = R.range(0.5, 1.3);
+    const pts = []; for (let i = 0; i <= 8; i++) { const t = i / 8; pts.push(new THREE.Vector2(Math.max(0.03, r * Math.pow(1 - t, 1.6)), t * h - 0.4)); }
+    const g = new THREE.LatheGeometry(pts, 8);
+    const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) { const n = 0.8 + 0.4 * vnoise3(p.getX(i) * 1.5, p.getY(i) * 0.6, p.getZ(i) * 1.5, v + k); p.setX(i, p.getX(i) * n); p.setZ(i, p.getZ(i) * n); }
+    g.translate(R.range(-0.8, 0.8), 0, R.range(-0.8, 0.8));
+    if (down) g.scale(1, -1, 1);
+    list.push(g);
+  }
+  return mergeSimple(list);
+}
+function boxAt(w, h, d, y0) { const g = new THREE.BoxGeometry(w, h, d); g.translate(0, y0 + h / 2, 0); return g; }
+export function pillarGeo(v) {
+  const [x, y, z] = [[6, 30, 6], [14, 14, 3], [4, 55, 10], [10, 22, 10]][v % 4];
+  const list = [boxAt(x, y, z, 0)];
+  if (v % 4 === 3) list.push(boxAt(x * 0.6, y * 0.5, z * 0.6, y));
+  if (v % 4 === 0) list.push(boxAt(x * 1.6, 1.2, z * 1.6, y));
+  return mergeSimple(list);
+}
+export function beamGeo(v) {
+  const [x, y, z, lift] = [[30, 1.5, 3, 14], [3, 1.5, 30, 22]][v % 2];
+  const list = [boxAt(x * 2, y * 2, z * 2, lift)];
+  // supports at the ends
+  const L = v % 2 ? z : x;
+  for (const s of [-1, 1]) { const g = boxAt(2, lift, 2, 0); g.translate(v % 2 ? 0 : s * (L - 1), 0, v % 2 ? s * (L - 1) : 0); list.push(g); }
+  return mergeSimple(list);
+}
+export function solidGeo(v) {
+  const k = v % 4;
+  if (k === 0) return mergeSimple([boxAt(5, 5, 5, 0)]);
+  if (k === 1) { const g = new THREE.SphereGeometry(2.2, 32, 16); g.translate(0, 2.2, 0); return finalize(g); }
+  if (k === 2) return mergeSimple([boxAt(6, 1.2, 6, 0)]);
+  return mergeSimple([boxAt(2, 8, 2, 0)]);
+}
+
 const BUILD = {
   rock: (v) => [{ geo: rockGeo(v), mat: 'mat' }],
   spire: (v) => [{ geo: spireGeo(v), mat: 'mat' }],
@@ -161,8 +230,17 @@ const BUILD = {
   lumentree: (v) => { const t = lumenTreeGeo(v); return [{ geo: t.trunk, mat: 'mat', shadow: true }, { geo: t.caps, mat: v % 2 ? 'capMatB' : 'capMat', double: true }]; },
   fungus: (v) => [{ geo: fungusGeo(v), mat: 'mat' }],
   reed: (v) => [{ geo: reedGeo(v), mat: 'mat', double: true }],
+  tree: (v) => { const t = treeGeo(v); return [{ geo: t.trunk, mat: 'mat', shadow: true }, { geo: t.caps, mat: 'capMat', shadow: true }]; },
+  cypress: (v) => { const t = cypressGeo(v); return [{ geo: t.trunk, mat: 'mat', shadow: true }, { geo: t.caps, mat: 'capMat', shadow: true }]; },
+  grass: (v) => [{ geo: grassGeo(v), mat: 'mat', double: true }],
+  stalagmite: (v) => [{ geo: stalagmiteGeo(v), mat: 'mat' }],
+  stalactite: (v) => [{ geo: stalagmiteGeo(v, true), mat: 'mat' }],
+  crystal: (v) => [{ geo: shardGeo(v + 10).scale(1.6, 1.8, 1.6), mat: v % 2 ? 'capMatB' : 'mat' }],
+  pillar: (v) => [{ geo: pillarGeo(v), mat: 'mat', shadow: true }],
+  beam: (v) => [{ geo: beamGeo(v), mat: 'mat', shadow: true }],
+  solid: (v) => [{ geo: solidGeo(v), mat: v % 2 ? 'capMat' : 'mat', shadow: true }],
 };
-const RADIUS = { rock: 300, spire: 900, shard: 320, lumentree: 240, fungus: 55, reed: 45 };
+const RADIUS = { rock: 300, spire: 900, shard: 320, lumentree: 240, fungus: 55, reed: 45, tree: 260, cypress: 420, grass: 38, stalagmite: 220, stalactite: 220, crystal: 240, pillar: 1100, beam: 1100, solid: 520 };
 
 // Instanced rendering of one world's scatter specs around a focus point.
 export class ScatterRender {

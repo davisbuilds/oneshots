@@ -99,6 +99,12 @@ export class WorldView {
       s.add(this.terrain.group);
       this.terrain.update(this.focus, 1e9);
     }
+    if (d.ceilingAt && d.features.some((f) => f.type === 'ceiling')) {
+      const cf = d.features.find((f) => f.type === 'ceiling');
+      this.ceiling = new Terrain(d.ceilingAt, this.materialFor(cf.mat), { flip: true });
+      s.add(this.ceiling.group);
+      this.ceiling.update(this.focus, 1e9);
+    }
     if (d.scatter.length && d.scatterCache) {
       this.scatter = new ScatterRender(this, d.scatterCache);
       s.add(this.scatter.group);
@@ -149,15 +155,17 @@ export class WorldView {
     this.uniforms.uTime.value = time;
     for (const f of this.updaters) f(dt, time);
     if (this.terrain) this.terrain.update(this.focus, budgetMs);
+    if (this.ceiling) this.ceiling.update(this.focus, budgetMs / 2);
     if (this.scatter) this.scatter.update(this.focus);
   }
 
   counts() {
-    return { tiles: this.terrain ? this.terrain.cache.size : 0, scatter: this.scatter ? this.scatter.count : 0, triangles: this.stats.triangles };
+    return { tiles: (this.terrain ? this.terrain.cache.size : 0) + (this.ceiling ? this.ceiling.cache.size : 0), scatter: this.scatter ? this.scatter.count : 0, triangles: this.stats.triangles };
   }
 
   dispose() {
     this.terrain?.dispose();
+    this.ceiling?.dispose();
     this.scatter?.dispose();
     for (const x of this.disposables) x.dispose?.();
     this.scene.traverse((o) => { if (o.isLight && o.shadow && o.shadow.map) o.shadow.map.dispose(); });
