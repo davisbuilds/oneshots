@@ -178,3 +178,84 @@ desert around it (the dawn platform behind: snapshot 08), walks back, and
 asserts exactly two crossings. My first versions of the test were wrong twice:
 a stop condition that a 7.7 cm-per-frame walk jumps over, and "reset" mouse
 moves that themselves rotated the camera.
+
+## 13:50 The rest of the test categories, in Node
+
+`tests/multiverse.test.js` and `tests/recursion.test.js`. Generation is
+fingerprinted (every generated field, numbers rounded to 1e-6) and compared
+across repeated runs for three universe seeds and 46 worlds each, including the
+height fields and scatter chunks; different universe seeds change 60 of 60
+sampled worlds. 1,379 links across 406 worlds resolve back to their source
+with the same opening and frame, and each round trip is the identity. A
+breadth-first walk from the origin reaches more than 20 lattice rows with
+degree at most 12. A save written, then "unloaded" (fresh caches, fresh save
+object from the same storage), restores the woken lodestone, the landmarks
+and the position, and the regenerated world's fingerprint is unchanged.
+
+The recursion test runs the *real* `PortalRenderer` against a stub WebGL
+renderer that only counts calls, in the room that contains itself (two
+cycles), along the stoa, up the skylight, and from 120 random poses in many
+worlds: depth and render budgets always hold, and cycles end in a terminal
+fill. To make this possible every module now imports the vendored three.js by
+relative path, so Node loads the renderer code with no install.
+
+The determinism test caught a real bug: a careless edit had deleted the body
+of the night-desert branch, so some procedural deserts had no atmosphere.
+
+## 14:00 Walking the impossible spaces
+
+Browser checks (`verify.mjs impossible`, snapshot 09): 25 s north along the
+44 m stoa never leaves it (two crossings); the eight-metre cell's door opens
+into a hall in which the walker runs 99 m; the room's east door lets you in by
+its west door; and walking through its north window drops you in through its
+own ceiling, rights you in about half a second and lands you upright.
+
+Two physics bugs surfaced. Walking into the cell door's 0.4 m threshold slab
+stopped dead: the step-up probe only moved the per-frame distance (4 mm after
+the wall contact had zeroed the velocity), never clearing the edge, and then
+dropped the full step height so the capsule sank beside the edge and was
+pushed back. Fixed by probing with the intended walk, descending in small
+increments, and counting an edge under the bottom of the capsule as ground.
+And realigning to gravity rotated the velocity with the body, which turned a
+fall into a forward slide; velocity no longer turns with the body.
+
+A black blob with a bright halo in the mirror room was NaN: the procedural bump
+normal divides by a surface-gradient determinant that vanishes at grazing
+angles. Guarded there, and post-processing now zeroes non-finite pixels before
+bloom so a single bad pixel can never spread.
+
+## 14:05 Five more archetypes
+
+Replaced the placeholders with real generators (snapshot 10): floating
+islands joined by stone bridges over a sea of cloud; temple ruins on hills in
+long light, with peristyles of fluted columns, fallen drums and cypresses; a
+cavern kilometres wide with a streamed ceiling (the quadtree terrain, flipped),
+stalactites, stalagmites, glowing crystals and black lakes; an endless
+brutalist grid of towers and raised beams around one monolith; and a pale
+geometric void with floating solids and a mirror sphere. First renders were
+over-fogged; retuned.
+
+## 14:10 The cinematic demo, sound
+
+`src/game/demo.js`: six shots, about 55 s, each driving the real controller
+(walk, turn, look) through real portals; the cuts between shots are fades.
+Stills along it are snapshot 11. It must not write to the journal, and must not
+show the "move the mouse" hint (both fixed).
+
+`src/game/sound.js`: procedural WebAudio ambience from each world's
+descriptor (surf, wind, sand hiss, drones tuned per world, chimes in forests,
+drips in caves). Doorways leak their world's sound, so a place is heard before
+it is entered. The context waits for a real gesture.
+
+## 14:15 Discovery and persistence in the browser
+
+`verify.mjs persistence|streaming|budget|demo` (snapshot 12): take the
+instrument with E, wake the lodestone behind the great door, cross into the
+desert, open the journal (worlds with photographs, the woken lodestone starred),
+reload the page: position, lodestone, instrument and visits are restored, and
+the regenerated Threshold shows its lodestone lit. Teleporting through 30
+worlds built 75 and disposed 65 world views, never holding more than the
+cache's 10. Live depth and render budgets hold from (1, 2) to (5, 24). Four
+extreme views (grazing the great door's plane, straight up the skylight,
+straight down at a threshold from both sides) have no black or NaN pixels.
+The demo finishes in 53.4 s with six real crossings through five worlds.

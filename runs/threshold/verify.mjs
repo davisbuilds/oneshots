@@ -32,7 +32,7 @@ async function open(query, { width = 1280, height = 720 } = {}) {
   await page.evaluate(() => { THR.app.manual = true; THR.app.post.params.grain = 0; });
   return page;
 }
-const shot = (page, name) => page.screenshot({ path: OUT + name + '.png' });
+const shot = (page, name) => page.screenshot({ path: OUT + name + '.png', timeout: 240000 });
 const state = (page) => page.evaluate(() => { const p = THR.app.player; return { world: p.world, feet: [...p.feet], eye: p.eye, look: [...p.look], up: [...p.up], vel: [...p.vel], crossings: THR.app.crossings || 0, grounded: p.grounded }; });
 const render = (page, n = 1) => page.evaluate((n) => { for (let i = 0; i < n; i++) THR.frame(1 / 60); return THR.stats(); }, n);
 // Step the simulation (no rendering) until `pred` holds or `seconds` pass.
@@ -226,6 +226,126 @@ try {
     assert.ok(s2.grounded && s2.up[1] > 0.99 && s2.feet[1] < 0.6, 'landed upright on the floor');
     await render(page, 3);
     await shot(page, 'b06-landed');
+    await page.close();
+  }
+  // ── 3. Discovery and persistence across a reload ────────────────────────
+  if (want('persistence')) {
+    const page = await open('play&nolock&fresh&quality=2');
+    // take the instrument from the pedestal with E, raise it with Q
+    await page.evaluate(() => THR.place('0,0', [2.6, 60, 24.2], 0, -0.5));
+    await render(page, 4);
+    await page.keyboard.press('KeyE'); await render(page, 1);
+    const took = await page.evaluate(() => THR.app.save.data.instrument);
+    assert.ok(took, 'took the instrument with E');
+    await page.evaluate(() => THR.place('0,0', [0.5, 60, 4], 0, 0.02));
+    await page.keyboard.press('KeyQ'); await simUntil(page, 'false', 0.8); await render(page, 2);
+    await shot(page, 'c01-instrument');
+    // wake the Threshold's lodestone, behind the great door
+    await page.evaluate(() => THR.place('0,0', [0, 60, -37.6], 0, 0.1));
+    await render(page, 2);
+    const prompt = await page.evaluate(() => document.querySelector('.prompt').textContent);
+    await page.keyboard.press('KeyE'); await simUntil(page, 'false', 1.5); await render(page, 2);
+    await shot(page, 'c02-lodestone-awake');
+    // walk into the desert so it is visited, then open the journal
+    await page.evaluate(() => THR.place('0,0', [0, 60, -30], 0, 0));
+    await page.keyboard.down('KeyW'); await simUntil(page, "THR.app.player.world === '1,0'", 5); await simUntil(page, 'false', 1.5); await page.keyboard.up('KeyW');
+    await simUntil(page, 'false', 3); await render(page, 2);
+    await page.keyboard.press('KeyJ'); await render(page, 1);
+    await shot(page, 'c03-journal');
+    const j = await page.evaluate(() => [...document.querySelectorAll('.j-n')].map((e) => e.textContent));
+    await page.keyboard.press('KeyJ');
+    const pos = await page.evaluate(() => { THR.app.save.setPos(THR.app.player.world, THR.app.player.feet, THR.app.player.look); THR.app.save.flush(); return { w: THR.app.player.world, f: THR.app.player.feet }; });
+    log(`persistence: prompt "${prompt}", journal lists ${JSON.stringify(j)}, saved at ${pos.w} ${pos.f.map((v) => v.toFixed(1))}`);
+    assert.match(prompt, /wake the lodestone/);
+    assert.ok(j.length >= 2 && j.some((n) => /Ashmere/.test(n)), 'the journal lists the worlds visited');
+    // reload the page: the world is regenerated from its seed, the overlay restores the changes
+    await page.goto(page.url().replace('&fresh', ''));
+    await page.waitForFunction(() => window.THR && window.THR.ready, null, { timeout: 120000 });
+    await page.evaluate(() => { THR.app.manual = true; THR.app.state = 'play'; });
+    await render(page, 4);
+    const after = await page.evaluate(() => ({ w: THR.app.player.world, f: THR.app.player.feet, lit: THR.app.save.isLit('0,0'), inst: THR.app.save.data.instrument, visited: Object.keys(THR.app.save.data.visited) }));
+    log(`persistence: after reload at ${after.w} ${after.f.map((v) => v.toFixed(1))}; lodestone lit ${after.lit}; instrument ${after.inst}; visited ${after.visited.join(' ')}`);
+    assert.equal(after.w, pos.w); assert.ok(Math.hypot(after.f[0] - pos.f[0], after.f[2] - pos.f[2]) < 0.5, 'position restored');
+    assert.ok(after.lit && after.inst && after.visited.includes('1,0'), 'discoveries restored');
+    await page.evaluate(() => THR.place('0,0', [0, 60, -36], Math.PI, 0.3));
+    await render(page, 6);
+    const lit = await page.evaluate(() => THR.app.views.get('0,0').lodestone.lit);
+    assert.ok(lit, 'the regenerated Threshold shows its lodestone awake');
+    await page.close();
+  }
+
+  // ── 4. Streaming stays bounded while travelling through many worlds ──────
+  if (want('streaming')) {
+    const page = await open('play&nosave&nolock&fresh&quality=1');
+    const keys = []; let i = 0, j = 0;
+    for (let k = 0; k < 30; k++) { keys.push(`${i},${j}`); i += k % 3 === 2 ? 0 : 1; j += k % 3 === 2 ? 1 : 0; }
+    const rows = [];
+    for (const k of keys) {
+      const r = await page.evaluate((k) => {
+        const d = THR.app.descs.get(k), s = d.spawn.feet;
+        THR.place(k, [s[0], s[1] + 0.5, s[2]], 0, 0);
+        for (let n = 0; n < 3; n++) THR.frame(1 / 30);
+        const st = THR.stats(), m = THR.app.renderer.info.memory;
+        let tiles = 0; for (const v of THR.app.views.map.values()) tiles += v.counts().tiles;
+        return { k, views: THR.app.views.map.size, geometries: m.geometries, textures: m.textures, tiles, built: st.built, disposed: st.disposed, ms: THR.app.views.lastBuildMs };
+      }, k);
+      rows.push(r);
+    }
+    const cap = await page.evaluate(() => THR.app.views.capacity);
+    const maxViews = Math.max(...rows.map((r) => r.views)), maxGeo = Math.max(...rows.map((r) => r.geometries));
+    const firstHalf = Math.max(...rows.slice(5, 15).map((r) => r.geometries)), secondHalf = Math.max(...rows.slice(15).map((r) => r.geometries));
+    log(`streaming: 30 worlds visited; built ${rows.at(-1).built}, disposed ${rows.at(-1).disposed}; loaded worlds max ${maxViews}/${cap}; geometries max ${maxGeo} (worlds 5-15: ${firstHalf}, 15-30: ${secondHalf}); textures max ${Math.max(...rows.map((r) => r.textures))}; terrain tiles max ${Math.max(...rows.map((r) => r.tiles))}`);
+    await writeFile(OUT + 'streaming.json', JSON.stringify(rows, null, 1));
+    assert.ok(maxViews <= cap, 'loaded worlds never exceed the cache capacity');
+    assert.ok(rows.at(-1).disposed >= 20, 'worlds left behind were disposed');
+    assert.ok(secondHalf < firstHalf * 1.6, 'GPU geometry count does not keep growing');
+    await page.close();
+  }
+
+  // ── 5. Recursion budgets and extreme views in the live renderer ──────────
+  if (want('budget')) {
+    const page = await open('play&nosave&nolock&fresh&quality=4');
+    for (const [depth, budget] of [[1, 2], [2, 4], [3, 8], [5, 24]]) {
+      const st = await page.evaluate(([depth, budget]) => {
+        THR.app.pr.settings.maxDepth = depth; THR.app.pr.settings.maxRenders = budget; THR.app.qPinned = true;
+        THR.place('3,0/mirror', [-2, 0, 0.3], -Math.PI / 2, 0.02);
+        THR.frame(1 / 60); THR.frame(1 / 60); THR.frame(1 / 60);
+        return THR.stats();
+      }, [depth, budget]);
+      log(`budget: depth ${depth}, budget ${budget}: rendered ${st.portalsRendered}, filled ${st.portalsFilled}, max level ${st.maxLevel}, world renders ${st.worldRenders}, draws ${st.calls}`);
+      assert.ok(st.maxLevel <= depth && st.portalsRendered <= budget && st.worldRenders === st.portalsRendered + 1);
+    }
+    await shot(page, 'd01-mirror-deep');
+    // extreme angles: grazing the plane of the great door; straight up the skylight; straight down at a doorway's threshold
+    const cases = [['0,0', [6.6, 60, -32.2], -Math.PI / 2 + 0.03, 0], ['3,0/mirror', [0.3, 0, 0.2], 0, 1.5], ['0,0', [0.2, 60, -31.95], 0, -1.45], ['0,0', [0.2, 60, -32.05], Math.PI, -1.45]];
+    let n = 0;
+    for (const [w, f, yaw, pitch] of cases) {
+      const r = await page.evaluate(([w, f, yaw, pitch]) => {
+        THR.place(w, f, yaw, pitch); THR.frame(1 / 60); THR.frame(1 / 60);
+        const gl = THR.app.renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight;
+        const px = new Uint8Array(W * H * 4); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, px);
+        let black = 0; for (let i = 0; i < px.length; i += 4) if (px[i] + px[i + 1] + px[i + 2] < 4) black++;
+        return { world: THR.app.player.world, black: black / (W * H), st: THR.stats() };
+      }, [w, f, yaw, pitch]);
+      await shot(page, `d0${2 + n++}-extreme`);
+      log(`extreme view ${n}: ${w} pitch ${pitch}: black pixels ${(r.black * 100).toFixed(2)}%, world renders ${r.st.worldRenders}, near-zone portals ${r.st.nearZone}`);
+      assert.ok(r.black < 0.02, 'no holes or NaN pixels');
+    }
+    await page.close();
+  }
+
+  // ── 6. The cinematic demo runs through every shot ─────────────────────────
+  if (want('demo')) {
+    const page = await open('nosave&quality=1');
+    const r = await page.evaluate(() => {
+      THR.app.start(true);
+      const worlds = new Set(); let t = 0;
+      while (THR.app.demo.active && t < 90) { THR.frame(1 / 30, { noRender: t % 1 > 0.05 }); worlds.add(THR.app.player.world); t += 1 / 30; }
+      return { t, worlds: [...worlds], crossings: THR.app.crossings || 0, done: THR.app.demo.done };
+    });
+    log(`demo: finished after ${r.t.toFixed(1)} s, ${r.crossings} real crossings, worlds ${r.worlds.join(' ')}`);
+    assert.ok(r.done && r.t >= 45 && r.t <= 62, 'a 45 to 60 second journey');
+    assert.ok(r.crossings >= 5 && r.worlds.length >= 5);
     await page.close();
   }
 } finally {

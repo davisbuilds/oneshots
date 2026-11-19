@@ -45,8 +45,10 @@ export function lodestone(view, L) {
         float rim = pow(abs(V.x * normalize(vL.x + 1e-4) * 0.0 + 1.0), 1.0);
         float h = vL.y / 600.0;
         float a = (1.0 - smoothstep(0.0, 1.0, h)) * (0.65 + 0.35 * sin(vL.y * 0.05 - uTime * 2.0));
+        float dc = length(cameraPosition - vWorldP);
+        a *= mix(0.05, 1.0, smoothstep(4.0, 60.0, dc)) * smoothstep(0.0, 6.0, vL.y + 300.0);
         vec3 rd; float fog = fogAmount(cameraPosition, vWorldP, rd);
-        gl_FragColor = vec4(uCol * a * uOn * 0.9 * (1.0 - fog * 0.6) * rim, 1.0);
+        gl_FragColor = vec4(uCol * a * uOn * 0.55 * (1.0 - fog * 0.6) * rim, 1.0);
       }`,
   }));
   const beamGeo = view.track(new THREE.CylinderGeometry(0.35, 0.9, 600, 16, 1, true).translate(0, 300 + top + 1.3, 0));

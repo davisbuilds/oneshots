@@ -91,7 +91,7 @@ void detailEval(vec3 p, vec3 n) {
   dH = b.r * 0.5 + c.g * 0.5; dBump = 0.5;
   float g = smoothstep(0.6, 0.78, a.g * 0.55 + b.b * 0.45) * smoothstep(0.3, 0.7, n.y);
   float spots = smoothstep(0.9, 0.97, c.a) * smoothstep(0.4, 0.7, b.g);
-  dEmit = uDetailGlow * (g * 0.06 + spots * 0.45) * (0.75 + 0.25 * sin(uTime * 0.6 + a.r * 20.0));
+  dEmit = uDetailGlow * (g * 0.022 + spots * 0.32) * (0.75 + 0.25 * sin(uTime * 0.6 + a.r * 20.0));
 #elif defined(DETAIL_BARK)
   vec4 s = texture2D(tNoise, vec2(atan(n.z, n.x) * 0.9 + p.x * 0.02, p.y * 0.05)) ;
   vec4 s2 = tri(p * vec3(1.0, 0.12, 1.0), w, 0.9);

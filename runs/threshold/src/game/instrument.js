@@ -36,7 +36,7 @@ export class Instrument {
     this.scene.add(new THREE.HemisphereLight(0xcfd8ff, 0x302418, 0.9));
     this.lastDraw = 0;
   }
-  acquire() { this.has = true; this.dirty = true; this.raised = true; }
+  acquire() { this.has = true; this.dirty = true; }
   toggle() { if (this.has) { this.raised = !this.raised; this.dirty = true; } }
 
   update(dt) {

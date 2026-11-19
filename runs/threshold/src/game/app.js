@@ -137,7 +137,7 @@ export class App {
     this.sound.start();
     if (demo) this.demo.start(); else if (!this.input.assumeLocked) this.input.lock();
     this.hud.showDot(true);
-    if (!this.save.data.hints.look) setTimeout(() => this.hint('look', 'Move the mouse to look around'), 2600);
+    if (!demo && !this.save.data.hints.look) setTimeout(() => { if (!this.demo.active) this.hint('look', 'Move the mouse to look around'); }, 2600);
   }
   onLock() {
     const locked = this.input.locked;
@@ -149,7 +149,7 @@ export class App {
     if (v) this.input.unlock(); else if (this.state === 'play') this.input.lock();
     this.hud.showPause(false);
   }
-  hint(id, text) { if (this.save.data.hints[id]) return; this.hud.hint(id, text); }
+  hint(id, text) { if (this.save.data.hints[id] || this.demo?.active) return; this.hud.hint(id, text); }
   doneHint(id) { if (!this.save.data.hints[id]) { this.save.data.hints[id] = true; this.save.touch(); } this.hud.clearHint(id); }
 
   onCross(c) {
@@ -167,6 +167,8 @@ export class App {
 
   onEnterWorld(key) {
     const d = this.descs.get(key);
+    // the demo is a film, not a journey: it does not write to the journal
+    if (this.demo.active) { this.lastWorld = key; this.post.target = d.post; return; }
     const first = this.save.visit(key, { name: d.name, epithet: d.epithet, archetype: d.archetype, coord: d.coord, links: d.portals.map((P) => P.link.world) });
     if (first || this.params.has('cards')) {
       const coord = d.pocket ? '' : `${d.coord[0] >= 0 ? '' : '−'}${Math.abs(d.coord[0])} · ${d.coord[1] >= 0 ? '' : '−'}${Math.abs(d.coord[1])}`;
