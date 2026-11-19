@@ -1,0 +1,30 @@
+schema = 1
+slug = "palimpsest"
+title = "Palimpsest"
+summary = "Excavate a miniature river settlement, brush eight objects from its surviving record, and test a historical interpretation against the centuries that produced it."
+date = 2026-11-19
+kind = "long-horizon"
+medium = ["web", "webgl", "game", "archaeology", "simulation", "procedural"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "GPT-6"
+model_id = "unrecorded"
+harness = "Codex"
+
+[run]
+brief = "brief.md"
+human_turns = 1
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+command = "node tools/bundle.mjs"
+verify = "node tools/bundle.mjs --check && node --test tests/history.test.cjs"
+timeout_minutes = 5
+
+[[assets]]
+file = "palimpsest.html"
+description = "Complete standalone offline game, including its 3D renderer"
