@@ -2,7 +2,7 @@
 // slopes and steep slip faces, broken up by large-scale swells; mesas on the
 // horizon; a colossal ring half sunk in the sand; moons. The curated world
 // (1,0) is the desert of three moons seen through the great doorway.
-import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, siteClearance, scaleRGB, mixRGB } from '../worldgen.js';
+import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, siteClearance, spreadBearing, scaleRGB, mixRGB } from '../worldgen.js';
 import { fbm2, noise2, rng } from '../rng.js';
 import { smoothstep, norm, qaxis } from '../math.js';
 import { makePortal } from '../portal.js';
@@ -50,9 +50,9 @@ export function dunes(ctx) {
   for (const link of ctx.links) {
     const b = BEARING[link.slot] ?? R.range(-Math.PI, Math.PI);
     const dist = link.slot === 'W' ? 34 : (curated ? (link.slot === 'E' ? 165 : 120) : R.range(90, 170));
-    const v = bearingVec(b + (curated ? 0 : R.range(-0.25, 0.25)));
+    const v = bearingVec(curated ? b : spreadBearing(d, b + R.range(-0.25, 0.25), dist));
     const x = v[0] * dist, z = v[2] * dist;
-    addDoor(d, link, [x, yAt(x, z) + 0.6, z], center, { siteR: 7, blend: 16 });
+    addDoor(d, link, [x, yAt(x, z) + 0.6, z], center, { siteR: curated && link.slot === 'W' ? 22 : 7, blend: curated && link.slot === 'W' ? 24 : 16 });
   }
 
   // ── The lodestone on a low rise near the arrival.
@@ -88,6 +88,14 @@ export function dunes(ctx) {
     d.parts.push(...frameParts(Wp, 'gate', { mat: 'relic', trim: 'glyph' }));
     d.parts.push({ kind: 'box', xf: xyaw([wx, wy + hw.sill / 2 - 0.45, wz], wyaw), he: [hw.hw + 0.6, hw.sill / 2 + 0.45, 0.5], mat: 'relic', solid: true });
     d.sites.push({ p: [wx, wy, wz], r: 6, y: wy, blend: 10 });
+    // a door on a low plinth among the dunes, rolled a quarter turn from the room behind it
+    const td = POCKET_DOORS.tilt, tx = 54, tz = -34, ty = yAt(tx, tz) + 0.5, tyaw = Math.atan2(-tx, -tz);
+    const Tp = makePortal({ world: d.key, slot: 'tilt', p: [tx, ty + td.hh, tz], q: qaxis([0, 1, 0], tyaw), hw: td.hw, hh: td.hh, link: { world: '1,0/tilt', slot: 'door' }, style: 'collar' });
+    d.portals.push(Tp);
+    d.parts.push(...frameParts(Tp, 'collar', { mat: 'relic' }));
+    d.parts.push({ kind: 'box', xf: xyaw([tx, ty - 0.5, tz], tyaw), he: [2.2, 0.5, 2.4], mat: 'relic', solid: true });
+    d.sites.push({ p: [tx, ty - 0.5, tz], r: 4, y: ty - 0.5, blend: 9 });
+    d.landmarks.push({ id: 'tilt', name: 'The Sideways Door', p: [tx, ty, tz], note: 'Through this door a lamp hangs sideways and a table stands on the wall.' });
     d.landmarks.push({ id: 'window', name: 'A Window in the Sand', p: [wx, wy, wz], note: 'A window frame standing alone in the dunes. Through it, a hall of columns in afternoon light.' });
   }
   d.features.push({ type: 'mesas', seed: ctx.seed, n: 16, r0: 700, r1: 1900, mat: 'rock', h0: 60, h1: 260 });

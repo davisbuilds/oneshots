@@ -13,8 +13,9 @@ import { qaxis, qfromBasis } from '../math.js';
 
 export const POCKET_DOORS = {
   hall: { hw: 1.15, hh: 1.75, style: 'gate' },
-  hallwin: { hw: 1.6, hh: 3.2, style: 'gate', sill: 0.9 },
+  hallwin: { hw: 2.2, hh: 4.2, style: 'gate', sill: 0.5 },
   mirror: { hw: 1.1, hh: 1.8, style: 'collar' },
+  tilt: { hw: 1.1, hh: 1.8, style: 'collar' },
 };
 
 // Axis-aligned wall slab in the XY plane (at z) or the ZY plane (at x), with
@@ -89,10 +90,10 @@ export function hallPocket(ctx) {
   d.features.push({ type: 'shafts', slots: [-18, 0, 18], z0: Z0, z1: Z1, y: H, width: 3.5 });
 
   const sun = [0.28, 0.86, 0.42];
-  d.atmos = { fogColor: [0.16, 0.12, 0.09], sunDir: sun, sunColor: [2.6, 1.95, 1.3], fogDensity: 0.007, fogFalloff: 0.012, fogBase: 0, inscatter: 2.2 };
+  d.atmos = { fogColor: [0.13, 0.1, 0.08], sunDir: sun, sunColor: [2.6, 1.95, 1.3], fogDensity: 0.0045, fogFalloff: 0.012, fogBase: 0, inscatter: 1.3 };
   d.sky = { zenith: [0.2, 0.32, 0.55], horizon: [0.8, 0.7, 0.55], ground: [0.3, 0.25, 0.2], sunSize: 0.012, sunGlow: 1.4, sunDisc: 22, moons: [], stars: 0, aurora: 0, clouds: 0.3, cloudScale: 0.5, cloudColor: [1, 0.95, 0.88] };
   d.light = { sun: 6.5, hemi: 0.14, hemiSky: [0.5, 0.42, 0.34], hemiGround: [0.3, 0.22, 0.15], env: 0.16, shadowRange: 80 };
-  d.post = { exposure: 1.15, saturation: 1.05, contrast: 1.07, lift: [0.01, 0.005, 0.0], gain: [1.03, 1.0, 0.95], bloom: 0.55 };
+  d.post = { exposure: 0.92, saturation: 1.05, contrast: 1.1, lift: [0.01, 0.005, 0.0], gain: [1.03, 1.0, 0.95], bloom: 0.55 };
   d.fill = [0.34, 0.27, 0.2];
   d.features.push({ type: 'particles', kind: 'motes', count: 1400, box: 40, color: [1.0, 0.82, 0.55], size: 0.035, speed: 0.08, glow: 0.9 });
   d.audio = { base: 'hall', tone: 131, wind: 0.08, reverb: 1 };
@@ -153,5 +154,52 @@ export function mirrorPocket(ctx) {
   d.killHeight = -60;
   d.spawn = { feet: [0, 0, R - 2], yaw: 0 };
   void xyaw;
+  return finish(d, null);
+}
+
+// The Leaning Room (1,0/tilt): its doorway is rolled a quarter turn relative
+// to the desert door that leads to it. Seen from the desert, the room lies on
+// its side (its floor stands as a wall); walk through and you arrive lying
+// sideways, and the room's gravity turns you upright onto its floor.
+export function tiltPocket(ctx) {
+  const d = skeleton(ctx);
+  d.name = 'The Leaning Room';
+  d.epithet = 'a room that is the right way up only from inside';
+  d.materials.stone = { color: [0.5, 0.46, 0.42], rough: 0.6, detail: 'slabs' };
+  d.materials.wallM = { color: [0.36, 0.38, 0.42], rough: 0.85, detail: 'concrete' };
+  d.materials.threshold = { color: [0.3, 0.29, 0.28], rough: 0.7, detail: 'stone' };
+  d.materials.cloth = { color: [0.42, 0.08, 0.06], rough: 0.95 };
+  d.materials.brass = { color: [0.75, 0.52, 0.25], rough: 0.3, metal: 1.0 };
+  d.materials.flame = { color: [0.05, 0.05, 0.05], emissive: [1.0, 0.62, 0.3], emissiveIntensity: 7, castShadow: false };
+  const parts = d.parts, R = 6, H = 7, T = 1.0, td = POCKET_DOORS.tilt, jw = 0.35;
+  parts.push({ kind: 'box', xf: xf([0, -0.5, 0]), he: [R + T, 0.5, R + T], mat: 'stone', solid: true });
+  parts.push({ kind: 'box', xf: xf([0, H + T / 2, 0]), he: [R + T, T / 2, R + T], mat: 'wallM', solid: true });
+  // the door, rolled: its local up runs along -Z, its local x points down
+  const q = qfromBasis([0, -1, 0], [0, 0, -1], [1, 0, 0]);
+  const cy = jw + td.hw;
+  const P = makePortal({ world: d.key, slot: 'door', p: [-R - T / 2, cy, 0], q, hw: td.hw, hh: td.hh, link: { world: '1,0', slot: 'tilt' }, style: 'collar' });
+  d.portals.push(P);
+  parts.push(...frameParts(P, 'collar', { mat: 'threshold' }));
+  wall(parts, 'x', -R - T / 2, -R, R, 0, H, T, [{ c: 0, y0: 0, y1: cy + td.hw + jw, hw: td.hh + jw }], 'wallM');
+  wall(parts, 'x', R + T / 2, -R, R, 0, H, T, [], 'wallM');
+  wall(parts, 'z', R + T / 2, -R - T, R + T, 0, H, T, [], 'wallM');
+  wall(parts, 'z', -R - T / 2, -R - T, R + T, 0, H, T, [], 'wallM');
+  // furniture that makes "down" unmistakable: a long carpet, a table, a lamp hanging on its chain
+  parts.push({ kind: 'box', xf: xf([0, 0.01, 0]), he: [R - 1, 0.01, 1.2], mat: 'cloth', solid: false });
+  parts.push({ kind: 'box', xf: xf([1.5, 0.8, 0]), he: [1.8, 0.06, 0.7], mat: 'stone', solid: true });
+  for (const [x, z] of [[0, -0.55], [0, 0.55], [3, -0.55], [3, 0.55]]) parts.push({ kind: 'box', xf: xf([x, 0.38, z]), he: [0.06, 0.38, 0.06], mat: 'brass', solid: true });
+  parts.push({ kind: 'cyl', xf: xf([1.5, H - 1.6, 0]), r: 0.015, h: 3.2, seg: 6, mat: 'brass', solid: false });
+  parts.push({ kind: 'sphere', xf: xf([1.5, H - 3.3, 0]), r: 0.22, seg: 14, mat: 'flame', solid: false });
+  d.lights.push({ p: [1.5, H - 3.5, 0], color: [1.0, 0.65, 0.35], intensity: 26, range: 16 });
+  for (const z of [-3.5, 3.5]) parts.push({ kind: 'cyl', xf: xf([4.5, H / 2, z]), r: 0.35, h: H, seg: 16, mat: 'stone', solid: true });
+  d.landmarks.push({ id: 'lean', name: 'The Leaning Room', p: [0, 0, 0], note: 'Seen through its door, the room lies on its side. Inside, it is the world that leans.' });
+  d.atmos = { fogColor: [0.08, 0.06, 0.05], sunDir: [0.2, 0.9, 0.3], sunColor: [0, 0, 0], fogDensity: 0.004, fogFalloff: 0.02, fogBase: 0, inscatter: 0.0 };
+  d.sky = { zenith: [0.02, 0.02, 0.03], horizon: [0.05, 0.04, 0.04], ground: [0.02, 0.02, 0.02], sunSize: 0.01, sunGlow: 0, sunDisc: 0, moons: [], stars: 0, aurora: 0, clouds: 0, cloudScale: 0.5, cloudColor: [0, 0, 0] };
+  d.light = { sun: 0.0, hemi: 0.4, hemiSky: [0.42, 0.38, 0.34], hemiGround: [0.2, 0.16, 0.12], env: 0.2, shadows: false };
+  d.post = { exposure: 1.25, saturation: 1.05, contrast: 1.05, lift: [0.01, 0.005, 0.0], gain: [1.02, 1.0, 0.96], bloom: 0.6 };
+  d.fill = [0.12, 0.09, 0.07];
+  d.audio = { base: 'room', tone: 123, wind: 0.0, reverb: 1 };
+  d.killHeight = -60;
+  d.spawn = { feet: [-2, 0, 0], yaw: -Math.PI / 2 };
   return finish(d, null);
 }

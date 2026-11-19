@@ -46,6 +46,7 @@ export class App {
     this.qPinned = params.has('quality');
     this.pr = new PortalRenderer(r);
     this.pr.frameId = 0;
+    this.pr.fillFor = (k) => this.descs.get(k)?.fill;
     this.post = new Post(r);
     this.pmrem = new THREE.PMREMGenerator(r);
     this.ctx = { renderer: r, pmrem: this.pmrem, shadows: true, shadowSize: this.software ? 1024 : 2048, particleScale: 1 };
@@ -250,6 +251,7 @@ export class App {
     }
     if (pl.world !== this.lastWorld) this.onEnterWorld(pl.world);
     this.updateHints();
+    if (this.frames % 20 === 0) this.noticeLandmarks();
     // streaming and world updates
     this.stream();
     const eye = pl.eye;
@@ -351,6 +353,17 @@ export class App {
       if (dot(f, this.turnWatch.yaw0) < -0.3) { this.turnWatch = null; this.doneHint('turn'); }
       else if (this.time - this.turnWatch.t > 7) { this.hint('turn', 'Look behind you'); }
       if (this.time - (this.turnWatch?.t ?? this.time) > 25) { this.turnWatch = null; this.hud.clearHint('turn'); }
+    }
+  }
+
+  // A landmark close by and in front of you is noted in the journal.
+  noticeLandmarks() {
+    if (this.demo.active || this.state !== 'play') return;
+    const d = this.descs.get(this.player.world), eye = this.player.eye, f = this.player.forward();
+    for (const L of d.landmarks) {
+      const v = [L.p[0] - eye[0], 0, L.p[2] - eye[2]], dist = Math.hypot(v[0], v[2]);
+      if (dist > 70 || (dist > 6 && (v[0] * f[0] + v[2] * f[2]) / dist < 0.55)) continue;
+      if (this.save.see(this.player.world, L.id, L.name)) { this.hud.note(`${L.name}. ${L.note}`, 5200); this.instrument.dirty = true; break; }
     }
   }
 

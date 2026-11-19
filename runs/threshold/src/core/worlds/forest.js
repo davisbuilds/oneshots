@@ -1,7 +1,7 @@
 // Lumen forest: a night forest of colossal trees whose crowns and roots glow.
 // Rolling ground under pooled mist, luminous fungi along the paths, drifting
 // spores, a still black pool. The curated world (2,0) is cyan and violet.
-import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, siteClearance, pathDistance, scaleRGB, mixRGB } from '../worldgen.js';
+import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, siteClearance, doorClearance, spreadBearing, pathDistance, scaleRGB, mixRGB } from '../worldgen.js';
 import { fbm2, rng } from '../rng.js';
 import { norm, smoothstep } from '../math.js';
 
@@ -31,7 +31,7 @@ export function forest(ctx) {
   for (const link of ctx.links) {
     const b = (BEARING[link.slot] ?? R.range(-Math.PI, Math.PI)) + (curated ? 0 : R.range(-0.3, 0.3));
     const dist = link.slot === 'W' ? 30 : (curated ? 120 : R.range(70, 130));
-    const v = bearingVec(b);
+    const v = bearingVec(curated ? b : spreadBearing(d, b, dist));
     const x = v[0] * dist, z = v[2] * dist;
     const P = addDoor(d, link, [x, base(x, z) + 0.4, z], center, { siteR: 8, blend: 14 });
     doorFloors.push([x, z]);
@@ -49,7 +49,8 @@ export function forest(ctx) {
   d.landmarks.push({ id: 'pool', name: 'The Black Pool', p: pool, note: 'Still water that holds the canopy\'s light like a second sky.' });
 
   // ── A great tree: the eldest, at the heart of the wood.
-  const eb = R.range(-Math.PI, Math.PI), ed = curated ? 70 : R.range(50, 110);
+  let eb = R.range(-Math.PI, Math.PI), ed = curated ? 70 : R.range(50, 110);
+  for (let k = 0; k < 24 && (doorClearance(d, Math.sin(eb) * ed, -Math.cos(eb) * ed) < 22 || paths.some((p) => pathDistance(p, Math.sin(eb) * ed, -Math.cos(eb) * ed) < 12)); k++) { eb = R.range(-Math.PI, Math.PI); ed = R.range(50, 140); }
   const ex = Math.sin(eb) * ed, ez = -Math.cos(eb) * ed;
   d.features.push({ type: 'elder', p: [ex, base(ex, ez) - 1, ez], h: 85, r: 5.5, seed: ctx.seed, bark: 'bark', cap: 'cap', capB: 'capB' });
   d.parts.push({ kind: 'cyl', xf: xf([ex, base(ex, ez) + 20, ez]), r: 5.0, h: 44, mat: 'bark', solid: true, hidden: true });
@@ -70,7 +71,7 @@ export function forest(ctx) {
   d.sky = {
     zenith: [0.003, 0.006, 0.015], horizon: curated ? [0.02, 0.05, 0.07] : scaleRGB(hsl(hueA, 0.4, 0.2), 0.3), ground: [0.01, 0.015, 0.02],
     sunSize: 0.01, sunGlow: 0.2, sunDisc: 0, moons: [{ dir: moonDir, size: 0.04, color: [0.75, 0.85, 1.0] }], moonLight: norm([0.2, 0.5, 0.9]),
-    stars: 0.8, aurora: curated ? 0.35 : R.range(0, 0.5), auroraColor: glowB, clouds: 0.1, cloudScale: 0.4, cloudColor: [0.03, 0.04, 0.06],
+    stars: 0.8, aurora: curated ? 0.2 : R.range(0, 0.4), auroraColor: glowB, clouds: 0.1, cloudScale: 0.4, cloudColor: [0.03, 0.04, 0.06],
   };
   d.light = { sun: 0.9, hemi: 0.4, hemiSky: [0.08, 0.12, 0.2], hemiGround: scaleRGB(glowA, 0.08), env: 0.5, shadowRange: 40 };
   d.fill = [0.02, 0.05, 0.06];

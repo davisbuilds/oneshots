@@ -74,6 +74,13 @@ export function siteClearance(sites, x, z) {
   return m;
 }
 
+// Clearance from the doorways' plazas only (for placing large structures).
+export function doorClearance(d, x, z) {
+  let m = Infinity;
+  for (const s of d.sites) if (s.door) m = Math.min(m, Math.hypot(x - s.p[0], z - s.p[2]) - s.r);
+  return m;
+}
+
 // Distance from point to a polyline path (list of [x, z]).
 export function pathDistance(path, x, z) {
   let m = Infinity;
@@ -86,12 +93,24 @@ export function pathDistance(path, x, z) {
   return m;
 }
 
+// Turn a bearing until a doorway placed along it at `dist` is at least `gap`
+// metres from every doorway already placed (so doors never stand in front of
+// each other).
+export function spreadBearing(d, b, dist, center = [0, 0, 0], gap = 24) {
+  for (let k = 0; k < 16; k++) {
+    const v = bearingVec(b), x = center[0] + v[0] * dist, z = center[2] + v[2] * dist;
+    if (d.portals.every((P) => Math.hypot(P.xf.p[0] - x, P.xf.p[2] - z) >= gap + P.hw)) return b;
+    b += 0.37;
+  }
+  return b;
+}
+
 // Place doorways for every lattice link around a centre, arrival (W) near it,
 // others further out along their bearings. yAt gives the floor height.
 export function ringDoors(d, ctx, R, yAt, { near = 30, far = [90, 160], jitter = 0.3, center = [0, 0, 0], siteR = 8, blend = 14, lift = 0.4 } = {}) {
   for (const link of ctx.links) {
-    const b = (BEARING[link.slot] ?? R.range(-Math.PI, Math.PI)) + R.range(-jitter, jitter);
     const dist = link.slot === 'W' ? near : R.range(far[0], far[1]);
+    const b = spreadBearing(d, (BEARING[link.slot] ?? R.range(-Math.PI, Math.PI)) + R.range(-jitter, jitter), dist, center);
     const v = bearingVec(b);
     const x = center[0] + v[0] * dist, z = center[2] + v[2] * dist;
     addDoor(d, link, [x, yAt(x, z) + lift, z], [center[0], yAt(x, z) + lift, center[2]], { siteR, blend });

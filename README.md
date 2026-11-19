@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**THRESHOLD: An Infinity of Elsewheres**](runs/threshold/) | A first-person walk through an unbounded, procedurally generated multiverse joined by real stencil-rendered portals you can stand halfway inside, with impossible architecture (a hall larger than its cell, a stoa that never ends, a room whose window opens through its own ceiling), a discovery journal and instrument, and a cinematic demo, all checked by tests that walk through the doors with real input. | Claude Opus 5.5 | 1 | [brief](runs/threshold/brief.md) · [log](runs/threshold/process/PROGRESS.md) · [snapshots](runs/threshold/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-threshold) |
 | [**Bit by Bit**](runs/bit-by-bit/) | A puzzle game that teaches data structures and algorithms by making you the algorithm: 34 hand-played levels from array indexing to dynamic programming, against an adversary who always arranges the worst case, each one naming and showing the code for what you just did. | Claude Fable 5.2 (medium) | 1 | [brief](runs/bit-by-bit/brief.md) · [log](runs/bit-by-bit/process/PROGRESS.md) · [snapshots](runs/bit-by-bit/process/snapshots) |
 | [**Tideline**](runs/tideline/) | A container-terminal operations console that plays like a strategy game: a living isometric paper diorama with real ship stability, stowage you can drag, cranes you can reassign, and straddle carriers that cannot collide or deadlock by construction, checked from their actual trajectories over many seeds. | Claude Opus 5.5 | 3 | [brief](runs/tideline/brief.md) · [log](runs/tideline/process/PROGRESS.md) · [snapshots](runs/tideline/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-tideline) |
 | [**Luminal**](runs/luminal/) | A one-button rhythm platformer in luminous geometry: one level, Heliotrope, built on an original synthesized soundtrack, with cube, ship, wave and gravity sections, practice checkpoints and saved bests, and a solver that proves every section can be cleared. | Claude Opus 5.5 | 1 | [brief](runs/luminal/brief.md) · [log](runs/luminal/process/PROGRESS.md) · [snapshots](runs/luminal/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-luminal) |
@@ -87,8 +88,9 @@ Several runs include a headless `verify.mjs` smoke test that uses
 `@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and pnpm
 (pinned in `package.json`; `corepack enable` provides it), install current Google Chrome
 and run `pnpm install --frozen-lockfile`, then
-`node runs/<slug>/verify.mjs` or `pnpm run verify:browser` for all nine configured
-verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
+`node runs/<slug>/verify.mjs` or `pnpm run verify:browser` for all ten configured
+verifiers (`antikythera-engine`'s also calls `python3` for its expected values;
+`threshold`'s renders in software and takes about twenty minutes).
 All active JavaScript verifiers/render tools and the Antikythera Python renderer
 use the supported Playwright `chrome` channel, with a temporary automation profile.
 Install and update Google Chrome using your platform's official installer; existing
@@ -123,7 +125,7 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
 `scripts/validate_runs.py`, the fast renderer build-recovery tests, and the
-`gate-to-game`, `luminal` and `bit-by-bit` logic tests (Node's built-in test
+`gate-to-game`, `luminal`, `bit-by-bit` and `threshold` logic tests (Node's built-in test
 runner, no dependencies).
 The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above

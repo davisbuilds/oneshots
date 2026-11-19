@@ -226,6 +226,27 @@ try {
     assert.ok(s2.grounded && s2.up[1] > 0.99 && s2.feet[1] < 0.6, 'landed upright on the floor');
     await render(page, 3);
     await shot(page, 'b06-landed');
+    // The sideways door: through it the room lies on its side; walk in and be righted.
+    await page.evaluate(() => {
+      const A = THR.app.space.portals('1,0').find((p) => p.slot === 'tilt'), d = THR.app.descs.get('1,0');
+      const x = A.xf.p[0] + A.n[0] * 5, z = A.xf.p[2] + A.n[2] * 5;
+      THR.place('1,0', [x, d.heightAt(x, z) + 0.2, z], Math.atan2(A.n[0], A.n[2]), 0.05);
+    });
+    await simUntil(page, 'false', 0.4); await render(page, 4);
+    await shot(page, 'b07-sideways-door');
+    const ct = (await state(page)).crossings;
+    await page.keyboard.down('KeyW');
+    const rt = await simUntil(page, `THR.app.crossings > ${ct}`, 6);
+    await simUntil(page, 'false', 0.15);
+    await page.keyboard.up('KeyW');
+    const st1 = await state(page);
+    await simUntil(page, 'false', 1.5);
+    const st2 = await state(page);
+    log(`sideways door: entered ${st1.world} with up (${st1.up.map((v) => v.toFixed(2))}); 1.5 s later up (${st2.up.map((v) => v.toFixed(2))}), grounded ${st2.grounded}, feet y ${st2.feet[1].toFixed(2)}`);
+    assert.ok(rt.ok && st1.world === '1,0/tilt' && st1.up[1] < 0.98, 'arrived turned relative to the room');
+    assert.ok(st2.grounded && st2.up[1] > 0.99 && Math.abs(st2.feet[1]) < 0.4, 'righted onto the floor');
+    await render(page, 3);
+    await shot(page, 'b08-leaning-room');
     await page.close();
   }
   // ── 3. Discovery and persistence across a reload ────────────────────────

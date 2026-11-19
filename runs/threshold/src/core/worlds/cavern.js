@@ -1,7 +1,7 @@
 // Cavern: a chamber kilometres wide under a stone sky. The floor rolls and
 // pools; the ceiling hangs seventy metres up with stalactites; crystals glow
 // in clusters and are the only light besides your own.
-import { skeleton, finish, hsl, xyaw, ringDoors, siteClearance, mixRGB, scaleRGB } from '../worldgen.js';
+import { skeleton, finish, hsl, xyaw, ringDoors, siteClearance, doorClearance, mixRGB, scaleRGB } from '../worldgen.js';
 import { fbm2, ridged2, rng } from '../rng.js';
 import { norm } from '../math.js';
 
@@ -31,7 +31,9 @@ export function cavern(ctx) {
     d.sites.push({ p: [x, y + 0.8, z], r: rad + 1, y: y - 1.5, blend: 8 });
   }
   // a great column where floor and ceiling meet
-  const ca = R.range(0, Math.PI * 2), cd = R.range(60, 120), cx = Math.sin(ca) * cd, cz = -Math.cos(ca) * cd;
+  let ca = R.range(0, Math.PI * 2), cd = R.range(60, 120);
+  for (let k = 0; k < 24 && doorClearance(d, Math.sin(ca) * cd, -Math.cos(ca) * cd) < 30; k++) { ca = R.range(0, Math.PI * 2); cd = R.range(50, 180); }
+  const cx = Math.sin(ca) * cd, cz = -Math.cos(ca) * cd;
   d.parts.push({ kind: 'cyl', xf: xyaw([cx, base(cx, cz) + 60, cz], 0), r1: 9, r: 14, h: 130, seg: 20, mat: 'rock', solid: true });
   d.landmarks.push({ id: 'column', name: 'The Pillar of the World', p: [cx, 0, cz], note: 'A column of living rock fourteen metres across, holding up the ceiling.' });
   d.lodestone = { p: [-10, base(-10, 6) + 0.2, 6], yaw: 0.5, kind: 'crystal' };

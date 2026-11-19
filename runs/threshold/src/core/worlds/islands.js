@@ -1,7 +1,7 @@
 // Islands: an archipelago adrift in the sky. Rock masses hang over a sea of
 // cloud; their grassy tops are joined by stone bridges; doorways stand on the
 // outer islands. Falling off returns you to the last place you stood.
-import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, mixRGB, scaleRGB } from '../worldgen.js';
+import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, spreadBearing, mixRGB, scaleRGB } from '../worldgen.js';
 import { fbm2, rng } from '../rng.js';
 import { norm } from '../math.js';
 
@@ -44,7 +44,7 @@ export function islands(ctx) {
       addDoor(d, link, [v[0] * 22, 0, v[2] * 22], [0, 0, 0], { siteR: 0, blend: 0 });
       continue;
     }
-    const v = bearingVec(b), x = v[0] * dist, z = v[2] * dist, y = R.range(-14, 16), r = R.range(13, 20);
+    const v = bearingVec(spreadBearing(d, b, dist, [0, 0, 0], 40)), x = v[0] * dist, z = v[2] * dist, y = R.range(-14, 16), r = R.range(13, 20);
     isle(x, y, z, r);
     bridge(isles[0], isles[isles.length - 1]);
     addDoor(d, link, [x + v[0] * r * 0.45, y, z + v[2] * r * 0.45], [x, y, z], { siteR: 0, blend: 0, yaw: Math.atan2(-v[0], -v[2]) });

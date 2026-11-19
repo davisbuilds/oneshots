@@ -2,7 +2,7 @@
 // plain under a low polar sun: a vault with a deep slot at its foot, stepped
 // towers, long walls and a cantilevered beam. Snow falls. The curated world
 // (3,0) holds the doorway to the room that contains itself.
-import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, siteClearance, scaleRGB, mixRGB } from '../worldgen.js';
+import { skeleton, addDoor, finish, hsl, xyaw, xf, BEARING, bearingVec, siteClearance, doorClearance, spreadBearing, scaleRGB, mixRGB } from '../worldgen.js';
 import { fbm2, ridged2, rng } from '../rng.js';
 import { norm } from '../math.js';
 import { makePortal } from '../portal.js';
@@ -30,13 +30,15 @@ export function glacier(ctx) {
   for (const link of ctx.links) {
     const b = (BEARING[link.slot] ?? R.range(-Math.PI, Math.PI)) + (curated ? 0 : R.range(-0.3, 0.3));
     const dist = link.slot === 'W' ? 32 : (curated ? 150 : R.range(90, 160));
-    const v = bearingVec(b);
+    const v = bearingVec(curated ? b : spreadBearing(d, b, dist));
     const x = v[0] * dist, z = v[2] * dist;
     addDoor(d, link, [x, base(x, z) + 0.5, z], center, { siteR: 8, blend: 14 });
   }
 
   // ── The Vault: an immense block with a slot cut into its foot.
-  const vb = curated ? 0.35 : R.range(-Math.PI, Math.PI), vd = curated ? 95 : R.range(80, 140);
+  let vb = curated ? 0.35 : R.range(-Math.PI, Math.PI), vd = curated ? 95 : R.range(80, 140);
+  // the vault must not stand on a doorway's plaza
+  for (let k = 0; k < 24 && !curated && doorClearance(d, Math.sin(vb) * vd, -Math.cos(vb) * vd) < 50; k++) { vb = R.range(-Math.PI, Math.PI); vd = R.range(80, 200); }
   const vx = Math.sin(vb) * vd, vz = -Math.cos(vb) * vd, vy = base(vx, vz);
   const yaw = Math.atan2(-vx, -vz); // the slot faces the centre
   const loc = (lx, ly, lz) => [vx + Math.cos(yaw) * lx + Math.sin(yaw) * lz, vy + ly, vz - Math.sin(yaw) * lx + Math.cos(yaw) * lz];
@@ -72,8 +74,8 @@ export function glacier(ctx) {
   for (let k = 0; k < (curated ? 14 : R.int(10) + 8); k++) {
     const a = R.range(-Math.PI, Math.PI), r = R.range(140, 520);
     const x = Math.sin(a) * r, z = -Math.cos(a) * r, y = base(x, z);
-    if (Math.hypot(x - vx, z - vz) < 70) continue;
     const s = R.range(8, 22), h = R.range(40, 180), steps = 1 + R.int(4), ty = R.range(0, Math.PI / 2);
+    if (Math.hypot(x - vx, z - vz) < 70 || doorClearance(d, x, z) < s * 1.75 + 12) continue;
     for (let t = 0; t < steps; t++) {
       const f = 1 - t * 0.22, hh = h / steps;
       box([x, y + hh * t + hh / 2 - 2, z], [s * f, hh / 2, s * f * R.range(0.6, 1.4)], t % 2 ? 'concreteDark' : 'concrete', ty);
@@ -83,9 +85,9 @@ export function glacier(ctx) {
   }
   for (let k = 0; k < 6; k++) {
     const a = R.range(-Math.PI, Math.PI), r = R.range(60, 300);
-    const x = Math.sin(a) * r, z = -Math.cos(a) * r;
-    if (siteClearance(d.sites, x, z) < 30) continue;
-    box([x, base(x, z) + 4, z], [R.range(20, 60), 6, 1.6], 'concreteDark', R.range(0, Math.PI));
+    const x = Math.sin(a) * r, z = -Math.cos(a) * r, half = R.range(20, 60);
+    if (siteClearance(d.sites, x, z) < half + 12 || Math.hypot(x - vx, z - vz) < half + 40) continue;
+    box([x, base(x, z) + 4, z], [half, 6, 1.6], 'concreteDark', R.range(0, Math.PI));
   }
   d.landmarks.push({ id: 'towers', name: 'The Stepped Towers', p: towers[0] ? [towers[0][0], 0, towers[0][1]] : [0, 0, 0], note: 'Concrete towers, stepped like ziggurats, rimed with ice.' });
 
@@ -95,11 +97,11 @@ export function glacier(ctx) {
   d.scatter.push({ id: 1, kind: 'shard', cell: 14, prob: 0.12, scale: [0.6, 2.2], clear: 8, collide: { r: 0.6, h: 3 }, variants: 4, mat: 'ice' });
   d.scatter.push({ id: 2, kind: 'rock', cell: 20, prob: 0.06, scale: [0.8, 2.5], clear: 8, collide: { r: 0.8, h: 1.2, y0: -0.3 }, variants: 4, mat: 'concreteDark' });
 
-  const sun = norm([-0.75, 0.16, -0.35]);
+  const sun = curated ? norm([-0.3, 0.26, 0.9]) : norm([-0.75, 0.16, -0.35]);
   d.atmos = { fogColor: [0.5, 0.58, 0.7], sunDir: sun, sunColor: [2.1, 1.7, 1.3], fogDensity: 0.0017, fogFalloff: 0.006, fogBase: 0, inscatter: 0.6 };
   d.sky = { zenith: [0.1, 0.2, 0.42], horizon: [0.62, 0.68, 0.78], ground: [0.6, 0.65, 0.7], sunSize: 0.014, sunGlow: 1.2, sunDisc: 24, moons: [], stars: 0, aurora: 0, clouds: 0.62, cloudScale: 0.5, cloudColor: [0.86, 0.88, 0.93] };
   d.light = { sun: 3.6, hemi: 0.5, hemiSky: [0.45, 0.58, 0.85], hemiGround: [0.42, 0.45, 0.52], env: 0.6, shadowRange: 60 };
-  d.post = { exposure: 0.72, saturation: 0.92, contrast: 1.06, lift: [0.0, 0.005, 0.015], gain: [0.98, 1.0, 1.04], bloom: 0.35 };
+  d.post = { exposure: 0.6, saturation: 0.92, contrast: 1.06, lift: [0.0, 0.005, 0.015], gain: [0.98, 1.0, 1.04], bloom: 0.35 };
   d.fill = mixRGB(d.atmos.fogColor, d.sky.horizon, 0.5);
   d.features.push({ type: 'terrain', mat: 'snow' });
   d.features.push({ type: 'particles', kind: 'snow', count: 2200, box: 40, color: [0.95, 0.97, 1.0], size: 0.035, speed: 1.4, wind: [0.6, 0, 0.3], glow: 0.0 });

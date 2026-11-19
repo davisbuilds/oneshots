@@ -41,7 +41,7 @@ export function abstract(ctx) {
   }
   d.lodestone = { p: [9, 0, -30], yaw: 0, kind: 'ring' };
   d.clearance = (x, z) => Math.min(siteClearance(d.sites, x, z) - 6, Math.hypot(x, z + 34) - 34, Math.hypot(x, z) - 20);
-  d.scatter.push({ id: 1, kind: 'solid', cell: 26, prob: 0.4, scale: [0.6, 1.8], clear: 6, reach: 20, collide: { box: SOLIDS.map(([x, y, z]) => [x, y, z]) }, variants: 4, mat: 'white', capMat: 'accent' });
+  d.scatter.push({ id: 1, kind: 'solid', cell: 26, prob: 0.4, scale: [0.6, 1.8], clear: 12, reach: 20, collide: { box: SOLIDS.map(([x, y, z]) => [x, y, z]) }, variants: 4, mat: 'white', capMat: 'accent' });
   const sd = norm([R.range(-1, 1), R.range(0.25, 0.6), R.range(-1, 1)]);
   d.atmos = { fogColor: dark ? [0.05, 0.05, 0.06] : [0.86, 0.85, 0.84], sunDir: sd, sunColor: dark ? [2.6, 2.5, 2.4] : [2.8, 2.7, 2.6], fogDensity: 0.0012, fogFalloff: 0.002, fogBase: 0, inscatter: 0.2 };
   d.sky = { zenith: dark ? [0.02, 0.02, 0.025] : [0.62, 0.68, 0.76], horizon: d.atmos.fogColor, ground: d.atmos.fogColor, sunSize: 0.01, sunGlow: 0.3, sunDisc: 0, moons: [], stars: dark ? 0.6 : 0, aurora: 0, clouds: 0, cloudScale: 0.5, cloudColor: [1, 1, 1] };

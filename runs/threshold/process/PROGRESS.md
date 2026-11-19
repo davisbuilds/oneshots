@@ -259,3 +259,80 @@ cache's 10. Live depth and render budgets hold from (1, 2) to (5, 24). Four
 extreme views (grazing the great door's plane, straight up the skylight,
 straight down at a threshold from both sides) have no black or NaN pixels.
 The demo finishes in 53.4 s with six real crossings through five worlds.
+
+## 14:25 Polishing the first impression
+
+The opening view is the first five minutes, so it got the most attention. The
+spawn moved onto a four-metre terrace at the south end of the deck, with a
+broad stair down, so the first frame looks over the deck to the sea and the
+door. The great door gained a stepped crown and glowing glyph columns on its
+jambs. From the deck's edge the ocean showed a regular tiled pattern (one noise
+scale at a nine-metre period); it now mixes three rotated scales and drops the
+fine detail with distance, and reads as open water with a glitter path. The
+sea stacks looked like vases (a lathe profile) and are now jagged rock; the
+floating fragments are masonry blocks and column drums; the haze moved from
+pink to a cooler grey, with the horizon warmer only on the sun's side.
+
+On the other slice worlds: a dune hid the great door when you looked back from
+the desert, so the desert's arrival plaza is now 22 m across; the Inner Hall's
+two windows doubled in size; the glacier's sun now lights the face of the
+Vault (it was lighting its back, leaving a flat grey tower); moons and the
+forest's aurora are dimmer; glacier and hall exposure lower.
+
+## 14:40 Measuring performance honestly
+
+`?bench` renders eight fixed scenes and reports draws, triangles, world renders
+and timings; `tools/bench.mjs` runs it headless. The first numbers (14 to 33
+ms per 1080p frame) were impossible for a software rasteriser: `gl.finish()`
+does not block here, so I was timing only JavaScript. Adding a synchronous
+1-pixel `readPixels` after each frame gave the truth: SwiftShader takes 1.5 to
+3.7 s per 1080p frame on this CPU. The JavaScript share still includes stalls
+on the rasteriser, so I report the hardware-independent counts (78 to 323
+draws, 0.02 to 2.3 M triangles, up to six world renders) and leave the benchmark
+for real hardware. Along the way: every `render()` call made three.js walk and
+recompute the whole world's matrix tree, and a world is rendered four to eight
+times per frame; matrices now update once per frame. Terrain leaves became
+128 m tiles at 64 segments near the viewer and 32 further away, halving the
+terrain's draw calls without coarsening the near ground.
+
+## 14:55 The film, and joining the collection
+
+`tools/film.mjs` records the demo frame by frame (the engine advances exactly
+1/30 s per frame, so the film is deterministic) and encodes it with the same
+pinned FFmpeg wheel Tideline uses; about 1.5 s per 720p frame here. Threshold's
+Node tests joined the root `pnpm test` and the Validate Runs workflow, its
+verifier joined `verify:browser`, and its name joined the Run assets Chrome
+provisioning list, as RUNS.md asks of new browser renderers.
+
+## 15:10 A door with a different down, and a long walk
+
+The brief asks for doorways into spaces with different gravity directions. The
+window that opens through a ceiling already did that by pitch; I added *the
+Leaning Room*, a pocket of the desert whose doorway is rolled a quarter turn
+relative to the desert's free-standing door. From the desert you see the room
+on its side (its lamp hangs sideways, its table stands on the wall); walking in
+you arrive tilted, and the room's gravity turns you upright onto its floor in
+about half a second. Simulated and added to the browser checks.
+
+`tools/stress.mjs` hops through the multiverse with the real controller: pick
+a doorway, walk into it, arrive in front of the paired doorway, walk out, check
+you are upright and standing, and every fifth hop walk back home. The first
+run (120 hops) stuck once: in a generated glacier a concrete wall 120 m long
+had been placed by its centre's distance from the doorways alone and ran
+straight across a plaza. The same class of bug could affect the glacier's
+vault and towers, the forest's eldest tree, the cavern's great column and the
+brutalist pillars and beams, so all now keep their whole extent off doorway
+plazas. The second run (750 hops) found two wormhole doorways generated 6 m
+apart, one in front of the other: doorway bearings are now spread to keep
+24 m between doors. It also showed my invariant was wrong: I had flagged the
+eye being behind a portal, but portals are one-sided and walking through a
+doorway's back is ordinary walking; the invariant is now that no step passes
+front to back through an opening without crossing. The third (6,000 hops, six
+seeds) failed only at the Inner Hall's windows, whose 0.9 m sills needed a
+jump; they are now 0.5 m. Then 6,000 hops with no failures. A 120-hop version
+runs in the Node suite.
+
+Note on the film: it was recorded from the code as it stood at 14:57. Since
+then the desert gained the sideways door (115 m behind the demo's desert shot)
+and one distant glacier structure moved; the release asset, rebuilt by the
+Run assets workflow from the committed source, will include those changes.

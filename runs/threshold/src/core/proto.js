@@ -1,7 +1,8 @@
 // Prototype worlds used to prove the portal engine before the multiverse
 // existed: two simple spaces, a doorway between them, a pair of facing
 // portals (a mirror-like infinite regress) and a back-to-back gate.
-// Kept as a diagnostic scene: ?world=proto.
+// Kept for the physics tests and as a diagnostic scene (in the browser
+// console: THR.place("proto:A", [0, 0, 6], 0)).
 import { makePortal } from './portal.js';
 import { frameParts, portalPose } from './frames.js';
 import { xyaw, qaxis } from './math.js';

@@ -189,7 +189,7 @@ export class PortalRenderer {
       if (!ok) {
         if (!dest && this.wanted && level + 1 <= 2) this.wanted.add(P.link.world);
         if (dest && D && level + 1 <= this.settings.maxDepth && this.renders >= this.settings.maxRenders) st.budgetHits++;
-        this.drawSurface(P, it.near, cam, this.fillMat, level, view, clip, dest);
+        this.drawSurface(P, it.near, cam, this.fillMat, level, view, clip, dest, P.link.world);
         st.portalsFilled++;
         continue;
       }
@@ -226,7 +226,7 @@ export class PortalRenderer {
     this.unlockStencil();
   }
 
-  drawSurface(P, near, cam, mats, ref, view, clip, fillView) {
+  drawSurface(P, near, cam, mats, ref, view, clip, fillView, fillKey) {
     const mat = mats[near ? 1 : 0];
     mat.stencilRef = ref;
     if (mat.uniforms && mat.uniforms.uFogColor) {
@@ -237,7 +237,7 @@ export class PortalRenderer {
       this.fogU.uFogParams.value.copy(u.uFogParams.value);
       this.fogU.uFogPlane.value.copy(u.uFogPlane.value);
       if (mats === this.fillMat) {
-        this.fogU.uFill.value.setRGB(...(fillView ? fillView.fillColor : [0.02, 0.02, 0.03]));
+        this.fogU.uFill.value.setRGB(...(fillView ? fillView.fillColor : (this.fillFor && this.fillFor(fillKey)) || [0.02, 0.02, 0.03]));
         this.fogU.uFillAmt.value = 1;
       } else this.fogU.uFillAmt.value = 0;
     }

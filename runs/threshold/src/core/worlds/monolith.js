@@ -40,8 +40,8 @@ export function monolith(ctx) {
   }
   d.lodestone = { p: [10, 1.2, -46], yaw: 0, kind: 'obelisk' };
   d.clearance = (x, z) => Math.min(siteClearance(d.sites, x, z) - 6, Math.hypot(x, z + 60) - 40, Math.hypot(x, z) - 22);
-  d.scatter.push({ id: 1, kind: 'pillar', cell: 32, prob: 0.55, scale: [0.6, 1.5], clear: 8, reach: 60, collide: { box: PILLARS.map(([x, y, z]) => [x / 2, y / 2, z / 2]) }, variants: 4, mat: 'concrete' });
-  d.scatter.push({ id: 2, kind: 'beam', cell: 64, prob: 0.35, scale: [0.8, 1.3], clear: 12, reach: 60, collide: { box: [[30, 1.5, 3, 14], [3, 1.5, 30, 22]] }, variants: 2, mat: 'concreteDark' });
+  d.scatter.push({ id: 1, kind: 'pillar', cell: 32, prob: 0.55, scale: [0.6, 1.5], clear: 18, reach: 60, collide: { box: PILLARS.map(([x, y, z]) => [x / 2, y / 2, z / 2]) }, variants: 4, mat: 'concrete' });
+  d.scatter.push({ id: 2, kind: 'beam', cell: 64, prob: 0.35, scale: [0.8, 1.3], clear: 44, reach: 60, collide: { box: [[30, 1.5, 3, 14], [3, 1.5, 30, 22]] }, variants: 2, mat: 'concreteDark' });
   const sd = warm ? norm([0.6, 0.35, -0.7]) : norm([-0.3, 0.75, 0.4]);
   d.atmos = { fogColor: warm ? [0.62, 0.58, 0.54] : [0.56, 0.6, 0.66], sunDir: sd, sunColor: warm ? [2.8, 2.2, 1.6] : [2.4, 2.4, 2.4], fogDensity: 0.0016, fogFalloff: 0.004, fogBase: 0, inscatter: 0.6 };
   d.sky = { zenith: warm ? [0.2, 0.25, 0.4] : [0.3, 0.36, 0.46], horizon: d.atmos.fogColor, ground: [0.4, 0.4, 0.4], sunSize: 0.012, sunGlow: 1.0, sunDisc: warm ? 22 : 0, moons: [], stars: 0, aurora: 0, clouds: warm ? 0.3 : 0.85, cloudScale: 0.4, cloudColor: [0.8, 0.8, 0.82] };

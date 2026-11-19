@@ -140,7 +140,7 @@ vec3 skyColor(vec3 d, bool withDisc) {
       float maria = smoothstep(0.45, 0.7, skFbm(sp * 0.9));
       float crater = skFbm(sp * 3.5) * 0.5 + skFbm(sp * 9.0) * 0.25;
       float tone = (0.92 - maria * 0.32) * (0.82 + crater * 0.36) * (0.55 + 0.45 * pow(z, 0.5));
-      vec3 mc = uMoonCol[i] * tone * (lit * 1.7 + 0.04);
+      vec3 mc = uMoonCol[i] * tone * (lit * 1.15 + 0.03);
       col = mix(col, mc, disc);
     }
     if (withDisc) col += uMoonCol[i] * smoothstep(r * 3.2, r, ang) * 0.06 * (1.0 - disc);
