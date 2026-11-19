@@ -21,7 +21,8 @@ export class WorldView {
     this.ready = false;
     this.scene = new THREE.Scene();
     this.scene.name = desc.key;
-    this.scene.matrixWorldAutoUpdate = true;
+    // matrices are updated once per frame in update(), not on every render() call
+    this.scene.matrixWorldAutoUpdate = false;
     this.uniforms = { ...makeAtmosUniforms(desc.atmos), ...makeSkyUniforms(desc.sky) };
     this.fillColor = desc.fill || desc.atmos.fogColor;
     this.portals = desc.portals.map((P) => ({ ...P, cornersPad: corners(P, 0.08) }));
@@ -114,6 +115,7 @@ export class WorldView {
     if (d.lodestone) this.lodestone = lodestone(this, d.lodestone);
     if (d.instrument) this.instrument = instrumentOnPedestal(this, d.instrument);
     this.makeEnvironment();
+    this.scene.updateMatrixWorld(true);
     this.ready = true;
     return this;
   }
@@ -155,6 +157,7 @@ export class WorldView {
     this.uniforms.uTime.value = time;
     for (const f of this.updaters) f(dt, time);
     if (this.terrain) this.terrain.update(this.focus, budgetMs);
+    this.scene.updateMatrixWorld();
     if (this.ceiling) this.ceiling.update(this.focus, budgetMs / 2);
     if (this.scatter) this.scatter.update(this.focus);
   }

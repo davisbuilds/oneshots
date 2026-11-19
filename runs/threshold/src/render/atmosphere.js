@@ -99,7 +99,11 @@ float skFbm(vec2 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { s +=
 vec3 skyColor(vec3 d, bool withDisc) {
   float y = d.y;
   float hz = pow(1.0 - max(y, 0.0), 4.0);
-  vec3 col = mix(uZenith, uHorizon, hz);
+  // the horizon is warmer towards the sun and cooler away from it
+  vec2 sh = normalize(uSunDir.xz + 1e-5), dh = normalize(d.xz + 1e-5);
+  float side = dot(sh, dh) * 0.5 + 0.5;
+  vec3 hor = uHorizon * mix(vec3(0.86, 0.92, 1.05), vec3(1.12, 1.03, 0.9), side * side) * (1.0 + 0.35 * pow(side, 6.0) * smoothstep(-0.1, 0.3, uSunDir.y + 0.2));
+  vec3 col = mix(uZenith, hor, hz);
   if (y < 0.0) col = mix(uHorizon, uGround, smoothstep(0.0, -0.25, y));
   // stars
   if (uSkyFx.x > 0.0 && y > -0.05) {

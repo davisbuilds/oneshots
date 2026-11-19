@@ -30,11 +30,13 @@ export function ocean(view, f) {
           float fr = 0.035 * pow(1.65, fi), am = 0.9 / pow(1.9, fi);
           g += dir * am * fr * cos(dot(dir, p) * fr + t * sqrt(9.8 * fr) * 0.9);
         }
-        vec2 q = p * 0.11;
-        vec2 d1 = texture2D(tNoise, q + vec2(t * 0.012, t * 0.007)).rg - 0.5;
-        vec2 d2 = texture2D(tNoise, q * 2.7 - vec2(t * 0.02, -t * 0.015)).gr - 0.5;
-        float far = smoothstep(30.0, 900.0, dist);
-        g += (d1 * 0.5 + d2 * 0.35) * (1.0 - far);
+        // three rotated scales of drifting noise, so no tiling period shows from above
+        mat2 r1 = mat2(0.8, -0.6, 0.6, 0.8), r2 = mat2(0.28, 0.96, -0.96, 0.28);
+        vec2 d0 = texture2D(tNoise, (r2 * p) * 0.012 + vec2(t * 0.003, 0.0)).rg - 0.5;
+        vec2 d1 = texture2D(tNoise, (r1 * p) * 0.047 + vec2(t * 0.011, t * 0.006)).rg - 0.5;
+        vec2 d2 = texture2D(tNoise, p * 0.13 - vec2(t * 0.02, -t * 0.015)).gr - 0.5;
+        float far = smoothstep(10.0, 420.0, dist);
+        g += d0 * 0.9 + (d1 * 0.5 + d2 * 0.3) * (1.0 - far);
         vec3 n = normalize(vec3(-g.x, 1.0, -g.y) * vec3(1.0 - far * 0.7, 1.0, 1.0 - far * 0.7));
         float fres = 0.02 + 0.98 * pow(1.0 - max(dot(n, V), 0.0), 5.0);
         vec3 R = reflect(-V, n); R.y = abs(R.y) + 0.02; R = normalize(R);
@@ -123,18 +125,21 @@ export function ring(view, f) {
   }
 }
 
+// Sea stacks: tall jagged columns of rock standing in the ocean.
 export function stacks(view, f) {
-  const R = rng(f.seed ^ 0x5717), list = [];
+  const R = rng(f.seed ^ 0x5717);
   for (let k = 0; k < f.n; k++) {
-    const a = R.range(0, Math.PI * 2), r = R.range(f.r0, f.r1), h = R.range(80, 320), w = R.range(25, 70);
-    const pts = [];
-    for (let i = 0; i <= 10; i++) { const t = i / 10; pts.push(new THREE.Vector2(w * (1 - t * 0.55) * (0.85 + 0.3 * Math.sin(t * 9 + k)), t * h - 20)); }
-    pts.push(new THREE.Vector2(0.01, h - 20));
-    const g = new THREE.LatheGeometry(pts, 9);
-    g.translate(Math.sin(a) * r, 0, -Math.cos(a) * r);
-    list.push(g);
+    const a = R.range(0, Math.PI * 2), r = R.range(f.r0, f.r1), h = R.range(90, 300), w = R.range(18, 55);
+    const parts = 1 + R.int(3);
+    for (let p = 0; p < parts; p++) {
+      const g = rockGeo(k * 3 + p, 2);
+      const hh = h * (1 - p * 0.3), ww = w * (1 - p * 0.25);
+      g.scale(ww, hh / 1.3, ww * R.range(0.6, 1.0));
+      g.rotateY(R.range(0, 6.28));
+      g.translate(Math.sin(a) * r + R.range(-1, 1) * w, hh * 0.35 - 10, -Math.cos(a) * r + R.range(-1, 1) * w);
+      addMesh(view, g, view.materialFor(f.mat), { shadow: false });
+    }
   }
-  for (const g of list) addMesh(view, g, view.materialFor(f.mat), { shadow: false });
 }
 
 export function mesas(view, f) {
@@ -164,9 +169,11 @@ export function floaters(view, f) {
   const group = new THREE.Group();
   for (let k = 0; k < f.n; k++) {
     const a = R.range(0, Math.PI * 2), r = R.range(f.r0, f.r1), y = f.center[1] + R.range(f.y0, f.y1);
-    const g = k % 3 === 0 ? new THREE.BoxGeometry(R.range(2, 7), R.range(2, 5), R.range(2, 7)) : rockGeo(k % 4, 1).scale(R.range(2, 6), R.range(2, 5), R.range(2, 6));
+    // fragments of the structure: masonry blocks, column drums, rough stone
+    const kind = k % 3;
+    const g = kind === 0 ? new THREE.BoxGeometry(R.range(2, 7), R.range(1.5, 4), R.range(2, 7)) : kind === 1 ? new THREE.CylinderGeometry(1.0, 1.0, R.range(1.5, 3.5), 20) : rockGeo(k % 4, 1).scale(R.range(2, 6), R.range(2, 5), R.range(2, 6));
     view.track(g);
-    const m = new THREE.Mesh(g, view.materialFor(f.mat));
+    const m = new THREE.Mesh(g, view.materialFor(kind === 2 ? f.mat : (f.mat2 || f.mat)));
     m.position.set(f.center[0] + Math.sin(a) * r, y, f.center[2] - Math.cos(a) * r);
     m.rotation.set(R.range(0, 3), R.range(0, 3), R.range(0, 3));
     m.castShadow = true; m.receiveShadow = true;

@@ -6,7 +6,7 @@
 // until the new one is complete, so there are never holes.
 import * as THREE from '../../vendor/three/three.module.js';
 
-const ROOT = 1024, MIN = 64, SPLIT = 1.35, N = 32, ROOTS = 1, CAPACITY = 160;
+const ROOT = 1024, MIN = 128, SPLIT = 1.35, NEAR = 64, FAR = 32, ROOTS = 1, CAPACITY = 90;
 
 export class Terrain {
   constructor(heightAt, material, { castShadow = false, flip = false } = {}) {
@@ -40,6 +40,7 @@ export class Terrain {
 
   build(key) {
     const [x0, z0, size] = key.split(':').map(Number);
+    const N = size <= MIN ? NEAR : FAR;
     const step = size / N, V = N + 1;
     // heights with a one-sample border for normals
     const H = new Float32Array((V + 2) * (V + 2));

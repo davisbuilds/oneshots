@@ -324,6 +324,7 @@ export class App {
     a.position.set(...pl.feet);
     const fw = norm(sub(f, up.map((x) => x * dot(f, up))));
     a.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(new THREE.Vector3(0, 0, 0), new THREE.Vector3(-fw[0], -fw[1], -fw[2]), new THREE.Vector3(...up)));
+    a.updateMatrixWorld(true);
   }
 
   easePost(dt) {

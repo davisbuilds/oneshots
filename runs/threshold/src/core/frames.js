@@ -69,6 +69,12 @@ export function frameParts(P, style = 'monolith', opts = {}) {
     parts.push(at([0, -hh - 0.25, 0], [hw + jw + 0.6, 0.25, fd + 1.8], mat));
     parts.push(at([0, hh + lh * 0.5, fd + 0.11], [hw * 0.6, 0.06, 0.02], trim, { solid: false }));
     parts.push(at([0, hh + lh * 0.5, -fd - 0.11], [hw * 0.6, 0.06, 0.02], trim, { solid: false }));
+    // glyph columns down the faces of the jambs, and a stepped crown on great doors
+    for (const s of [-1, 1]) for (const z of [fd + 0.012, -fd - 0.012]) parts.push(at([s * (hw + jw * 0.5), 0.1 * hh, z], [jw * 0.09, hh * 0.78, 0.012], opts.glyph || trim, { solid: false }));
+    if (hh > 6) {
+      parts.push(at([0, hh + lh + 0.3 + 0.9, 0], [hw + jw * 0.6, 0.9, fd * 0.75], mat));
+      parts.push(at([0, hh + lh + 0.3 + 1.8 + 0.5, 0], [hw * 0.55, 0.5, fd * 0.55], mat));
+    }
   }
   return parts;
 }

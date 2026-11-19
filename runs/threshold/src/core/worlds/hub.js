@@ -35,7 +35,7 @@ export function hub(ctx) {
     box([0, y - h / 2, zc], [DECK.x * fx, h / 2, hz * fz], 'stoneDark'); y -= h;
   }
   // low curbs along the edges, with gaps where the sea can be approached
-  for (const [z0, z1] of [[-45, -26], [-14, 14], [26, 39]]) box([-DECK.x + 0.4, PY + 0.35, (z0 + z1) / 2], [0.4, 0.35, (z1 - z0) / 2], 'stoneDark');
+  for (const [z0, z1] of [[-45, -26], [-14, 14]]) box([-DECK.x + 0.4, PY + 0.35, (z0 + z1) / 2], [0.4, 0.35, (z1 - z0) / 2], 'stoneDark');
   box([0, PY + 0.35, DECK.z1 - 0.4], [DECK.x - 6, 0.35, 0.4], 'stoneDark');
   box([-8, PY + 0.35, DECK.z0 + 0.4], [12, 0.35, 0.4], 'stoneDark');
 
@@ -84,26 +84,38 @@ export function hub(ctx) {
     else if (link.slot === 'W') addDoor(d, link, [-11, PY, 22], [0, PY, 14], { siteR: 0, blend: 0 });
   }
 
+  // ── The terrace at the south end: you begin four metres above the deck and
+  // descend a broad stair towards the door.
+  const TZ = 30, TH = 4;
+  box([0, PY + TH / 2, (TZ + DECK.z1) / 2], [11, TH / 2, (DECK.z1 - TZ) / 2], 'stone');
+  for (let k = 0; k < 8; k++) box([0, PY + (k + 1) * TH / 16, TZ - (8 - k) * 0.9 + 0.45], [7.5, (k + 1) * TH / 16, 0.45], 'stone');
+  for (const sx of [-1, 1]) {
+    box([sx * 9.25, PY + TH / 2 + 0.6, TZ - 3.4], [1.75, TH / 2 + 0.6, 3.6], 'stoneDark');
+    box([sx * 9.25, PY + TH + 1.5, TZ - 0.6], [1.9, 0.3, 1.9], 'stone');
+  }
+  box([0, PY + TH + 0.5, DECK.z1 - 0.5], [11, 0.5, 0.5], 'stoneDark');
+  for (const sx of [-1, 1]) box([sx * 10.5, PY + TH + 0.5, (TZ + DECK.z1) / 2], [0.5, 0.5, (DECK.z1 - TZ) / 2], 'stoneDark');
+
   // ── The pedestal with the instrument, and the lodestone behind the great door.
-  d.parts.push({ kind: 'cyl', xf: xf([2.6, PY + 0.55, 21.5]), r: 0.7, h: 1.1, seg: 24, mat: 'stoneDark', solid: true });
-  d.parts.push({ kind: 'cyl', xf: xf([2.6, PY + 1.15, 21.5]), r: 0.85, h: 0.12, seg: 24, mat: 'stone', solid: true });
-  d.instrument = { p: [2.6, PY + 1.45, 21.5] };
+  d.parts.push({ kind: 'cyl', xf: xf([2.4, PY + TH + 0.55, 33.2]), r: 0.6, h: 1.1, seg: 24, mat: 'stoneDark', solid: true });
+  d.parts.push({ kind: 'cyl', xf: xf([2.4, PY + TH + 1.15, 33.2]), r: 0.75, h: 0.12, seg: 24, mat: 'stone', solid: true });
+  d.instrument = { p: [2.4, PY + TH + 1.45, 33.2] };
   d.lodestone = { p: [0, PY, -41], yaw: 0, kind: 'ring' };
   d.landmarks.push({ id: 'behind', name: 'Behind the Great Door', p: [0, PY, -41], note: 'From behind, the great door shows only the sea.' });
-  d.spawn = { feet: [0, PY, 26], yaw: 0 };
+  d.spawn = { feet: [0, PY + TH, 36.5], yaw: 0 };
 
   // ── The sea, and what stands in it.
-  d.features.push({ type: 'ocean', y: 0, deep: [0.006, 0.028, 0.045], shallow: [0.03, 0.1, 0.12], glitter: 1.0 });
+  d.features.push({ type: 'ocean', y: 0, deep: [0.008, 0.022, 0.04], shallow: [0.025, 0.07, 0.09], glitter: 1.0 });
   d.features.push({ type: 'ring', p: [-700, -60, -1700], r: 160, tube: 10, yaw: 0.5, mat: 'stoneDark' });
   d.features.push({ type: 'stacks', seed: ctx.seed, n: 9, r0: 900, r1: 2600, mat: 'stoneDark' });
-  d.features.push({ type: 'floaters', seed: ctx.seed, n: 16, center: [0, PY - 8, -3], r0: 32, r1: 95, y0: -28, y1: 24, mat: 'stoneDark' });
+  d.features.push({ type: 'floaters', seed: ctx.seed, n: 18, center: [0, PY - 8, -3], r0: 30, r1: 95, y0: -28, y1: 24, mat: 'stoneDark', mat2: 'stone' });
   d.features.push({ type: 'particles', kind: 'motes', count: 700, box: 50, color: [1.0, 0.86, 0.62], size: 0.045, speed: 0.12, glow: 0.5 });
 
   // ── A gold dawn, the sun low at front left.
   const sun = norm([-0.8, 0.2, -0.56]);
-  d.atmos = { fogColor: [0.6, 0.56, 0.54], sunDir: sun, sunColor: [1.9, 1.32, 0.86], fogDensity: 0.0009, fogFalloff: 0.011, fogBase: 0, inscatter: 0.45 };
+  d.atmos = { fogColor: [0.54, 0.56, 0.61], sunDir: sun, sunColor: [1.9, 1.32, 0.86], fogDensity: 0.0009, fogFalloff: 0.011, fogBase: 0, inscatter: 0.45 };
   d.sky = {
-    zenith: [0.08, 0.15, 0.32], horizon: [0.74, 0.6, 0.5], ground: [0.3, 0.33, 0.36],
+    zenith: [0.06, 0.13, 0.31], horizon: [0.7, 0.64, 0.6], ground: [0.3, 0.33, 0.36],
     sunSize: 0.012, sunGlow: 1.0, sunDisc: 30, moons: [{ dir: norm([0.45, 0.38, -0.8]), size: 0.02, color: [0.82, 0.82, 0.86] }], moonLight: norm([-0.8, 0.2, -0.5]),
     stars: 0.0, aurora: 0, clouds: 0.46, cloudScale: 0.55, cloudColor: [0.96, 0.8, 0.7],
   };
