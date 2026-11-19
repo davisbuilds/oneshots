@@ -5,7 +5,7 @@
 // overlaps the jambs slightly; the jambs hide the overlap.
 import { xmul, xf, qaxis } from './math.js';
 
-export const FRAME_STYLES = ['monolith', 'gate', 'arch', 'slab'];
+export const FRAME_STYLES = ['monolith', 'gate', 'arch', 'slab', 'collar'];
 
 // Parts are in world coordinates. Each box part may be solid (collider).
 export function frameParts(P, style = 'monolith', opts = {}) {
@@ -14,6 +14,16 @@ export function frameParts(P, style = 'monolith', opts = {}) {
   const parts = [];
   const mat = opts.mat || 'threshold';
   const trim = opts.trim || 'thresholdGlow';
+  if (style === 'collar') {
+    // A plain square collar set into a wall: symmetric, no apron, works at any
+    // orientation (windows, skylights, doors in thin walls).
+    const jw = opts.jw ?? 0.35, fd = opts.fd ?? 0.56;
+    for (const s of [-1, 1]) {
+      parts.push(at([s * (hw + jw / 2), 0, 0], [jw / 2, hh + jw, fd], mat));
+      parts.push(at([0, s * (hh + jw / 2), 0], [hw, jw / 2, fd], mat));
+    }
+    return parts;
+  }
   if (style === 'gate') {
     // A thin, tall frame of dark stone with a luminous inlay.
     const jw = 0.45, fd = 0.35, lh = 0.6;

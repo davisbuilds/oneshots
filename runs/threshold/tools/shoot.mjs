@@ -37,7 +37,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
       }
       const t0 = Date.now();
       const res = await current.page.evaluate(async ({ code, frames }) => {
-        window.THR.manual = true;
+        window.THR.app.manual = true;
         let r = null;
         if (code) r = await (new Function('THR', 'THREE', `return (async () => { ${code} })()`))(window.THR, window.THR.THREE);
         for (let i = 0; i < (frames || 1); i++) window.THR.frame(1 / 60);

@@ -1,12 +1,17 @@
 // A loaded world: the three.js scene built from a world descriptor, plus the
 // per-world uniforms, lights, environment map and portal records the portal
-// renderer needs. Building is split into steps so a world can be prepared
-// over several frames; dispose() releases every GPU resource it created.
+// renderer needs. update() streams terrain and scatter around the world's
+// focus; dispose() releases every GPU resource the world created.
 import * as THREE from 'three';
 import { makeAtmosUniforms, makeSkyUniforms, makeSkyMesh, patchMaterial } from './atmosphere.js';
 import { partGeometry, merge } from './geometry.js';
 import { corners } from '../core/portal.js';
 import { LAYER } from './portal-renderer.js';
+import { detailMaterial } from './materials.js';
+import { Terrain } from './terrain.js';
+import { ScatterRender } from './props.js';
+import { FEATURES } from './features.js';
+import { lodestone, instrumentOnPedestal } from './artifacts.js';
 
 export class WorldView {
   constructor(desc, ctx) {
@@ -16,40 +21,51 @@ export class WorldView {
     this.ready = false;
     this.scene = new THREE.Scene();
     this.scene.name = desc.key;
+    this.scene.matrixWorldAutoUpdate = true;
     this.uniforms = { ...makeAtmosUniforms(desc.atmos), ...makeSkyUniforms(desc.sky) };
     this.fillColor = desc.fill || desc.atmos.fogColor;
     this.portals = desc.portals.map((P) => ({ ...P, cornersPad: corners(P, 0.08) }));
     this.bySlot = new Map(this.portals.map((P) => [P.slot, P]));
-    this.focus = new THREE.Vector3();
+    this.focus = new THREE.Vector3(...(desc.spawn?.feet || [0, 0, 0]));
     this.disposables = [];
     this.updaters = [];
-    this.materials = {};
-    this.lastShadowFocus = null;
+    this.mats = new Map();
     this.stats = { meshes: 0, triangles: 0 };
   }
 
   portal(slot) { return this.bySlot.get(slot) || null; }
-
   track(x) { this.disposables.push(x); return x; }
+  patch(mat, key) { return patchMaterial(mat, this.uniforms, { key }); }
 
-  // Build everything synchronously (generators may override with steps).
+  // Merged static parts carry per-vertex colour; everything else does not
+  // (a material reading a missing colour attribute would render black).
+  materialFor(name, double = false, vertexColors = false) {
+    const k = name + (double ? ':2' : '') + (vertexColors ? ':vc' : '');
+    if (!this.mats.has(k)) {
+      const spec = this.desc.materials[name] || { color: [1, 0, 1] };
+      const m = this.track(detailMaterial(double ? { ...spec, side: 'double' } : spec, this.uniforms, { env: this.desc.light.env, vertexColors, key: vertexColors ? 'vc' : '' }));
+      this.mats.set(k, m);
+    }
+    return this.mats.get(k);
+  }
+
   build() {
-    const d = this.desc, s = this.scene, u = this.uniforms;
-    s.add(makeSkyMesh(u));
-    this.track(s.children[s.children.length - 1].geometry); this.track(s.children[s.children.length - 1].material);
-    // Lights
+    const d = this.desc, s = this.scene;
+    const sky = makeSkyMesh(this.uniforms);
+    this.track(sky.geometry); this.track(sky.material);
+    s.add(sky);
+    // lights
     const L = d.light;
     const sun = new THREE.DirectionalLight(new THREE.Color(...d.atmos.sunColor), L.sun);
-    sun.position.set(...d.atmos.sunDir).multiplyScalar(200);
     sun.layers.set(LAYER.LIGHTS);
     s.add(sun, sun.target);
     this.sun = sun;
-    if (this.ctx.shadows && L.shadows !== false) {
+    if (this.ctx.shadows && L.shadows !== false && L.sun > 0) {
       sun.castShadow = true;
       sun.shadow.mapSize.set(this.ctx.shadowSize, this.ctx.shadowSize);
-      const c = sun.shadow.camera; const r = L.shadowRange || 45;
-      c.left = -r; c.right = r; c.top = r; c.bottom = -r; c.near = 1; c.far = 600;
-      sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04;
+      const c = sun.shadow.camera, r = L.shadowRange || 45;
+      c.left = -r; c.right = r; c.top = r; c.bottom = -r; c.near = 1; c.far = 700;
+      sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.05;
       c.layers.enable(LAYER.DETAIL);
     }
     const hemi = new THREE.HemisphereLight(new THREE.Color(...L.hemiSky), new THREE.Color(...L.hemiGround), L.hemi);
@@ -59,51 +75,41 @@ export class WorldView {
       const p = new THREE.PointLight(new THREE.Color(...pl.color), pl.intensity, pl.range, 2);
       p.position.set(...pl.p); p.layers.set(LAYER.LIGHTS); s.add(p);
     }
-    // Materials
-    for (const [name, m] of Object.entries(d.materials)) this.materials[name] = this.makeMaterial(name, m);
-    // Static parts, merged per material
+    // static parts, merged per material
     const groups = new Map();
     for (const part of d.parts) {
+      if (part.hidden) continue;
       if (!groups.has(part.mat)) groups.set(part.mat, []);
       groups.get(part.mat).push(partGeometry(part));
     }
-    for (const [mat, geos] of groups) {
+    for (const [name, geos] of groups) {
       const g = this.track(merge(geos, { colors: true }));
-      const mesh = new THREE.Mesh(g, this.materials[mat] || this.materials.default);
+      const spec = d.materials[name] || {};
+      const mesh = new THREE.Mesh(g, this.materialFor(name, false, true));
       mesh.matrixAutoUpdate = false;
-      mesh.castShadow = d.materials[mat]?.castShadow !== false; mesh.receiveShadow = true;
-      if (d.materials[mat]?.transparent) mesh.layers.set(LAYER.TRANSPARENT);
+      mesh.castShadow = spec.castShadow !== false; mesh.receiveShadow = true;
+      if (spec.transparent) mesh.layers.set(LAYER.TRANSPARENT);
       s.add(mesh);
       this.stats.meshes++; this.stats.triangles += g.index.count / 3;
     }
-    if (d.ground) this.addGround(d.ground);
+    // terrain and scatter
+    const tf = d.features.find((f) => f.type === 'terrain');
+    if (tf && d.heightAt) {
+      this.terrain = new Terrain(d.heightAt, this.materialFor(tf.mat), { castShadow: false });
+      s.add(this.terrain.group);
+      this.terrain.update(this.focus, 1e9);
+    }
+    if (d.scatter.length && d.scatterCache) {
+      this.scatter = new ScatterRender(this, d.scatterCache);
+      s.add(this.scatter.group);
+      this.scatter.update(this.focus);
+    }
+    for (const f of d.features) if (FEATURES[f.type]) FEATURES[f.type](this, f);
+    if (d.lodestone) this.lodestone = lodestone(this, d.lodestone);
+    if (d.instrument) this.instrument = instrumentOnPedestal(this, d.instrument);
     this.makeEnvironment();
     this.ready = true;
     return this;
-  }
-
-  makeMaterial(name, m) {
-    const opts = {
-      color: new THREE.Color(...(m.color || [0.5, 0.5, 0.5])), roughness: m.rough ?? 0.8, metalness: m.metal ?? 0,
-      vertexColors: true, envMapIntensity: m.env ?? this.desc.light.env ?? 1,
-    };
-    if (m.emissive) { opts.emissive = new THREE.Color(...m.emissive); opts.emissiveIntensity = m.emissiveIntensity ?? 1; }
-    if (m.transparent) { opts.transparent = true; opts.opacity = m.opacity ?? 0.5; opts.depthWrite = false; }
-    if (m.side === 'double') opts.side = THREE.DoubleSide;
-    const mat = this.track(new THREE.MeshStandardMaterial(opts));
-    patchMaterial(mat, this.uniforms, { key: 'std' });
-    return mat;
-  }
-
-  addGround(g) {
-    if (g.kind === 'plane') {
-      const geo = this.track(new THREE.PlaneGeometry(6000, 6000, 1, 1).rotateX(-Math.PI / 2));
-      const mesh = new THREE.Mesh(geo, this.materials[g.mat]);
-      mesh.position.y = g.y; mesh.receiveShadow = true; mesh.frustumCulled = false;
-      mesh.onBeforeRender = (r, sc, cam) => { mesh.position.x = Math.round(cam.position.x / 50) * 50; mesh.position.z = Math.round(cam.position.z / 50) * 50; mesh.updateMatrixWorld(); };
-      // the snap happens before the model-view matrix is computed for this draw
-      this.scene.add(mesh);
-    }
   }
 
   makeEnvironment() {
@@ -111,7 +117,7 @@ export class WorldView {
     const skyScene = new THREE.Scene();
     const sky = makeSkyMesh(this.uniforms);
     skyScene.add(sky);
-    const rt = this.ctx.pmrem.fromScene(skyScene, 0, 0.1, 100, { size: 128 });
+    const rt = this.ctx.pmrem.fromScene(skyScene, 0, 0.1, 100, { size: 64 });
     sky.geometry.dispose(); sky.material.dispose();
     this.envRT = this.track(rt);
     this.scene.environment = rt.texture;
@@ -124,33 +130,40 @@ export class WorldView {
     if (this.sun && this.sun.castShadow && this.shadowFrame !== pr.frameId) {
       this.shadowFrame = pr.frameId;
       const f = this.focus;
-      if (!this.lastShadowFocus || this.lastShadowFocus.distanceToSquared(f) > 16 || this.shadowAnimated) {
-        const c = this.sun.shadow.camera, texel = (c.right - c.left) / this.sun.shadow.mapSize.x;
+      if (!this.lastShadowFocus || this.lastShadowFocus.distanceToSquared(f) > 9 || this.shadowDirty) {
+        this.shadowDirty = false;
+        const c = this.sun.shadow.camera, texel = (c.right - c.left) / this.sun.shadow.mapSize.x * 4;
         const sd = this.uniforms.uSunDir.value;
-        // snap the focus to shadow texels along the light's axes to avoid shimmer
         const fx = Math.round(f.x / texel) * texel, fy = Math.round(f.y / texel) * texel, fz = Math.round(f.z / texel) * texel;
         this.sun.target.position.set(fx, fy, fz);
-        this.sun.position.set(fx + sd.x * 250, fy + sd.y * 250, fz + sd.z * 250);
+        this.sun.position.set(fx + sd.x * 300, fy + sd.y * 300, fz + sd.z * 300);
         this.sun.target.updateMatrixWorld(); this.sun.updateMatrixWorld();
         pr.r.shadowMap.needsUpdate = true;
         this.lastShadowFocus = (this.lastShadowFocus || new THREE.Vector3()).copy(f);
+        pr.stats.shadowUpdates = (pr.stats.shadowUpdates || 0) + 1;
       }
     }
   }
 
-  update(dt, time) {
+  update(dt, time, budgetMs = 4) {
     this.uniforms.uTime.value = time;
     for (const f of this.updaters) f(dt, time);
+    if (this.terrain) this.terrain.update(this.focus, budgetMs);
+    if (this.scatter) this.scatter.update(this.focus);
+  }
+
+  counts() {
+    return { tiles: this.terrain ? this.terrain.cache.size : 0, scatter: this.scatter ? this.scatter.count : 0, triangles: this.stats.triangles };
   }
 
   dispose() {
+    this.terrain?.dispose();
+    this.scatter?.dispose();
     for (const x of this.disposables) x.dispose?.();
-    this.scene.traverse((o) => {
-      if (o.isMesh || o.isPoints || o.isInstancedMesh) { o.geometry?.dispose?.(); }
-      if (o.isLight && o.shadow && o.shadow.map) o.shadow.map.dispose();
-    });
+    this.scene.traverse((o) => { if (o.isLight && o.shadow && o.shadow.map) o.shadow.map.dispose(); });
     this.scene.clear();
     this.disposables = [];
+    this.mats.clear();
     this.ready = false;
     this.disposed = true;
   }

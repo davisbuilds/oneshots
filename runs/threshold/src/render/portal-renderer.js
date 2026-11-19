@@ -57,7 +57,7 @@ export class PortalRenderer {
   constructor(renderer) {
     this.r = renderer;
     this.gl = renderer.getContext();
-    this.settings = { maxDepth: 3, maxRenders: 12, minPixels: 48 };
+    this.settings = { maxDepth: 3, maxRenders: 12, minPixels: 48, farByLevel: [6000, 2600, 1300, 800, 600] };
     this.stats = this.freshStats();
     this.clipPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1e9);
     renderer.clippingPlanes = [this.clipPlane];
@@ -187,6 +187,7 @@ export class PortalRenderer {
       const minPix = level === 0 ? 0 : this.settings.minPixels;
       const ok = dest && dest.ready && D && level + 1 <= this.settings.maxDepth && this.renders < this.settings.maxRenders && it.area >= minPix;
       if (!ok) {
+        if (!dest && this.wanted && level + 1 <= 2) this.wanted.add(P.link.world);
         if (dest && D && level + 1 <= this.settings.maxDepth && this.renders >= this.settings.maxRenders) st.budgetHits++;
         this.drawSurface(P, it.near, cam, this.fillMat, level, view, clip, dest);
         st.portalsFilled++;
@@ -203,8 +204,12 @@ export class PortalRenderer {
       const q = qnorm(qmul(M.q, [cam.quaternion.x, cam.quaternion.y, cam.quaternion.z, cam.quaternion.w]));
       vcam.position.set(p[0], p[1], p[2]);
       vcam.quaternion.set(q[0], q[1], q[2], q[3]);
+      // deeper levels see less far: fewer draws, and fog hides the rest
+      const far = this.settings.farByLevel[Math.min(level + 1, this.settings.farByLevel.length - 1)];
+      if (vcam.far !== far) { vcam.far = far; vcam.updateProjectionMatrix(); }
       vcam.updateMatrixWorld(true);
       vcam.userData.viaPortal = D;
+      if (this.seen && !this.seen.has(dest.key)) this.seen.set(dest.key, vcam.position.clone());
       this.setScissor(it.rect);
       this.drawWorld(dest, vcam, level + 1, { n: D.n, d: D.d, portal: D }, it.rect);
       // back in W: restore its scissor, clip plane and uniforms (W may have been drawn again in the recursion)

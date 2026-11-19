@@ -89,6 +89,8 @@ uniform vec3 uMoonCol[3];
 uniform vec4 uSkyFx;             // stars, aurora, clouds coverage, cloud height
 uniform vec3 uCloudCol;
 uniform vec3 uAuroraCol;
+uniform vec3 uMoonLight;
+uniform vec4 uBeacon;           // xyz direction to the Threshold's beacon, w strength
 float skHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float skNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   float a = skHash(vec3(i, 1.7)), b = skHash(vec3(i + vec2(1, 0), 1.7)), c = skHash(vec3(i + vec2(0, 1), 1.7)), d = skHash(vec3(i + vec2(1, 1), 1.7));
@@ -124,15 +126,29 @@ vec3 skyColor(vec3 d, bool withDisc) {
     float ang = acos(clamp(c, -1.0, 1.0));
     float disc = smoothstep(r, r * 0.985, ang);
     if (withDisc && disc > 0.0) {
-      // a lit sphere: shade by the sun direction across the disc
+      // a lit sphere: maria, craters and limb darkening, shaded by uMoonLight
       vec3 t = normalize(cross(md, vec3(0.0, 1.0, 0.0) + 1e-4)); vec3 b = cross(t, md);
       vec2 uv = vec2(dot(d - md * c, t), dot(d - md * c, b)) / r;
-      vec3 n = normalize(t * uv.x + b * uv.y - md * sqrt(max(1.0 - dot(uv, uv), 0.0)));
-      float lit = max(dot(-n, -uSunDir * 0.6 + md * 0.4), 0.0) * 0.85 + 0.15;
-      float crater = 0.85 + 0.15 * skNoise(uv * 6.0 + float(i) * 7.0);
-      col = mix(col, uMoonCol[i] * lit * crater * 1.6, disc);
+      float z = sqrt(max(1.0 - dot(uv, uv), 0.0));
+      vec3 n = normalize(t * uv.x + b * uv.y - md * z);
+      float lit = smoothstep(-0.08, 0.25, dot(n, normalize(uMoonLight)));
+      vec2 sp = uv * 2.2 + float(i) * 7.3;
+      float maria = smoothstep(0.45, 0.7, skFbm(sp * 0.9));
+      float crater = skFbm(sp * 3.5) * 0.5 + skFbm(sp * 9.0) * 0.25;
+      float tone = (0.92 - maria * 0.32) * (0.82 + crater * 0.36) * (0.55 + 0.45 * pow(z, 0.5));
+      vec3 mc = uMoonCol[i] * tone * (lit * 1.7 + 0.04);
+      col = mix(col, mc, disc);
     }
+    if (withDisc) col += uMoonCol[i] * smoothstep(r * 3.2, r, ang) * 0.06 * (1.0 - disc);
     col += uMoonCol[i] * pow(max(c, 0.0), 900.0 * (0.02 / max(r, 0.004))) * 0.25;
+  }
+  // the beacon: a thin pillar of pale light on the horizon, towards the Threshold
+  if (uBeacon.w > 0.0) {
+    vec2 bd = normalize(uBeacon.xz), dd = normalize(d.xz + 1e-5);
+    float ang = acos(clamp(dot(bd, dd), -1.0, 1.0));
+    float w = 0.0022 + 0.004 * uBeacon.w;
+    float pillar = smoothstep(w, 0.0, ang) * smoothstep(-0.02, 0.05, y) * (1.0 - smoothstep(0.1, 0.9, y));
+    col += vec3(1.0, 0.86, 0.62) * pillar * uBeacon.w * 2.2;
   }
   // clouds
   if (uSkyFx.z > 0.0 && y > 0.0) {
@@ -160,6 +176,8 @@ export function makeSkyUniforms(s) {
     uSkyFx: { value: new THREE.Vector4(s.stars, s.aurora, s.clouds, s.cloudScale) },
     uCloudCol: { value: new THREE.Color(...s.cloudColor) },
     uAuroraCol: { value: new THREE.Color(...(s.auroraColor || [0.2, 1, 0.6])) },
+    uMoonLight: { value: new THREE.Vector3(...(s.moonLight || [0.6, 0.45, 0.66])).normalize() },
+    uBeacon: { value: new THREE.Vector4(...(s.beacon || [0, 0, 1, 0])) },
   };
 }
 

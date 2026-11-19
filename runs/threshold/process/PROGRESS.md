@@ -86,3 +86,95 @@ then *invalidates its colour attachment* after every `render()` call, which
 would break multi-call stencil compositing. The scene target is therefore
 single-sampled and anti-aliased with FXAA in post. `PCFSoftShadowMap` was
 removed in r187; using `PCFShadowMap`.
+
+## 13:05 Physics: a body that straddles worlds
+
+`src/core/physics.js`: a capsule controller (radius 0.32 m, eye 1.62 m) with
+step-up, ground snapping, substepping (no step longer than 0.15 m, so falls
+cannot tunnel through floors) and an explicit `up` axis, so a portal that
+rotates the traveller (a window that opens through a ceiling) can be followed
+by a smooth re-alignment to the new world's gravity.
+
+The important part is **portal-aware collision**. While the capsule overlaps
+a portal's opening, contacts with its own world's geometry *beyond* the plane
+inside the opening are discarded, and the linked world's geometry in front
+of the exit portal is mapped back through the portal and used instead. A test
+builds a doorway whose own world has a wall 0.4 m behind the plane (like the
+inside of a small hut) while the far world has a post 0.5 m beyond it: the
+walker passes the wall's position and stops at the post, at exactly
+`0.5 - radius` beyond the plane.
+
+Failures on the way: the monolith frame's base blocks stuck 0.2 m into the
+opening (a real geometry bug, found by a test that strafes into the jambs from
+both sides of the plane and expects to stop at `hw - radius`); and three test
+construction mistakes (wrong facing in the back-to-back test, a reversal loop
+that never reached the plane, a high-speed start too far away). The suite now
+covers walking through and back, standing halfway, consistent jamb collisions
+on both sides, 60 approaches into edges and corners (asserting the eye is never
+behind a portal of its own world), a 300 m/s crossing, 400 rapid reversals, and
+the back-to-back gate.
+
+## 13:15 The multiverse: lattice addressing
+
+Worlds live on an unbounded integer lattice, key `"i,j"`. Every lattice edge
+that exists is one portal pair, decided by a hash of one canonical endpoint
+(E/W always, N/S at 42 %, four long "wormhole" offsets at 7 % each), so both
+ends agree without storing anything and every link is reversible by
+construction. Pocket worlds (`"i,j/name"`) hang off a host for the impossible
+architecture. Archetypes are hashed per cell, with E/W neighbours steered apart
+so a doorway usually shows a contrasting world; (0,0) to (3,0) are curated
+(the Threshold, the desert, the forest, the glacier). A quick check over twelve
+worlds, including far ones such as (-12, 9), found every link resolving back
+to its source with matching size; generating all of them took 39 ms.
+
+## 13:20 Rendering a world from its descriptor
+
+`src/render/`: a shared 256² tileable noise texture drives triplanar detail on
+every PBR surface by kind (paving with per-slab tint and grooves, sand ripples
+with glints, banded rock, glowing moss, bark, snow, cracked ice, board-marked
+concrete with snow on its upper faces); quadtree terrain with skirts, a bounded
+tile cache and a per-frame build budget that never shows holes; instanced
+props from the same chunked placements physics uses; an analytic sky with sun,
+moons (with phases, maria and craters), stars, aurora and clouds, also used for
+the ocean's reflections; height fog with sun inscattering; and per-world
+environment maps made from the sky.
+
+## 13:30 The first full app, and what was wrong with it
+
+Snapshot 04 is the first frame of the real app. Faults: every object without
+a per-vertex colour attribute rendered **black** (the materials asked for
+vertex colours; WebGL's default attribute value is zero), the great door was a
+small rectangle 80 m away instead of the enormous doorway of the brief, the
+light was flat lavender, and the view cache thrashed (nine worlds built, three
+disposed in six frames: the recursion reaches about eight worlds from the
+spawn). Also `flat` is a reserved word in GLSL ES 3.0.
+
+Recomposed the Threshold (snapshot 05): a long deck in one-point perspective
+with a colonnade left and the stoa right, the doorway now 12 × 32 m and 58 m
+from the spawn, the sun low at front left so the door is backlit and the
+pillars' shadows stripe the deck. The desert became a violet twilight: the sun
+just set behind the great door (its afterglow lights the dunes facing you),
+and the three moons rise in the east, placed so they sit inside the doorway as
+seen from the spawn. View cache raised to ten worlds; deeper recursion levels
+use a nearer far plane.
+
+Snapshot 06: forest, glacier, hall and the room that contains itself on first
+render. The forest was garish (moss patches and caps too bright), the glacier
+was lost in white fog, the hall was lit flat with no sunbeams, and the mirror
+room's lodestone stood where the camera spawns. Retuned all four.
+
+## 13:40 The acceptance test, in a browser, with real input
+
+`verify.mjs` drives the page with real keyboard and mouse events (a `?nolock`
+test mode replaces pointer lock with drag-to-look; the input path is the same)
+and steps frames itself. It walks 58 m to the great door, releases short of it
+and eases in with key taps until the eye is 3.3 cm from the plane, looks left,
+right and down (snapshot 07: the jamb is lit by dawn on one half and twilight
+on the other; looking down, the deck meets the sand exactly at the plane),
+compares the frame 5 mm before the plane with the frame after a 1 cm step
+across it (mean change 0.24/255; 0.01 % of pixels change by more than 40), walks
+out, turns round with the mouse and checks the doorway is brighter than the
+desert around it (the dawn platform behind: snapshot 08), walks back, and
+asserts exactly two crossings. My first versions of the test were wrong twice:
+a stop condition that a 7.7 cm-per-frame walk jumps over, and "reset" mouse
+moves that themselves rotated the camera.
