@@ -245,3 +245,13 @@ test('regenerated GPU input buffers agree per seed and across high/low terrain s
   assert.notDeepEqual(high.geometry.attributes.position.array, other.geometry.attributes.position.array);
   for (const m of [high, low, repeat, other]) m.geometry.dispose();
 });
+
+test('renderer objects receive distinct v4 UUIDs through the platform random source', (t) => {
+  t.mock.method(Math, 'random', () => assert.fail('renderer UUID used Math.random'));
+  const first = new T.BufferGeometry().uuid;
+  const second = new T.BufferGeometry().uuid;
+  const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+  assert.match(first, uuid);
+  assert.match(second, uuid);
+  assert.notEqual(first, second);
+});

@@ -20,13 +20,13 @@ The benchmark samples 2.5 seconds at each of seven viewpoints. It measures elaps
 
 | View | Median frame | P95 frame | Median GPU | Scene views | Draw calls | Triangles |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Opening | 16.7 ms | 18.3 ms | 4.39 ms | 4 | 188 | 803,630 |
-| Approach | 16.7 ms | 18.5 ms | 4.42 ms | 4 | 178 | 787,594 |
-| Saffron Sea | 16.7 ms | 17.3 ms | 4.94 ms | 3 | 132 | 680,464 |
-| Vesper Canopy | 16.7 ms | 17.2 ms | 5.17 ms | 4 | 146 | 796,990 |
-| Glass Meridian | 16.7 ms | 17.3 ms | 5.12 ms | 5 | 177 | 679,510 |
-| Folded Archive | 16.7 ms | 17.4 ms | 5.44 ms | 6 | 150 | 843,752 |
-| Returning aisle | 16.7 ms | 17.4 ms | 5.51 ms | 6 | 160 | 853,512 |
+| Opening | 16.7 ms | 18.7 ms | 4.35 ms | 4 | 188 | 803,630 |
+| Approach | 16.7 ms | 18.7 ms | 4.42 ms | 4 | 178 | 787,594 |
+| Saffron Sea | 16.7 ms | 18.6 ms | 4.99 ms | 3 | 132 | 680,464 |
+| Vesper Canopy | 16.7 ms | 18.4 ms | 5.11 ms | 4 | 146 | 796,990 |
+| Glass Meridian | 16.7 ms | 18.9 ms | 5.12 ms | 5 | 177 | 679,510 |
+| Folded Archive | 16.7 ms | 18.4 ms | 5.45 ms | 6 | 150 | 843,752 |
+| Returning aisle | 16.6 ms | 18.5 ms | 5.58 ms | 6 | 160 | 853,512 |
 
 The most expensive sampled GPU view was the returning aisle, where nested doors retained six scene passes. Scissoring bounds fragment work. An instanced batch can still submit distant geometry outside the narrow visible opening. First entry also builds geometry and may compile a shader or allocate a shadow target. The sampling windows cover warm movement and return views. They do not characterize cold-start stalls, display latency, every possible seed, software rendering, mobile GPUs or other browser engines.
 
