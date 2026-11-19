@@ -29,7 +29,7 @@ export function frameParts(P, style = 'monolith', opts = {}) {
     const jw = 1.0, fd = 0.8;
     for (const s of [-1, 1]) {
       parts.push(at([s * (hw + jw / 2), 0.4, 0], [jw / 2, hh + 0.4, fd], mat));
-      parts.push(at([s * (hw + jw / 2), -hh + 0.35, 0], [jw / 2 + 0.15, 0.35, fd + 0.15], mat));
+      parts.push(at([s * (hw + jw / 2 + 0.075), -hh + 0.35, 0], [jw / 2 + 0.075, 0.35, fd + 0.15], mat));
       parts.push(at([s * (hw + jw / 2), hh + 0.95, 0], [jw / 2 + 0.12, 0.15, fd + 0.12], mat));
     }
     for (let i = 0; i < 4; i++) {
@@ -52,7 +52,7 @@ export function frameParts(P, style = 'monolith', opts = {}) {
     const jw = Math.max(0.9, hw * 0.35), fd = 0.7, lh = Math.max(1.0, hh * 0.25);
     for (const s of [-1, 1]) {
       parts.push(at([s * (hw + jw / 2), lh / 2, 0], [jw / 2, hh + lh / 2, fd], mat));
-      parts.push(at([s * (hw + jw / 2), -hh + 0.3, 0], [jw / 2 + 0.2, 0.3, fd + 0.2], mat));
+      parts.push(at([s * (hw + jw / 2 + 0.1), -hh + 0.3, 0], [jw / 2 + 0.1, 0.3, fd + 0.2], mat));
     }
     parts.push(at([0, hh + lh / 2, 0], [hw + jw + 0.25, lh / 2, fd + 0.1], mat));
     parts.push(at([0, hh + lh + 0.15, 0], [hw + jw + 0.5, 0.15, fd + 0.25], mat));
