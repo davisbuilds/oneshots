@@ -1,0 +1,31 @@
+schema = 1
+slug = "cambrian-engine"
+title = "The Cambrian Engine"
+summary = "An artificial-life microscope with inherited anatomy, an evolving food web, and a replayable record of every lineage."
+date = 2026-11-19
+kind = "long-horizon"
+medium = ["web", "artificial-life", "evolution", "simulation", "procedural", "interactive"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "GPT-6.2 Astra"
+model_id = "gpt-6.2-astra"
+harness = "Codex"
+reasoning = "xhigh"
+
+[run]
+brief = "brief.md"
+human_turns = 1
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+command = "node build.cjs"
+verify = "node build.cjs --check && node --test tests/*.test.cjs"
+timeout_minutes = 5
+
+[[assets]]
+file = "cambrian-engine.html"
+description = "The complete offline microscope, observatory and simulation in one HTML file"

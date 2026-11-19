@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "study": "cpu-profile",
+  "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+  "host": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4"
+  },
+  "parameters": {
+    "ticks": 18000,
+    "warmup": 1200,
+    "interval": 60
+  },
+  "samples": 4772,
+  "seconds": 7.141,
+  "frames": [
+    {
+      "name": "wrap @ engine.js",
+      "share": 0.261269
+    },
+    {
+      "name": "_neighbor @ engine.js",
+      "share": 0.253017
+    },
+    {
+      "name": "_act @ engine.js",
+      "share": 0.15827
+    },
+    {
+      "name": "cosine @ engine.js",
+      "share": 0.089559
+    },
+    {
+      "name": "step @ engine.js",
+      "share": 0.060453
+    },
+    {
+      "name": "delta @ engine.js",
+      "share": 0.038728
+    },
+    {
+      "name": "_graze @ engine.js",
+      "share": 0.033682
+    },
+    {
+      "name": "_eat @ engine.js",
+      "share": 0.028896
+    },
+    {
+      "name": "direction @ engine.js",
+      "share": 0.02547
+    },
+    {
+      "name": "sine @ engine.js",
+      "share": 0.025226
+    },
+    {
+      "name": "_bite @ engine.js",
+      "share": 0.005946
+    },
+    {
+      "name": "(garbage collector)",
+      "share": 0.005439
+    },
+    {
+      "name": "distanceFromOrigin @ engine.js",
+      "share": 0.002124
+    },
+    {
+      "name": "(program)",
+      "share": 0.002007
+    },
+    {
+      "name": "_createOrganism @ engine.js",
+      "share": 0.001645
+    }
+  ]
+}
