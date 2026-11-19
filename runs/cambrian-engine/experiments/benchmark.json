@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "benchmark",
-  "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+  "engineSha256": "b51da670a6e49cc89a51c3950128b7a0d963154b5fb223e6574b54f655655504",
   "host": {
     "node": "v24.22.1",
     "platform": "darwin",
@@ -17,26 +17,26 @@
     {
       "seed": 17,
       "environment": "balanced",
-      "minPopulation": 50,
-      "maxPopulation": 317,
-      "medianMsPerTick": 0.112546,
-      "p95BatchMsPerTick": 0.128975
+      "minPopulation": 70,
+      "maxPopulation": 306,
+      "medianMsPerTick": 0.116546,
+      "p95BatchMsPerTick": 0.131502
     },
     {
       "seed": 31,
       "environment": "jade",
-      "minPopulation": 82,
-      "maxPopulation": 371,
-      "medianMsPerTick": 0.143334,
-      "p95BatchMsPerTick": 0.155752
+      "minPopulation": 94,
+      "maxPopulation": 365,
+      "medianMsPerTick": 0.138804,
+      "p95BatchMsPerTick": 0.158457
     },
     {
       "seed": 73,
       "environment": "amber",
-      "minPopulation": 214,
-      "maxPopulation": 392,
-      "medianMsPerTick": 0.152417,
-      "p95BatchMsPerTick": 0.166966
+      "minPopulation": 212,
+      "maxPopulation": 355,
+      "medianMsPerTick": 0.1478,
+      "p95BatchMsPerTick": 0.162415
     }
   ]
 }

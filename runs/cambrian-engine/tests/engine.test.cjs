@@ -182,3 +182,28 @@ test('bounded replay arithmetic preserves directions and Shannon entropy', () =>
   }
   assert.ok(Math.abs(new World().summary().diversity - Math.log(96)) < 2e-14);
 });
+
+test('spatial lookup agrees with current positions throughout sequential movement', () => {
+  class CheckedWorld extends World {
+    _neighbor(observer) {
+      const distance = (other) => {
+        const dx = Math.abs(other.x - observer.x);
+        const dy = Math.abs(other.y - observer.y);
+        return Math.hypot(Math.min(dx, this.width - dx), Math.min(dy, this.height - dy));
+      };
+      let nearest = Infinity;
+      for (const other of this.organisms) {
+        if (other === observer || other.energy <= 0) continue;
+        const separation = distance(other);
+        if (separation < observer.traits.senses) nearest = Math.min(nearest, separation);
+      }
+      const indexed = super._neighbor(observer);
+      assert.equal(indexed ? distance(indexed) : Infinity, nearest,
+        `nearest living neighbor at tick ${this.tick} for specimen ${observer.id}`);
+      return indexed;
+    }
+  }
+  const world = new CheckedWorld({seed: 73});
+  world.step(950);
+  assert.ok(world.summary().births > 0 && world.summary().deaths > 0);
+});

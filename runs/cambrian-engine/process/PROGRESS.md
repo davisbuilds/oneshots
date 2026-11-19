@@ -16,6 +16,8 @@
 
 The first PR scan flagged the packager’s matching of HTML script end tags. The revised packager reads local asset declarations one line at a time and fails on an unexpected script declaration. Rebuilt the standalone page and exercised it through the offline browser route.
 
+At 10:19 UTC, review identified a second numerical-model issue. After a swimmer crossed a resource-cell boundary, later swimmers in the same tick could search a bucket holding its previous position. Seed 73 reproduced a missed neighbor at tick 784, 10.45 units away inside an 11.73-unit sensing radius. A brute-force oracle failed against the spatial index before repair. The corrected model relinks a moving organism immediately and agrees with the oracle on every query in the regression run. We repeated the multi-seed studies, long pedigree, profile, browser interactions and Chrome–Node comparison. The current notebook and final-state screenshots describe that revision.
+
 ## Numbered observations
 
 1. [First integrated instrument](snapshots/01-instrument.webp) — early optical plate and census.

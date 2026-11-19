@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "stability",
-  "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+  "engineSha256": "b51da670a6e49cc89a51c3950128b7a0d963154b5fb223e6574b54f655655504",
   "host": {
     "node": "v24.22.1",
     "platform": "darwin",
@@ -14,174 +14,174 @@
     "interval": 256
   },
   "minPopulation": 22,
-  "maxPopulation": 322,
-  "maxAbsoluteResidual": 0.00006025887978466926,
-  "maxRelativeResidual": 2.0801042443866417e-12,
-  "elapsedStepMs": 72707.7,
-  "ticksPerSecond": 8527.3,
+  "maxPopulation": 329,
+  "maxAbsoluteResidual": 0.00004567790438159136,
+  "maxRelativeResidual": 1.7239590280832215e-12,
+  "elapsedStepMs": 76935.6,
+  "ticksPerSecond": 8058.7,
   "peakSampledMemoryBytes": {
-    "heapUsed": 370044720,
-    "rss": 510377984
+    "heapUsed": 374745112,
+    "rss": 504512512
   },
   "checkpoints": [
     {
       "tick": 51712,
-      "population": 263,
-      "births": 32054,
-      "deaths": 31887,
-      "maxGeneration": 249,
-      "livingMaxGeneration": 249
+      "population": 265,
+      "births": 31718,
+      "deaths": 31549,
+      "maxGeneration": 218,
+      "livingMaxGeneration": 218
     },
     {
       "tick": 103424,
-      "population": 271,
-      "births": 65485,
-      "deaths": 65310,
-      "maxGeneration": 460,
-      "livingMaxGeneration": 460
+      "population": 266,
+      "births": 65534,
+      "deaths": 65364,
+      "maxGeneration": 412,
+      "livingMaxGeneration": 412
     },
     {
       "tick": 155136,
-      "population": 275,
-      "births": 98811,
-      "deaths": 98632,
-      "maxGeneration": 668,
-      "livingMaxGeneration": 668
+      "population": 270,
+      "births": 98439,
+      "deaths": 98265,
+      "maxGeneration": 628,
+      "livingMaxGeneration": 628
     },
     {
       "tick": 206848,
-      "population": 280,
-      "births": 132477,
-      "deaths": 132293,
-      "maxGeneration": 884,
-      "livingMaxGeneration": 884
+      "population": 278,
+      "births": 130812,
+      "deaths": 130630,
+      "maxGeneration": 833,
+      "livingMaxGeneration": 833
     },
     {
       "tick": 258560,
-      "population": 256,
-      "births": 165947,
-      "deaths": 165787,
-      "maxGeneration": 1070,
-      "livingMaxGeneration": 1070
+      "population": 292,
+      "births": 163749,
+      "deaths": 163553,
+      "maxGeneration": 1030,
+      "livingMaxGeneration": 1030
     },
     {
       "tick": 310272,
-      "population": 281,
-      "births": 200337,
-      "deaths": 200152,
-      "maxGeneration": 1287,
-      "livingMaxGeneration": 1287
+      "population": 282,
+      "births": 198979,
+      "deaths": 198793,
+      "maxGeneration": 1250,
+      "livingMaxGeneration": 1250
     },
     {
       "tick": 361984,
-      "population": 287,
-      "births": 233963,
-      "deaths": 233772,
-      "maxGeneration": 1501,
-      "livingMaxGeneration": 1501
+      "population": 271,
+      "births": 231416,
+      "deaths": 231241,
+      "maxGeneration": 1439,
+      "livingMaxGeneration": 1439
     },
     {
       "tick": 413696,
-      "population": 271,
-      "births": 266909,
-      "deaths": 266734,
-      "maxGeneration": 1709,
-      "livingMaxGeneration": 1709
+      "population": 274,
+      "births": 265878,
+      "deaths": 265700,
+      "maxGeneration": 1666,
+      "livingMaxGeneration": 1666
     },
     {
       "tick": 465408,
-      "population": 257,
-      "births": 300046,
-      "deaths": 299885,
-      "maxGeneration": 1923,
-      "livingMaxGeneration": 1923
+      "population": 295,
+      "births": 299977,
+      "deaths": 299778,
+      "maxGeneration": 1889,
+      "livingMaxGeneration": 1889
     },
     {
       "tick": 517120,
-      "population": 265,
-      "births": 332716,
-      "deaths": 332547,
-      "maxGeneration": 2117,
-      "livingMaxGeneration": 2117
+      "population": 276,
+      "births": 332382,
+      "deaths": 332202,
+      "maxGeneration": 2103,
+      "livingMaxGeneration": 2103
     },
     {
       "tick": 568832,
-      "population": 285,
-      "births": 366386,
-      "deaths": 366197,
-      "maxGeneration": 2333,
-      "livingMaxGeneration": 2333
+      "population": 286,
+      "births": 365905,
+      "deaths": 365715,
+      "maxGeneration": 2315,
+      "livingMaxGeneration": 2315
     },
     {
       "tick": 620000,
-      "population": 270,
-      "births": 400636,
-      "deaths": 400462,
-      "maxGeneration": 2548,
-      "livingMaxGeneration": 2548
+      "population": 302,
+      "births": 398681,
+      "deaths": 398475,
+      "maxGeneration": 2506,
+      "livingMaxGeneration": 2506
     }
   ],
   "finalBudget": {
     "initial": 4283.19232353665,
-    "regenerated": 30337858.698967505,
-    "burned": 26309798.13462424,
-    "spoiled": 4028814.116902285,
-    "jade": 496.0889750145469,
-    "amber": 489.2727859863445,
-    "biomass": 2544.2780527336863,
-    "balance": 0.000049217497689824086
+    "regenerated": 30220067.752054323,
+    "burned": 26182726.96884184,
+    "spoiled": 4037641.606595936,
+    "jade": 453.79220694185346,
+    "amber": 472.03073816387825,
+    "biomass": 3056.54603529529,
+    "balance": 0.00004031864318676526
   },
   "verifiedLivingAncestry": {
-    "organism": 400668,
-    "depth": 2548,
-    "founder": 20,
-    "checkedRecords": 2549
+    "organism": 398713,
+    "depth": 2506,
+    "founder": 42,
+    "checkedRecords": 2507
   },
   "final": {
     "tick": 620000,
-    "population": 270,
-    "births": 400636,
-    "deaths": 400462,
-    "allTimeGeneration": 2548,
-    "livingGeneration": 2548,
+    "population": 302,
+    "births": 398681,
+    "deaths": 398475,
+    "allTimeGeneration": 2506,
+    "livingGeneration": 2506,
     "livingBranches": 154,
-    "newBranches": 107982,
-    "preyBites": 959573,
-    "distinctGenomes": 270,
-    "rmsTraitSpread": 0.214044,
+    "newBranches": 107594,
+    "preyBites": 1028218,
+    "distinctGenomes": 302,
+    "rmsTraitSpread": 0.210998,
     "traits": {
-      "size": 0.084555,
-      "aspect": 0.771699,
-      "fins": 0.613525,
-      "tail": 0.332964,
-      "armor": 0.111298,
-      "spines": 0.178628,
-      "jaw": 0.095913,
-      "gut": 0.483915,
-      "vision": 0.579564,
-      "chemotaxis": 0.857915,
-      "pursuit": 0.246802,
-      "throttle": 0.800352,
-      "turning": 0.779088,
-      "fertility": 0.645261,
-      "longevity": 0.824151,
-      "turnBias": 0.503916,
-      "thrustHunger": 0.519557,
-      "thrustChemistry": 0.463572,
-      "thrustNeighbor": 0.380734,
-      "grazeBias": 0.844924,
-      "grazeHunger": 0.764636,
-      "grazeChemistry": 0.588025,
-      "grazeNeighbor": 0.530245,
-      "graspBias": 0.250711,
-      "graspHunger": 0.28122,
-      "graspChemistry": 0.33373,
-      "graspNeighbor": 0.596222
+      "size": 0.087209,
+      "aspect": 0.756469,
+      "fins": 0.452367,
+      "tail": 0.193621,
+      "armor": 0.135102,
+      "spines": 0.171776,
+      "jaw": 0.076415,
+      "gut": 0.475733,
+      "vision": 0.600166,
+      "chemotaxis": 0.852082,
+      "pursuit": 0.260195,
+      "throttle": 0.834569,
+      "turning": 0.760128,
+      "fertility": 0.438877,
+      "longevity": 0.835385,
+      "turnBias": 0.264324,
+      "thrustHunger": 0.500204,
+      "thrustChemistry": 0.583203,
+      "thrustNeighbor": 0.663978,
+      "grazeBias": 0.819468,
+      "grazeHunger": 0.826672,
+      "grazeChemistry": 0.607809,
+      "grazeNeighbor": 0.383255,
+      "graspBias": 0.25678,
+      "graspHunger": 0.544919,
+      "graspChemistry": 0.668896,
+      "graspNeighbor": 0.431929
     },
     "diet": {
-      "jade": 9924028.041,
-      "amber": 9834407.883,
-      "prey": 40358.862
+      "jade": 9830306.49,
+      "amber": 9906360.934,
+      "prey": 45629.98
     }
   }
 }

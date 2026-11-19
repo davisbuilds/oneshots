@@ -150,11 +150,11 @@ function adaptation(rows, response) {
   };
   for (const row of rows) {
     const byBlock = row.assays.map(({ blocks }) => {
-      const rate = (source, environment) => response(blocks[source][environment]?.at(-1)) / assayFounders;
-      const advantage = (suffix) => (
-        (rate(`jade-${suffix}`, 'jade') - rate(`amber-${suffix}`, 'jade')) +
-        (rate(`amber-${suffix}`, 'amber') - rate(`jade-${suffix}`, 'amber'))
-      ) / 2;
+      const count = (source, environment) => response(blocks[source][environment]?.at(-1));
+      // Form paired differences from integer counts before dividing, so exact ties remain zero.
+      const advantage = (suffix) => (count(`jade-${suffix}`, 'jade') - count(`amber-${suffix}`, 'jade')) +
+        (count(`amber-${suffix}`, 'amber') - count(`jade-${suffix}`, 'amber'));
+      const againstAncestor = (environment) => 2 * (count(`${environment}-mutation`, environment) - count('ancestor', environment));
       const mutation = advantage('mutation');
       const noMutation = advantage('no-mutation');
       return {
@@ -163,13 +163,13 @@ function adaptation(rows, response) {
         extraWithMutation: mutation - noMutation,
         neutralGut: advantage('neutral-gut'),
         ancestralController: advantage('ancestral-controller'),
-        jadeOnJadeVsAncestor: rate('jade-mutation', 'jade') - rate('ancestor', 'jade'),
-        amberOnAmberVsAncestor: rate('amber-mutation', 'amber') - rate('ancestor', 'amber'),
+        jadeOnJadeVsAncestor: againstAncestor('jade'),
+        amberOnAmberVsAncestor: againstAncestor('amber'),
       };
     });
     for (const [label, collection] of Object.entries(metrics)) {
       const values = byBlock.map((block) => block[label]);
-      if (values.every(Number.isFinite)) collection.push(mean(values));
+      if (values.every(Number.isFinite)) collection.push(mean(values) / (2 * assayFounders));
     }
   }
   return Object.fromEntries(Object.entries(metrics).map(([name, values]) => [name, compareAcrossSeeds(values)]));

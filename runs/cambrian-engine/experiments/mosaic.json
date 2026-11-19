@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "balanced-mosaic",
-  "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+  "engineSha256": "b51da670a6e49cc89a51c3950128b7a0d963154b5fb223e6574b54f655655504",
   "parameters": {
     "seeds": [
       17,
@@ -45,16 +45,16 @@
         "worldsWithBothExtremes": 5,
         "lowMinusHighShare": {
           "values": [
-            0.156587,
-            0.231488,
-            0.297378,
-            0.154429,
-            0.311932
+            -0.338353,
+            0.071304,
+            0.176637,
+            0.278877,
+            0.192621
           ],
-          "mean": 0.230363,
-          "positive": 5,
+          "mean": 0.076217,
+          "positive": 4,
           "zero": 0,
-          "negative": 0
+          "negative": 1
         }
       },
       {
@@ -63,13 +63,13 @@
         "worldsWithBothExtremes": 5,
         "lowMinusHighShare": {
           "values": [
-            0.222977,
-            0.239493,
-            0.292478,
-            0.217657,
-            0.277389
+            0.256234,
+            0.261131,
+            0.253028,
+            0.287375,
+            0.236475
           ],
-          "mean": 0.249999,
+          "mean": 0.258849,
           "positive": 5,
           "zero": 0,
           "negative": 0
@@ -81,13 +81,13 @@
         "worldsWithBothExtremes": 5,
         "lowMinusHighShare": {
           "values": [
-            0.316164,
-            0.298227,
-            0.265648,
-            0.211117,
-            0.272321
+            0.200569,
+            0.269783,
+            0.248415,
+            0.269683,
+            0.184597
           ],
-          "mean": 0.272695,
+          "mean": 0.234609,
           "positive": 5,
           "zero": 0,
           "negative": 0
@@ -120,10 +120,10 @@
         "worldsWithBothExtremes": 2,
         "lowMinusHighShare": {
           "values": [
-            0.281903,
-            0.352841
+            0.23995,
+            0.11633
           ],
-          "mean": 0.317372,
+          "mean": 0.17814,
           "positive": 2,
           "zero": 0,
           "negative": 0
@@ -132,14 +132,13 @@
       {
         "tick": 9600,
         "livingWorlds": 6,
-        "worldsWithBothExtremes": 2,
+        "worldsWithBothExtremes": 1,
         "lowMinusHighShare": {
           "values": [
-            0.205336,
-            0.078646
+            0.12542
           ],
-          "mean": 0.141991,
-          "positive": 2,
+          "mean": 0.12542,
+          "positive": 1,
           "zero": 0,
           "negative": 0
         }
@@ -147,14 +146,13 @@
       {
         "tick": 14400,
         "livingWorlds": 6,
-        "worldsWithBothExtremes": 2,
+        "worldsWithBothExtremes": 1,
         "lowMinusHighShare": {
           "values": [
-            0.146728,
-            0.277225
+            0.085036
           ],
-          "mean": 0.211977,
-          "positive": 2,
+          "mean": 0.085036,
+          "positive": 1,
           "zero": 0,
           "negative": 0
         }
@@ -185,55 +183,55 @@
         },
         {
           "tick": 4800,
-          "population": 220,
+          "population": 219,
           "occupancy": {
             "low": {
-              "population": 99,
-              "meanInitialJadeShare": 0.581364
+              "population": 134,
+              "meanInitialJadeShare": 0.543565
             },
             "medium": {
-              "population": 94,
-              "meanInitialJadeShare": 0.492832
+              "population": 82,
+              "meanInitialJadeShare": 0.490857
             },
             "high": {
-              "population": 27,
-              "meanInitialJadeShare": 0.424777
+              "population": 3,
+              "meanInitialJadeShare": 0.881918
             }
           }
         },
         {
           "tick": 9600,
-          "population": 269,
+          "population": 267,
           "occupancy": {
             "low": {
-              "population": 104,
-              "meanInitialJadeShare": 0.629071
+              "population": 115,
+              "meanInitialJadeShare": 0.665629
             },
             "medium": {
-              "population": 63,
-              "meanInitialJadeShare": 0.512934
+              "population": 47,
+              "meanInitialJadeShare": 0.429415
             },
             "high": {
-              "population": 102,
-              "meanInitialJadeShare": 0.406094
+              "population": 105,
+              "meanInitialJadeShare": 0.409395
             }
           }
         },
         {
           "tick": 14400,
-          "population": 297,
+          "population": 290,
           "occupancy": {
             "low": {
-              "population": 136,
-              "meanInitialJadeShare": 0.650712
+              "population": 93,
+              "meanInitialJadeShare": 0.63421
             },
             "medium": {
-              "population": 24,
-              "meanInitialJadeShare": 0.471535
+              "population": 40,
+              "meanInitialJadeShare": 0.442271
             },
             "high": {
-              "population": 137,
-              "meanInitialJadeShare": 0.334548
+              "population": 157,
+              "meanInitialJadeShare": 0.433641
             }
           }
         }
@@ -259,15 +257,15 @@
         },
         {
           "tick": 4800,
-          "population": 97,
+          "population": 95,
           "occupancy": {
             "low": {
-              "population": 93,
-              "meanInitialJadeShare": 0.562915
+              "population": 95,
+              "meanInitialJadeShare": 0.602917
             },
             "medium": {
-              "population": 4,
-              "meanInitialJadeShare": 0.302199
+              "population": 0,
+              "meanInitialJadeShare": null
             },
             "high": {
               "population": 0,
@@ -277,11 +275,11 @@
         },
         {
           "tick": 9600,
-          "population": 92,
+          "population": 88,
           "occupancy": {
             "low": {
-              "population": 92,
-              "meanInitialJadeShare": 0.586694
+              "population": 88,
+              "meanInitialJadeShare": 0.580922
             },
             "medium": {
               "population": 0,
@@ -295,11 +293,11 @@
         },
         {
           "tick": 14400,
-          "population": 96,
+          "population": 99,
           "occupancy": {
             "low": {
-              "population": 96,
-              "meanInitialJadeShare": 0.612242
+              "population": 99,
+              "meanInitialJadeShare": 0.587695
             },
             "medium": {
               "population": 0,
@@ -410,15 +408,15 @@
         },
         {
           "tick": 4800,
-          "population": 24,
+          "population": 33,
           "occupancy": {
             "low": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "medium": {
-              "population": 24,
-              "meanInitialJadeShare": 0.465834
+              "population": 33,
+              "meanInitialJadeShare": 0.408031
             },
             "high": {
               "population": 0,
@@ -428,15 +426,15 @@
         },
         {
           "tick": 9600,
-          "population": 35,
+          "population": 29,
           "occupancy": {
             "low": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "medium": {
-              "population": 35,
-              "meanInitialJadeShare": 0.463373
+              "population": 29,
+              "meanInitialJadeShare": 0.47417
             },
             "high": {
               "population": 0,
@@ -446,15 +444,15 @@
         },
         {
           "tick": 14400,
-          "population": 33,
+          "population": 34,
           "occupancy": {
             "low": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "medium": {
-              "population": 33,
-              "meanInitialJadeShare": 0.505467
+              "population": 34,
+              "meanInitialJadeShare": 0.447536
             },
             "high": {
               "population": 0,
@@ -487,55 +485,55 @@
         },
         {
           "tick": 4800,
-          "population": 190,
+          "population": 165,
           "occupancy": {
             "low": {
-              "population": 56,
-              "meanInitialJadeShare": 0.557336
+              "population": 31,
+              "meanInitialJadeShare": 0.572759
             },
             "medium": {
-              "population": 102,
-              "meanInitialJadeShare": 0.47449
+              "population": 92,
+              "meanInitialJadeShare": 0.505543
             },
             "high": {
-              "population": 32,
-              "meanInitialJadeShare": 0.325848
+              "population": 42,
+              "meanInitialJadeShare": 0.501455
             }
           }
         },
         {
           "tick": 9600,
-          "population": 280,
+          "population": 239,
           "occupancy": {
             "low": {
-              "population": 93,
-              "meanInitialJadeShare": 0.653312
+              "population": 94,
+              "meanInitialJadeShare": 0.601444
             },
             "medium": {
-              "population": 69,
-              "meanInitialJadeShare": 0.483625
+              "population": 77,
+              "meanInitialJadeShare": 0.484276
             },
             "high": {
-              "population": 118,
-              "meanInitialJadeShare": 0.413819
+              "population": 68,
+              "meanInitialJadeShare": 0.340313
             }
           }
         },
         {
           "tick": 14400,
-          "population": 281,
+          "population": 258,
           "occupancy": {
             "low": {
-              "population": 74,
-              "meanInitialJadeShare": 0.678923
+              "population": 96,
+              "meanInitialJadeShare": 0.608539
             },
             "medium": {
-              "population": 98,
-              "meanInitialJadeShare": 0.501248
+              "population": 44,
+              "meanInitialJadeShare": 0.522572
             },
             "high": {
-              "population": 109,
-              "meanInitialJadeShare": 0.380696
+              "population": 118,
+              "meanInitialJadeShare": 0.338756
             }
           }
         }
@@ -561,55 +559,55 @@
         },
         {
           "tick": 4800,
-          "population": 84,
+          "population": 83,
           "occupancy": {
             "low": {
-              "population": 57,
-              "meanInitialJadeShare": 0.5755
+              "population": 44,
+              "meanInitialJadeShare": 0.563527
             },
             "medium": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 27,
-              "meanInitialJadeShare": 0.293597
+              "population": 39,
+              "meanInitialJadeShare": 0.323577
             }
           }
         },
         {
           "tick": 9600,
-          "population": 70,
+          "population": 86,
           "occupancy": {
             "low": {
-              "population": 62,
-              "meanInitialJadeShare": 0.524776
+              "population": 46,
+              "meanInitialJadeShare": 0.547783
             },
             "medium": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 8,
-              "meanInitialJadeShare": 0.31944
+              "population": 40,
+              "meanInitialJadeShare": 0.422363
             }
           }
         },
         {
           "tick": 14400,
-          "population": 73,
+          "population": 82,
           "occupancy": {
             "low": {
-              "population": 58,
-              "meanInitialJadeShare": 0.501874
+              "population": 57,
+              "meanInitialJadeShare": 0.551344
             },
             "medium": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 15,
-              "meanInitialJadeShare": 0.355146
+              "population": 25,
+              "meanInitialJadeShare": 0.466308
             }
           }
         }
@@ -638,55 +636,55 @@
         },
         {
           "tick": 4800,
-          "population": 172,
+          "population": 204,
           "occupancy": {
             "low": {
-              "population": 16,
-              "meanInitialJadeShare": 0.662549
+              "population": 68,
+              "meanInitialJadeShare": 0.555977
             },
             "medium": {
-              "population": 65,
-              "meanInitialJadeShare": 0.543093
+              "population": 46,
+              "meanInitialJadeShare": 0.629009
             },
             "high": {
-              "population": 91,
-              "meanInitialJadeShare": 0.365171
+              "population": 90,
+              "meanInitialJadeShare": 0.37934
             }
           }
         },
         {
           "tick": 9600,
-          "population": 256,
+          "population": 259,
           "occupancy": {
             "low": {
-              "population": 84,
-              "meanInitialJadeShare": 0.686723
+              "population": 107,
+              "meanInitialJadeShare": 0.649366
             },
             "medium": {
-              "population": 39,
-              "meanInitialJadeShare": 0.482047
+              "population": 51,
+              "meanInitialJadeShare": 0.489806
             },
             "high": {
-              "population": 133,
-              "meanInitialJadeShare": 0.394245
+              "population": 101,
+              "meanInitialJadeShare": 0.396338
             }
           }
         },
         {
           "tick": 14400,
-          "population": 291,
+          "population": 282,
           "occupancy": {
             "low": {
-              "population": 81,
-              "meanInitialJadeShare": 0.642225
+              "population": 113,
+              "meanInitialJadeShare": 0.630332
             },
             "medium": {
-              "population": 84,
-              "meanInitialJadeShare": 0.498974
+              "population": 45,
+              "meanInitialJadeShare": 0.529961
             },
             "high": {
-              "population": 126,
-              "meanInitialJadeShare": 0.376577
+              "population": 124,
+              "meanInitialJadeShare": 0.381917
             }
           }
         }
@@ -724,12 +722,30 @@
             },
             "high": {
               "population": 32,
-              "meanInitialJadeShare": 0.320248
+              "meanInitialJadeShare": 0.319657
             }
           }
         },
         {
           "tick": 9600,
+          "population": 30,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.379105
+            }
+          }
+        },
+        {
+          "tick": 14400,
           "population": 35,
           "occupancy": {
             "low": {
@@ -742,25 +758,7 @@
             },
             "high": {
               "population": 35,
-              "meanInitialJadeShare": 0.359929
-            }
-          }
-        },
-        {
-          "tick": 14400,
-          "population": 29,
-          "occupancy": {
-            "low": {
-              "population": 0,
-              "meanInitialJadeShare": null
-            },
-            "medium": {
-              "population": 0,
-              "meanInitialJadeShare": null
-            },
-            "high": {
-              "population": 29,
-              "meanInitialJadeShare": 0.392951
+              "meanInitialJadeShare": 0.363326
             }
           }
         }
@@ -789,55 +787,55 @@
         },
         {
           "tick": 4800,
-          "population": 176,
+          "population": 152,
           "occupancy": {
             "low": {
-              "population": 53,
-              "meanInitialJadeShare": 0.585851
+              "population": 29,
+              "meanInitialJadeShare": 0.693695
             },
             "medium": {
-              "population": 35,
-              "meanInitialJadeShare": 0.514499
+              "population": 60,
+              "meanInitialJadeShare": 0.519659
             },
             "high": {
-              "population": 88,
-              "meanInitialJadeShare": 0.431422
+              "population": 63,
+              "meanInitialJadeShare": 0.414818
             }
           }
         },
         {
           "tick": 9600,
-          "population": 241,
+          "population": 234,
           "occupancy": {
             "low": {
-              "population": 74,
-              "meanInitialJadeShare": 0.5899
+              "population": 96,
+              "meanInitialJadeShare": 0.640806
             },
             "medium": {
-              "population": 84,
-              "meanInitialJadeShare": 0.533766
+              "population": 48,
+              "meanInitialJadeShare": 0.486172
             },
             "high": {
-              "population": 83,
-              "meanInitialJadeShare": 0.372243
+              "population": 90,
+              "meanInitialJadeShare": 0.353431
             }
           }
         },
         {
           "tick": 14400,
-          "population": 239,
+          "population": 249,
           "occupancy": {
             "low": {
-              "population": 70,
-              "meanInitialJadeShare": 0.583443
+              "population": 101,
+              "meanInitialJadeShare": 0.634269
             },
             "medium": {
-              "population": 102,
-              "meanInitialJadeShare": 0.529
+              "population": 56,
+              "meanInitialJadeShare": 0.518922
             },
             "high": {
-              "population": 67,
-              "meanInitialJadeShare": 0.372326
+              "population": 92,
+              "meanInitialJadeShare": 0.364586
             }
           }
         }
@@ -863,7 +861,7 @@
         },
         {
           "tick": 4800,
-          "population": 74,
+          "population": 64,
           "occupancy": {
             "low": {
               "population": 0,
@@ -874,14 +872,14 @@
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 74,
-              "meanInitialJadeShare": 0.439616
+              "population": 64,
+              "meanInitialJadeShare": 0.432182
             }
           }
         },
         {
           "tick": 9600,
-          "population": 65,
+          "population": 70,
           "occupancy": {
             "low": {
               "population": 0,
@@ -892,14 +890,14 @@
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 65,
-              "meanInitialJadeShare": 0.475434
+              "population": 70,
+              "meanInitialJadeShare": 0.481773
             }
           }
         },
         {
           "tick": 14400,
-          "population": 60,
+          "population": 66,
           "occupancy": {
             "low": {
               "population": 0,
@@ -910,8 +908,8 @@
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 60,
-              "meanInitialJadeShare": 0.510108
+              "population": 66,
+              "meanInitialJadeShare": 0.437994
             }
           }
         }
@@ -940,55 +938,55 @@
         },
         {
           "tick": 4800,
-          "population": 145,
+          "population": 217,
           "occupancy": {
             "low": {
-              "population": 89,
-              "meanInitialJadeShare": 0.568352
+              "population": 84,
+              "meanInitialJadeShare": 0.607529
             },
             "medium": {
-              "population": 52,
-              "meanInitialJadeShare": 0.453924
+              "population": 68,
+              "meanInitialJadeShare": 0.437641
             },
             "high": {
-              "population": 4,
-              "meanInitialJadeShare": 0.25642
+              "population": 65,
+              "meanInitialJadeShare": 0.414908
             }
           }
         },
         {
           "tick": 9600,
-          "population": 260,
+          "population": 259,
           "occupancy": {
             "low": {
-              "population": 100,
-              "meanInitialJadeShare": 0.637178
+              "population": 121,
+              "meanInitialJadeShare": 0.641742
             },
             "medium": {
-              "population": 37,
-              "meanInitialJadeShare": 0.519481
+              "population": 26,
+              "meanInitialJadeShare": 0.475011
             },
             "high": {
-              "population": 123,
-              "meanInitialJadeShare": 0.359789
+              "population": 112,
+              "meanInitialJadeShare": 0.405267
             }
           }
         },
         {
           "tick": 14400,
-          "population": 278,
+          "population": 285,
           "occupancy": {
             "low": {
-              "population": 107,
-              "meanInitialJadeShare": 0.654961
+              "population": 91,
+              "meanInitialJadeShare": 0.634019
             },
             "medium": {
-              "population": 54,
-              "meanInitialJadeShare": 0.486551
+              "population": 60,
+              "meanInitialJadeShare": 0.507236
             },
             "high": {
-              "population": 117,
-              "meanInitialJadeShare": 0.38264
+              "population": 134,
+              "meanInitialJadeShare": 0.449422
             }
           }
         }
@@ -1014,55 +1012,55 @@
         },
         {
           "tick": 4800,
-          "population": 58,
+          "population": 36,
           "occupancy": {
             "low": {
-              "population": 28,
-              "meanInitialJadeShare": 0.659791
+              "population": 32,
+              "meanInitialJadeShare": 0.666672
             },
             "medium": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 30,
-              "meanInitialJadeShare": 0.30695
+              "population": 4,
+              "meanInitialJadeShare": 0.550342
             }
           }
         },
         {
           "tick": 9600,
-          "population": 74,
+          "population": 30,
           "occupancy": {
             "low": {
-              "population": 26,
-              "meanInitialJadeShare": 0.488923
+              "population": 30,
+              "meanInitialJadeShare": 0.633495
             },
             "medium": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 48,
-              "meanInitialJadeShare": 0.410277
+              "population": 0,
+              "meanInitialJadeShare": null
             }
           }
         },
         {
           "tick": 14400,
-          "population": 72,
+          "population": 29,
           "occupancy": {
             "low": {
-              "population": 23,
-              "meanInitialJadeShare": 0.643745
+              "population": 29,
+              "meanInitialJadeShare": 0.5983
             },
             "medium": {
               "population": 0,
               "meanInitialJadeShare": null
             },
             "high": {
-              "population": 49,
-              "meanInitialJadeShare": 0.36652
+              "population": 0,
+              "meanInitialJadeShare": null
             }
           }
         }

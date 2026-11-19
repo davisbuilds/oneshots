@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "cpu-profile",
-  "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+  "engineSha256": "b51da670a6e49cc89a51c3950128b7a0d963154b5fb223e6574b54f655655504",
   "host": {
     "node": "v24.22.1",
     "platform": "darwin",
@@ -13,68 +13,68 @@
     "warmup": 1200,
     "interval": 60
   },
-  "samples": 4772,
-  "seconds": 7.141,
+  "samples": 4700,
+  "seconds": 7.032,
   "frames": [
     {
       "name": "wrap @ engine.js",
-      "share": 0.261269
+      "share": 0.268869
     },
     {
       "name": "_neighbor @ engine.js",
-      "share": 0.253017
+      "share": 0.256233
     },
     {
       "name": "_act @ engine.js",
-      "share": 0.15827
+      "share": 0.173127
     },
     {
       "name": "cosine @ engine.js",
-      "share": 0.089559
+      "share": 0.075545
     },
     {
       "name": "step @ engine.js",
-      "share": 0.060453
+      "share": 0.061501
     },
     {
       "name": "delta @ engine.js",
-      "share": 0.038728
-    },
-    {
-      "name": "_graze @ engine.js",
-      "share": 0.033682
-    },
-    {
-      "name": "_eat @ engine.js",
-      "share": 0.028896
-    },
-    {
-      "name": "direction @ engine.js",
-      "share": 0.02547
+      "share": 0.034018
     },
     {
       "name": "sine @ engine.js",
-      "share": 0.025226
+      "share": 0.023969
     },
     {
-      "name": "_bite @ engine.js",
-      "share": 0.005946
+      "name": "direction @ engine.js",
+      "share": 0.023768
+    },
+    {
+      "name": "_eat @ engine.js",
+      "share": 0.023246
+    },
+    {
+      "name": "_graze @ engine.js",
+      "share": 0.021575
+    },
+    {
+      "name": "_cell @ engine.js",
+      "share": 0.007034
     },
     {
       "name": "(garbage collector)",
-      "share": 0.005439
+      "share": 0.005807
     },
     {
-      "name": "distanceFromOrigin @ engine.js",
-      "share": 0.002124
+      "name": "(anonymous) @ engine.js",
+      "share": 0.005718
     },
     {
-      "name": "(program)",
-      "share": 0.002007
+      "name": "_bite @ engine.js",
+      "share": 0.003099
     },
     {
-      "name": "_createOrganism @ engine.js",
-      "share": 0.001645
+      "name": "_moveBetweenCells @ engine.js",
+      "share": 0.002785
     }
   ]
 }

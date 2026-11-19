@@ -264,7 +264,7 @@
         ...pedigree, genome, traits: body, x, y, angle, energy, age,
         action: 'swimming', feed: null, intake: 0, spent: 0, lastIntake: 0, lastSpent: 0,
         offspring: 0, offspringEnergy: 0, nextBirth: 0, speed: 0,
-        _binNext: -1, _cause: null,
+        _binPrev: -1, _binNext: -1, _cause: null,
       };
       this._pedigree.push(pedigree);
       this._living.set(id, organism);
@@ -317,13 +317,28 @@
       this._heads.fill(-1);
       for (let i = 0; i < this.organisms.length; i++) {
         const organism = this.organisms[i];
-        const cell = this._cell(organism.x, organism.y);
-        organism._binNext = this._heads[cell];
-        this._heads[cell] = i;
+        this._linkCell(i, this._cell(organism.x, organism.y));
         organism.lastIntake = 0;
         organism.lastSpent = 0;
         organism.feed = null;
       }
+    }
+
+    _linkCell(index, cell) {
+      const organism = this.organisms[index];
+      const head = this._heads[cell];
+      organism._binPrev = -1;
+      organism._binNext = head;
+      if (head >= 0) this.organisms[head]._binPrev = index;
+      this._heads[cell] = index;
+    }
+
+    _moveBetweenCells(index, from, to) {
+      const {_binPrev: previous, _binNext: next} = this.organisms[index];
+      if (previous >= 0) this.organisms[previous]._binNext = next;
+      else this._heads[from] = next;
+      if (next >= 0) this.organisms[next]._binPrev = previous;
+      this._linkCell(index, to);
     }
 
     _neighbor(organism) {
@@ -401,9 +416,8 @@
       return true;
     }
 
-    _graze(organism, effort) {
+    _graze(organism, effort, i) {
       const body = organism.traits;
-      const i = this._cell(organism.x, organism.y);
       // Both substrates pass through the same inherited capture apparatus.
       // Saturation and tissue affinity determine how much of each is absorbed.
       const jadeAffinity = this.jade[i] / (0.24 + this.jade[i]) * square(body.jadeEfficiency);
@@ -429,12 +443,14 @@
       return true;
     }
 
-    _act(organism) {
+    _act(index) {
+      const organism = this.organisms[index];
       if (organism.energy <= 0) return;
       const body = organism.traits;
       const control = body.controller;
       const hunger = 1 - organism.energy / body.maxEnergy;
-      const food = this._availableFood(this._cell(organism.x, organism.y), body) / SUBSTRATE_CAPACITY;
+      const fromCell = this._cell(organism.x, organism.y);
+      const food = this._availableFood(fromCell, body) / SUBSTRATE_CAPACITY;
       const neighbor = this._neighbor(organism);
       let proximity = 0;
       let bearing = 0;
@@ -465,9 +481,13 @@
       organism.speed = speed;
       organism.x = wrap(organism.x + forwardX * speed, this.width);
       organism.y = wrap(organism.y + forwardY * speed, this.height);
+      const toCell = this._cell(organism.x, organism.y);
+      // Later turns sense the current world, including swimmers that have
+      // already moved. Organism indices are stable until every turn ends.
+      if (toCell !== fromCell) this._moveBetweenCells(index, fromCell, toCell);
       organism.age++;
       const gotPrey = neighbor && grasp > 0 && this._bite(organism, neighbor, forwardX, forwardY, grasp);
-      const gotFood = graze > 0 && this._graze(organism, graze * (1 - grasp));
+      const gotFood = graze > 0 && this._graze(organism, graze * (1 - grasp), toCell);
       if (gotPrey) organism.feed = 'prey';
       organism.action = gotPrey ? 'hunting' : gotFood ? 'grazing' : 'swimming';
       const drag = 0.72 * (0.007 + 0.012 * body.size + 0.009 * body.armor) / (0.70 + 0.42 * body.aspect);
@@ -531,7 +551,7 @@
         const start = (this.tick - 1) % count;
         // Rotating the first swimmer keeps the fixed iteration order from
         // giving the same individual the first access to food every tick.
-        for (let i = 0; i < count; i++) this._act(this.organisms[(start + i) % count]);
+        for (let i = 0; i < count; i++) this._act((start + i) % count);
         const children = [];
         let living = 0;
         for (let i = 0; i < count; i++) {

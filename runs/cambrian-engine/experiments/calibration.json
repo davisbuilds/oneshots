@@ -414,5 +414,38 @@
         "share": 0.257375
       }
     ]
+  },
+  "beforeSpatialIndexCorrection": {
+    "recordedOn": "2026-11-19",
+    "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+    "reasonSuperseded": "Review found that moving organisms remained listed in their old spatial buckets until the next tick, although lookups used their current positions.",
+    "meanReciprocalHomeAdvantagePerFounder": {
+      "mutation": 6.68316,
+      "noMutation": 2.577257,
+      "neutralGut": -0.047743
+    },
+    "balancedMosaic": {
+      "tick": 14400,
+      "livingWorlds": 5,
+      "worldsWithBothExtremes": 5,
+      "lowMinusHighShare": {
+        "values": [
+          0.316164,
+          0.298227,
+          0.265648,
+          0.211117,
+          0.272321
+        ],
+        "mean": 0.272695,
+        "positive": 5,
+        "zero": 0,
+        "negative": 0
+      }
+    },
+    "balancedSeed73": {
+      "tick": 620000,
+      "population": 270,
+      "ancestryDepth": 2548
+    }
   }
 }
