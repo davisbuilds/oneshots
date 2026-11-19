@@ -22,7 +22,11 @@ export class Hud {
     this.hints = new Map();
     this.cardTimer = null;
     this.onAction = null;
-    root.addEventListener('click', (e) => { const b = e.target.closest('[data-act]'); if (b) { e.stopPropagation(); this.onAction?.(b.dataset.act); } });
+    root.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-act]');
+      if (b) { e.stopPropagation(); this.onAction?.(b.dataset.act); }
+      else if (this.pauseEl.contains(e.target)) this.onAction?.('resume');
+    });
   }
   showTitle(v) { this.title.classList.toggle('on', v); }
   showPause(v) { this.pauseEl.classList.toggle('on', v); }

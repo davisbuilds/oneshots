@@ -69,7 +69,12 @@ export class App {
     this.resize();
     addEventListener('resize', () => this.resize());
     document.addEventListener('pointerlockchange', () => this.onLock());
-    canvas.addEventListener('click', () => { if (this.state === 'play' && !this.input.locked && !this.journalOpen) this.input.lock(); });
+    canvas.addEventListener('click', () => {
+      if (this.demo?.active) { this.demo.stop(); }
+      if (this.state === 'play' && !this.input.locked && !this.journalOpen) this.input.lock();
+    });
+    // Esc or Enter ends the demo and hands over control
+    addEventListener('keydown', (e) => { if (this.demo?.active && (e.code === 'Escape' || e.code === 'Enter')) { this.demo.stop(); this.input.lock(); } });
     this.spawn();
     this.instrument = new Instrument(this);
     this.demo = new Demo(this);
@@ -130,6 +135,7 @@ export class App {
     if (a === 'enter') { this.start(false); }
     else if (a === 'demo') { this.start(true); }
     else if (a === 'journal') { this.toggleJournal(true); }
+    else if (a === 'resume') { this.hud.showPause(false); this.input.lock(); }
     else if (a === 'reset') { this.save.reset(); location.search = '?fresh'; }
   }
   start(demo) {

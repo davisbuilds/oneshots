@@ -25,7 +25,8 @@ try {
   page.on('pageerror', (e) => console.log('page error:', e.message));
   await page.goto(`${server.url}index.html?nosave&quality=3&capture`);
   await page.waitForFunction(() => window.THR && window.THR.ready);
-  await page.evaluate(() => { THR.app.manual = true; THR.app.qPinned = true; THR.app.demo.recording = true; THR.app.start(true); });
+  // lighter film grain than the live page: grain is noise, and noise does not compress
+  await page.evaluate(() => { THR.app.manual = true; THR.app.qPinned = true; THR.app.demo.recording = true; THR.app.post.params.grain = 0.012; THR.app.start(true); });
   const t0 = Date.now();
   for (;;) {
     const r = await page.evaluate((dt) => {
@@ -41,6 +42,6 @@ try {
   await browser.close();
   await server.close();
 }
-execFileSync(ffmpeg, ['-y', '-loglevel', 'error', '-framerate', fps, '-i', FRAMES + '%05d.jpg', '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', OUT + 'threshold_demo.mp4'], { stdio: 'inherit' });
+execFileSync(ffmpeg, ['-y', '-loglevel', 'error', '-framerate', fps, '-i', FRAMES + '%05d.jpg', '-vf', 'hqdn3d=1.5:1.5:4:4', '-c:v', 'libx264', '-preset', 'slow', '-crf', '23', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', OUT + 'threshold_demo.mp4'], { stdio: 'inherit' });
 await rm(FRAMES, { recursive: true, force: true });
 console.log(`wrote output/threshold_demo.mp4: ${n} frames, ${(n / +fps).toFixed(1)} s at ${width}x${height}`);

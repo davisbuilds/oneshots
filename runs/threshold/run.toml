@@ -33,4 +33,4 @@ timeout_minutes = 110
 
 [[assets]]
 file = "threshold_demo.mp4"
-description = "The cinematic demo as played by the engine: about 54 s, 1280 x 720, 30 fps, H.264 CRF 20, silent"
+description = "The cinematic demo as played by the engine: about 53 s, 1280 x 720, 30 fps, H.264 CRF 23, silent (about 65 MB)"
