@@ -90,7 +90,7 @@ Several runs include a headless `verify.mjs` smoke test that uses
 and run `pnpm install --frozen-lockfile`, then
 `node runs/<slug>/verify.mjs` or `pnpm run verify:browser` for all ten configured
 verifiers (`antikythera-engine`'s also calls `python3` for its expected values;
-`threshold`'s renders in software and takes about twenty minutes).
+`threshold`'s renders in software and takes about ten minutes).
 All active JavaScript verifiers/render tools and the Antikythera Python renderer
 use the supported Playwright `chrome` channel, with a temporary automation profile.
 Install and update Google Chrome using your platform's official installer; existing

@@ -17,8 +17,8 @@ harness = "Claude Code (cloud session)"
 
 [run]
 brief = "brief.md"
-human_turns = 1                   # the brief
-wall_clock_minutes = 240          # 12:36 to about 16:40 UTC, one session
+human_turns = 1                   # the brief; the "Try again" that resumed after the usage-limit pause is not counted (curator's call)
+wall_clock_minutes = 434          # 12:36 to 19:50 UTC, including a usage-limit pause from about 15:15 to 19:16 (about 4 h); about 193 min of work
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 

@@ -15,7 +15,7 @@ lattice of generated worlds that does not stop.
 | :--- | :--- |
 | **Model** | Claude Opus 5.5 (Claude Code, cloud session) |
 | **Brief** | [`brief.md`](brief.md), 1 human turn |
-| **Wall clock** | about four hours, one session (see the log) |
+| **Wall clock** | 7 h 14 min (12:36 to 19:50 UTC), including a usage-limit pause of about 4 h; about 3 h 13 min of work |
 | **Full-size outputs** | release `run-threshold`: the demo film, `threshold_demo.mp4` |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 
@@ -276,7 +276,7 @@ generated in front of each other; window sills too high to step over) and one
 mistake in my own invariant.
 
 **Browser checks** (`node verify.mjs`, real keyboard and mouse events,
-SwiftShader, about twenty minutes). Results from the last run are in the PR
+SwiftShader, about ten minutes). Results from the last run are in the PR
 and in `output/verify/report.txt` when you run it:
 
 - *The acceptance test.* From the spawn, walk 68 m down the terrace stair to
@@ -295,8 +295,8 @@ and in `output/verify/report.txt` when you run it:
 - *Persistence.* Take the instrument, wake a lodestone, visit the desert,
   reload: position, lodestone, instrument and visits are restored, and the
   regenerated platform shows its lodestone lit.
-- *Streaming.* Teleporting through 30 worlds built 75 world views and disposed
-  65, never holding more than 10.
+- *Streaming.* Teleporting through 30 worlds built 77 world views and disposed
+  67, never holding more than 10.
 - *Budgets and extreme views.* Live depth and render budgets hold from (1, 2)
   to (5, 24); grazing the great door's plane, looking straight up the skylight
   and straight down at a threshold from both sides leave no black or NaN
