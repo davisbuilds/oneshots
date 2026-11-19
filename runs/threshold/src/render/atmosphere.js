@@ -4,7 +4,7 @@
 // through* (uFogPlane), so a world seen through a doorway is not fogged for
 // the stretch of the ray that lies in the viewer's own world; that stretch is
 // fogged by the viewer's world when the portal surface is composited.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 
 export const FOG_PARS = /* glsl */`
 uniform vec3 uFogColor;

@@ -4,7 +4,7 @@
 // lodestones (starred), pocket worlds as satellites of their hosts, and the
 // links between them. It is rendered into the scene target after the world,
 // so it is lit, graded and blooms like everything else.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { parseKey, ORIGIN } from '../core/multiverse.js';
 
 export class Instrument {

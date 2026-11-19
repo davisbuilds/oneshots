@@ -1,7 +1,7 @@
 // Artifacts: each world's lodestone (dormant until woken, then a pillar of
 // light visible from far away and through portals), and the instrument that
 // waits on the pedestal of the Threshold.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { FOG_PARS } from './atmosphere.js';
 import { LAYER } from './portal-renderer.js';
 

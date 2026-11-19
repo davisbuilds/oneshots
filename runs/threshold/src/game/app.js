@@ -1,7 +1,7 @@
 // The application: renderer and post, the multiverse caches, the traveller,
 // streaming, interaction, discovery, hints, quality adaptation, and the
 // window.THR hooks used by the automated tests.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { PortalRenderer, LAYER } from '../render/portal-renderer.js';
 import { Post } from '../render/post.js';
 import { Space } from '../core/space.js';

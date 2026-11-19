@@ -1,6 +1,6 @@
 // Geometry helpers: transformed primitives with world-scale UVs, merging, and
 // a few procedural shapes shared by the world builders.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { xmat4 } from '../core/math.js';
 
 const _m = new THREE.Matrix4(), _arr = new Array(16);

@@ -159,6 +159,75 @@ try {
     log(`acceptance: back on the Threshold at ${back.feet.map((v) => v.toFixed(2))}, ${back.crossings} crossings, grounded ${back.grounded}`);
     await page.close();
   }
+  // ── 2. Impossible architecture ──────────────────────────────────────────
+  if (want('impossible')) {
+    const page = await open('play&nosave&nolock&fresh&quality=3');
+    // The Endless Stoa: walk north for 25 s; the stoa is 44 m long.
+    await page.evaluate(() => THR.place('0,0', [16.5, 60.24, 14], 0, 0));
+    await render(page, 6);
+    await shot(page, 'b01-stoa-looking-north');
+    const c0 = (await state(page)).crossings;
+    await page.keyboard.down('KeyW');
+    let maxAbsZ = 0, minX = 99, maxX = -99;
+    for (let k = 0; k < 25; k++) {
+      await simUntil(page, 'false', 1);
+      const s = await state(page);
+      maxAbsZ = Math.max(maxAbsZ, Math.abs(s.feet[2])); minX = Math.min(minX, s.feet[0]); maxX = Math.max(maxX, s.feet[0]);
+      assert.equal(s.world, '0,0');
+    }
+    await page.keyboard.up('KeyW');
+    const sStoa = await state(page);
+    log(`stoa: walked 25 s (~115 m) north inside a 44 m stoa: ${sStoa.crossings - c0} crossings, |z| never above ${maxAbsZ.toFixed(1)} m, x in [${minX.toFixed(2)}, ${maxX.toFixed(2)}]`);
+    assert.ok(sStoa.crossings - c0 >= 2 && maxAbsZ < 23, 'the stoa loops');
+    // The Cell: a seven-metre room whose door opens into a hall 160 m long.
+    await page.evaluate(() => THR.place('0,0', [-2.5, 60, -6], Math.PI / 2, 0));
+    await render(page, 6);
+    await shot(page, 'b02-cell-door');
+    await page.keyboard.down('KeyW');
+    const rh = await simUntil(page, "THR.app.player.world === '0,0/hall'", 5);
+    assert.ok(rh.ok, 'entered the hall through the cell door');
+    await page.keyboard.down('ShiftLeft');
+    await simUntil(page, 'false', 12);
+    await page.keyboard.up('ShiftLeft'); await page.keyboard.up('KeyW');
+    const sh = await state(page);
+    log(`hall: entered after ${rh.t.toFixed(2)} s; then ran to z = ${sh.feet[2].toFixed(1)} m inside a room whose outside is 7 m across`);
+    assert.equal(sh.world, '0,0/hall');
+    assert.ok(sh.feet[2] < -80, 'ran more than 80 m inside');
+    await render(page, 6);
+    await shot(page, 'b03-hall');
+    // The room that contains itself: east door -> west door.
+    await page.evaluate(() => THR.place('3,0/mirror', [-2, 0, 0], -Math.PI / 2, 0));
+    await render(page, 6);
+    await shot(page, 'b04-mirror-east');
+    const cm = (await state(page)).crossings;
+    await page.keyboard.down('KeyW');
+    const rm = await simUntil(page, `THR.app.crossings > ${cm}`, 6);
+    await simUntil(page, 'false', 0.4);
+    await page.keyboard.up('KeyW');
+    const sm = await state(page);
+    log(`mirror: walked out of the east door and came in by the west door at x = ${sm.feet[0].toFixed(2)}`);
+    assert.ok(rm.ok && sm.world === '3,0/mirror' && sm.feet[0] < -4, 'east leads to west');
+    // The window opens through the ceiling: fall back in from above, then stand.
+    await page.evaluate(() => THR.place('3,0/mirror', [0, 1.0, -6.0], 0, 0));
+    await simUntil(page, 'false', 0.3);
+    const cw = (await state(page)).crossings;
+    await page.keyboard.down('KeyW');
+    const rw = await simUntil(page, `THR.app.crossings > ${cw}`, 4);
+    await page.keyboard.up('KeyW');
+    const s1 = await state(page);
+    await render(page, 2);
+    await shot(page, 'b05-through-the-skylight');
+    const traj = [];
+    for (let k = 0; k < 12; k++) { await simUntil(page, 'false', 0.25); const s = await state(page); traj.push([s.feet[1].toFixed(2), s.up.map((v) => v.toFixed(2)).join(','), s.grounded]); }
+    const s2 = await state(page);
+    log(`skylight: through the window after ${rw.t.toFixed(2)} s; eye at y ${s1.eye[1].toFixed(2)} with up (${s1.up.map((v) => v.toFixed(2))}); 3 s later feet y ${s2.feet[1].toFixed(2)}, up (${s2.up.map((v) => v.toFixed(2))}), grounded ${s2.grounded}`);
+    log('skylight trajectory (y, up, grounded): ' + traj.map((t) => t.join(' ')).join(' | '));
+    assert.ok(rw.ok && s1.eye[1] > 7, 'came in through the ceiling');
+    assert.ok(s2.grounded && s2.up[1] > 0.99 && s2.feet[1] < 0.6, 'landed upright on the floor');
+    await render(page, 3);
+    await shot(page, 'b06-landed');
+    await page.close();
+  }
 } finally {
   await writeFile(OUT + 'report.txt', report.join('\n') + '\n');
   await browser.close();

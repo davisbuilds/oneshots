@@ -160,13 +160,18 @@ export function resolve(api, world, feet, vel, up, body = BODY) {
     p = madd(p, k.n, k.depth + 1e-5);
     const vn = dot(v, k.n);
     if (vn < 0) v = madd(v, k.n, -vn);
-    const u = dot(k.n, up);
-    if (u > 0.62) { if (!ground || u > dot(ground.n, up)) ground = k; }
+    const u = dot(k.n, up), h = dot(sub(k.p, p), up);
+    // ground: a walkable slope, or an edge under the bottom of the capsule
+    if (u > 0.62 || (u > 0.25 && h < body.radius * 0.8)) { if (!ground || u > dot(ground.n, up)) ground = k; }
     else if (u > -0.3) wall = k;
   }
   // a last sweep to learn about ground contact without moving
   if (!ground) {
-    for (const k of gatherContacts(api, world, madd(p, up, -0.02), up, body)) if (dot(k.n, up) > 0.62) { ground = k; break; }
+    const q = madd(p, up, -0.02);
+    for (const k of gatherContacts(api, world, q, up, body)) {
+      const u = dot(k.n, up), h = dot(sub(k.p, q), up);
+      if (u > 0.62 || (u > 0.25 && h < body.radius * 0.8)) { ground = k; break; }
+    }
   }
   return { p, v, ground, wall };
 }
@@ -216,7 +221,6 @@ export class Traveller {
     const eye = this.eye;
     this.up = norm(qrot(dq, this.up));
     this.look = qnorm(qmul(dq, this.look));
-    this.vel = qrot(dq, this.vel);
     this.feet = madd(eye, this.up, -this.body.eye);
   }
 
@@ -248,6 +252,7 @@ export class Traveller {
     }
     // Substep fast motion so a body never moves more than 0.15 m per collision pass.
     const n = Math.min(64, Math.max(1, Math.ceil(len(v) * dt / 0.15)));
+    this.wishDelta = scale(target, dt / n); // intended walk, for stepping up onto ledges
     for (let i = 0; i < n; i++) {
       const w0 = this.world;
       this.moveBy(scale(v, dt / n), v, dt / n);
@@ -264,12 +269,24 @@ export class Traveller {
     let res = this.noclip ? { p, v, ground: null, wall: null } : resolve(api, this.world, p, v, up, this.body);
     // Step up onto ledges no higher than BODY.step when walking into them.
     if (!this.noclip && wasGrounded && res.wall) {
-      const h = reject(delta, up);
-      if (len(h) > 1e-5) {
-        const lifted = resolve(api, this.world, add(madd(this.feet, up, this.body.step), h), v, up, this.body);
-        const dropped = resolve(api, this.world, madd(lifted.p, up, -this.body.step), lifted.v, up, this.body);
-        const gain = (q) => dot(sub(q, this.feet), norm(h));
-        if (dropped.ground && gain(dropped.p) > gain(res.p) + 1e-4 && dot(sub(dropped.p, this.feet), up) <= this.body.step + 0.01) res = dropped;
+      const h0 = reject(delta, up), hw = this.wishDelta ? reject(this.wishDelta, up) : h0;
+      const h = len(hw) > len(h0) ? hw : h0, hl = len(h);
+      if (hl > 1e-5) {
+        // lift, move far enough to clear the edge, drop: a step is climbed when
+        // the drop lands on ground higher than we were, but not higher than a step
+        const dir = scale(h, 1 / hl);
+        const lifted = resolve(api, this.world, madd(madd(this.feet, up, this.body.step), dir, hl), v, up, this.body);
+        // descend in small increments until something is underfoot
+        let q = lifted.p, dropped = null;
+        for (let k = 0; k < 14; k++) {
+          const nq = madd(q, up, -0.05);
+          if (gatherContacts(api, this.world, nq, up, this.body).some((c) => dot(c.n, up) > 0.25)) { dropped = resolve(api, this.world, nq, lifted.v, up, this.body); break; }
+          q = nq;
+        }
+        if (dropped) {
+          const rise = dot(sub(dropped.p, this.feet), up), gain = dot(sub(dropped.p, this.feet), dir);
+          if (dropped.ground && rise > 0.02 && rise <= this.body.step + 0.01 && gain > dot(sub(res.p, this.feet), dir) + 1e-4) res = dropped;
+        }
       }
     }
     // Stay glued to the ground walking down steps and slopes.

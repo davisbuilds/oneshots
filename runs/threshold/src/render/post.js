@@ -3,7 +3,7 @@
 // which would break multi-pass stencil compositing), bloom by dual filtering,
 // exposure, tone mapping and grading into an LDR target, then FXAA, vignette
 // and grain to the canvas.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 
 const VS = 'varying vec2 vUv; void main() { vUv = position.xy * 0.5 + 0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }';
 
@@ -33,7 +33,7 @@ export class Post {
         vec3 s(vec2 o) { return texture2D(tSrc, vUv + o * uTexel).rgb; }
         void main() {
           vec3 c = (s(vec2(-1,-1)) + s(vec2(1,-1)) + s(vec2(-1,1)) + s(vec2(1,1))) * 0.25;
-          c = min(c, vec3(64.0));
+          c = (any(isnan(c)) || any(isinf(c))) ? vec3(0.0) : min(c, vec3(64.0));
           float l = max(c.r, max(c.g, c.b));
           float knee = uThreshold * 0.6;
           float soft = clamp(l - uThreshold + knee, 0.0, 2.0 * knee); soft = soft * soft / (4.0 * knee + 1e-4);
@@ -90,7 +90,9 @@ export class Post {
           return clamp(pow(max(c, 0.0), vec3(2.2)), 0.0, 1.0);
         }
         void main() {
-          vec3 c = texture2D(tScene, vUv).rgb + texture2D(tBloom, vUv).rgb * uBloom;
+          vec3 c = texture2D(tScene, vUv).rgb;
+          if (any(isnan(c)) || any(isinf(c))) c = vec3(0.0);
+          c += texture2D(tBloom, vUv).rgb * uBloom;
           c = agx(c * uExposure);
           float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
           c = mix(vec3(l), c, uSat);

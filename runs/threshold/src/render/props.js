@@ -1,7 +1,7 @@
 // Procedural props and their instanced rendering. Geometry is built per
 // variant from a seed; placements come from the core scatter cache, the same
 // one physics uses, so every rock you can see is a rock you can walk into.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { rng, hash32 } from '../core/rng.js';
 import { CHUNK } from '../core/scatter.js';
 import { LAYER } from './portal-renderer.js';

@@ -1,6 +1,6 @@
 // Descriptor features turned into meshes: ocean, particles, monuments,
 // floating stones, mesas, the elder tree, light shafts, pools, lodestones.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { FOG_PARS, SKY_PARS } from './atmosphere.js';
 import { rng } from '../core/rng.js';
 import { LAYER } from './portal-renderer.js';

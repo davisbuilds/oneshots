@@ -2,7 +2,7 @@
 // triplanar in world space, shaped per material kind into albedo variation,
 // roughness, bump and emission. No UVs or image assets are needed, so every
 // generated surface gets consistent, scale-correct detail.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { patchMaterial } from './atmosphere.js';
 
 let NOISE = null;
@@ -127,7 +127,9 @@ vec3 bumpNormal(vec3 vpos, vec3 n, float h, float k) {
   vec3 r1 = cross(dpy, n), r2 = cross(n, dpx);
   float det = dot(dpx, r1);
   vec3 g = (r1 * dhx + r2 * dhy) * sign(det);
-  return normalize(abs(det) * n - g * 0.06);
+  vec3 nn = abs(det) * n - g * 0.06;
+  // grazing angles: the surface gradient vanishes; keep the geometric normal
+  return (abs(det) > 1e-12 && dot(nn, nn) > 1e-20) ? normalize(nn) : n;
 }
 `;
 

@@ -22,7 +22,7 @@
 // open box reaching *behind* the plane: every view ray that passes through the
 // opening ends on one of its inner faces beyond the near plane, and no other
 // ray can reach it, so it is drawn without a depth test.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { pairXf, cameraInNearZone } from '../core/portal.js';
 import { xpoint, qmul, qnorm, xmat4 } from '../core/math.js';
 import { FOG_PARS } from './atmosphere.js';

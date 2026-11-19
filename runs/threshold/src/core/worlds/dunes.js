@@ -115,7 +115,18 @@ export function dunes(ctx) {
     };
     d.light = { sun: 2.6, hemi: 0.6, hemiSky: [0.3, 0.3, 0.55], hemiGround: [0.2, 0.12, 0.13], env: 0.6, shadowRange: 55 };
     d.post = { exposure: 1.3, saturation: 1.06, contrast: 1.07, lift: [0.006, 0.0, 0.018], gain: [1.02, 0.98, 1.02], bloom: 0.6 };
-  } else if (night) {  } else {
+  } else if (night) {
+    const moonList = Array.from({ length: Math.max(1, moons) }, () => ({ dir: norm([R.range(-1, 1), R.range(0.15, 0.7), R.range(-1, 1)]), size: R.range(0.02, 0.09), color: hsl(R.range(0, 360), R.range(0.1, 0.5), R.range(0.6, 0.85)) }));
+    const md = moonList[0].dir;
+    d.atmos = { fogColor: scaleRGB(hsl(hue + 220, 0.35, 0.3), 0.4), sunDir: md, sunColor: [0.55, 0.62, 0.86], fogDensity: 0.0026, fogFalloff: 0.012, fogBase: 0, inscatter: 0.5 };
+    d.sky = {
+      zenith: scaleRGB(hsl(hue + 230, 0.6, 0.12), 0.5), horizon: scaleRGB(hsl(hue + 300, 0.4, 0.3), 0.5), ground: [0.05, 0.04, 0.05],
+      sunSize: 0.01, sunGlow: 0.4, sunDisc: 0, moons: moonList, moonLight: norm([R.range(-1, 1), 0.3, R.range(-1, 1)]),
+      stars: 1.0, aurora: 0, clouds: R.range(0, 0.3), cloudScale: 0.4, cloudColor: [0.12, 0.1, 0.14],
+    };
+    d.light = { sun: 1.9, hemi: 0.55, hemiSky: [0.22, 0.24, 0.4], hemiGround: [0.16, 0.1, 0.1], env: 0.6, shadowRange: 50 };
+    d.post = { exposure: 1.75, saturation: 1.0, contrast: 1.06, lift: [0.0, 0.004, 0.015], gain: [0.98, 1.0, 1.04], bloom: 0.6 };
+  } else {
     const sd = norm([R.range(-1, 1), R.range(0.35, 0.8), R.range(-1, 1)]);
     d.atmos = { fogColor: hsl(hue + 10, 0.35, 0.72), sunDir: sd, sunColor: [2.2, 1.9, 1.5], fogDensity: 0.004, fogFalloff: 0.01, fogBase: 0, inscatter: 0.8 };
     d.sky = { zenith: hsl(hue + 200, 0.45, 0.45), horizon: hsl(hue + 20, 0.35, 0.78), ground: [0.4, 0.33, 0.28], sunSize: 0.02, sunGlow: 1.6, sunDisc: 20, moons: moons ? [{ dir: norm([R.range(-1, 1), 0.5, R.range(-1, 1)]), size: 0.05, color: [0.9, 0.9, 0.9] }] : [], stars: 0, aurora: 0, clouds: R.range(0, 0.35), cloudScale: 0.6, cloudColor: [1, 0.95, 0.9] };

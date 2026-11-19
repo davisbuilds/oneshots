@@ -2,7 +2,7 @@
 // per-world uniforms, lights, environment map and portal records the portal
 // renderer needs. update() streams terrain and scatter around the world's
 // focus; dispose() releases every GPU resource the world created.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 import { makeAtmosUniforms, makeSkyUniforms, makeSkyMesh, patchMaterial } from './atmosphere.js';
 import { partGeometry, merge } from './geometry.js';
 import { corners } from '../core/portal.js';

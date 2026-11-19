@@ -4,7 +4,7 @@
 // skirts that hide cracks between levels. Tiles are cached (LRU, bounded) and
 // built under a per-frame time budget; the previous selection stays on screen
 // until the new one is complete, so there are never holes.
-import * as THREE from 'three';
+import * as THREE from '../../vendor/three/three.module.js';
 
 const ROOT = 1024, MIN = 64, SPLIT = 1.35, N = 32, ROOTS = 1, CAPACITY = 160;
 
