@@ -52,6 +52,7 @@ jobs:
           node runs/echo-atlas/tests/zero-size-frame.mjs
           node runs/echo-atlas/verify.mjs
           node runs/luminal/tests/browser-frame.mjs
+          node runs/threshold/tools/verify.mjs --pixels
 
       - name: Test the gate-to-game stack
         run: |
@@ -65,3 +66,6 @@ jobs:
 
       - name: Test Bit by Bit's puzzle logic
         run: node --test runs/bit-by-bit/tests/*.test.js
+
+      - name: Test THRESHOLD's traversal, world graph and streaming
+        run: node --test runs/threshold/tests/*.test.mjs

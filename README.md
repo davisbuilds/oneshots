@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**THRESHOLD — An Infinity of Elsewheres**](runs/threshold/) | Walk a tide-worn causeway into a three-moon desert, sound the instruments of a luminous forest and follow a library aisle back into itself through live recursive portals. | GPT 6.2 Astra (max) | 1 | [brief](runs/threshold/brief.md) · [log](runs/threshold/process/PROGRESS.md) · [snapshots](runs/threshold/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-threshold) |
 | [**Bit by Bit**](runs/bit-by-bit/) | A puzzle game that teaches data structures and algorithms by making you the algorithm: 34 hand-played levels from array indexing to dynamic programming, against an adversary who always arranges the worst case, each one naming and showing the code for what you just did. | Claude Fable 5.2 (medium) | 1 | [brief](runs/bit-by-bit/brief.md) · [log](runs/bit-by-bit/process/PROGRESS.md) · [snapshots](runs/bit-by-bit/process/snapshots) |
 | [**Tideline**](runs/tideline/) | A container-terminal operations console that plays like a strategy game: a living isometric paper diorama with real ship stability, stowage you can drag, cranes you can reassign, and straddle carriers that cannot collide or deadlock by construction, checked from their actual trajectories over many seeds. | Claude Opus 5.5 | 3 | [brief](runs/tideline/brief.md) · [log](runs/tideline/process/PROGRESS.md) · [snapshots](runs/tideline/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-tideline) |
 | [**Luminal**](runs/luminal/) | A one-button rhythm platformer in luminous geometry: one level, Heliotrope, built on an original synthesized soundtrack, with cube, ship, wave and gravity sections, practice checkpoints and saved bests, and a solver that proves every section can be cleared. | Claude Opus 5.5 | 1 | [brief](runs/luminal/brief.md) · [log](runs/luminal/process/PROGRESS.md) · [snapshots](runs/luminal/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-luminal) |
@@ -109,8 +110,8 @@ renderers. This retires the separate Chrome-for-Testing archive pin. The install
 is intended for disposable CI; local machines use their installed Chrome.
 Browser policy tests run with `pnpm run test:browser-policy` (after `pnpm install --frozen-lockfile`).
 The Validate Runs workflow also provisions the locked Linux browser and exercises
-the Echo Atlas verifier through the same launcher, without publishing assets.
-`tideline/verify.mjs` remains a separate optional browser check.
+the Echo Atlas verifier, Luminal frame check and THRESHOLD framebuffer witnesses through the same launcher.
+Tideline and THRESHOLD have separate browser checks in their run READMEs. THRESHOLD’s source edition uses a static server. Its portable HTML opens directly from disk.
 
 The locked tooling is optional; the HTML runs still open without it.
 Screenshots from the verifiers stay in their run directories and are ignored.
@@ -123,7 +124,7 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
 `scripts/validate_runs.py`, the fast renderer build-recovery tests, and the
-`gate-to-game`, `luminal` and `bit-by-bit` logic tests (Node's built-in test
+`gate-to-game`, `luminal`, `bit-by-bit` and `threshold` logic tests (Node's built-in test
 runner, no dependencies).
 The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above

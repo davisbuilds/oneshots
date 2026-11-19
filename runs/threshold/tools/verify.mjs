@@ -19,15 +19,39 @@ await browserSession(async (browser, url) => {
   await page.waitForFunction(() => window.lab);
   const pixels = await page.evaluate(() => lab.probes());
   console.log('Framebuffer witnesses', JSON.stringify(pixels));
+  if (process.argv.includes('--pixels')) {
+    assert.deepEqual(errors, []);
+    assert.deepEqual(external, []);
+    return;
+  }
   const disposal = await page.evaluate(() => lab.resourceProbe());
   console.log('GPU disposal', JSON.stringify(disposal));
+  // Tap the actual destination bus in the test page to witness sound and mute.
+  await page.addInitScript(() => {
+    const connect = AudioNode.prototype.connect;
+    AudioNode.prototype.connect = function (...args) {
+      if (args[0] instanceof AudioDestinationNode) {
+        const probe = this.context.createAnalyser();
+        connect.call(this, probe);
+        const samples = new Float32Array(probe.fftSize);
+        window.outputRms = () => {
+          probe.getFloatTimeDomainData(samples);
+          return Math.sqrt(samples.reduce((sum, v) => sum + v * v, 0) / samples.length);
+        };
+      }
+      return connect.apply(this, args);
+    };
+  });
   await page.goto(url);
   await ready(page);
   await page.evaluate(() => document.fonts.ready);
   const shot = (name) => page.screenshot({ path: output + 'playwright/' + name + '.png' });
   await shot('cover');
   await page.getByRole('button', { name: 'Enable ambient sound' }).click();
-  assert.equal(await page.locator('#sound').getAttribute('aria-pressed'), 'true');
+  await page.waitForFunction(() => window.outputRms?.() > 0.008);
+  await page.getByRole('button', { name: 'Mute ambient sound' }).click();
+  await page.waitForFunction(() => window.outputRms() < 0.0008);
+  await page.getByRole('button', { name: 'Enable ambient sound' }).click();
   await page.getByRole('button', { name: 'Enter the atlas' }).click();
   await page.keyboard.down('Shift');
   await until(page, 'w', () => threshold.inspect().pos[2] < 10.1);

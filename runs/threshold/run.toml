@@ -1,0 +1,35 @@
+schema = 1
+slug = "threshold"
+title = "THRESHOLD — An Infinity of Elsewheres"
+summary = "Walk a tide-worn causeway into a three-moon desert, sound the instruments of a luminous forest and follow a library aisle back into itself through live recursive portals."
+date = 2026-11-19
+kind = "long-horizon"
+medium = ["interactive 3D", "Three.js", "procedural worlds", "portals"]
+entry = "index.html"
+hero = "preview/hero.webp"
+curator_note = ""
+
+[agent]
+model = "GPT 6.2 Astra"
+model_id = "gpt-6.2-astra"
+harness = "Codex"
+reasoning = "max"
+
+[run]
+brief = "brief.md"
+human_turns = 1
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+command = "python3 tools/build.py && node tools/capture.mjs"
+verify = "python3 tools/build.py --check && node --test tests/*.test.mjs && node tools/capture.mjs --verify"
+timeout_minutes = 20
+
+[[assets]]
+file = "threshold.html"
+description = "Portable offline edition containing all modules, fonts and licenses."
+
+[[assets]]
+file = "threshold-crossing.webm"
+description = "A first-person out-and-back crossing recorded from the live WebGL canvas with keyboard input, 1280 × 720 VP9."
