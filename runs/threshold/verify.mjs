@@ -80,7 +80,8 @@ try {
   // ── 1. The acceptance test: through the great door and back ───────────────
   if (want('acceptance')) {
     const page = await open('play&nosave&nolock&fresh&quality=3');
-    await page.evaluate(() => THR.place('0,0', [0, 60, 26], 0, 0.03));
+    // the real spawn: on the terrace, four metres above the deck; the walk goes down its stair
+    await page.evaluate(() => { const s = THR.app.descs.get('0,0').spawn; THR.place('0,0', s.feet, s.yaw, 0.03); });
     await render(page, 8);
     await shot(page, 'a01-spawn');
     const s0 = await state(page);
@@ -103,7 +104,7 @@ try {
     }
     const halfway = await state(page);
     const zh = halfway.eye[2] - (-32 + 0);
-    log(`acceptance: walked ${(26 - halfway.feet[2]).toFixed(2)} m in ${r1.t.toFixed(2)} s, then ${taps} taps; eye ${(zh * 100).toFixed(1)} cm before the plane`);
+    log(`acceptance: walked ${(s0.feet[2] - halfway.feet[2]).toFixed(2)} m from the spawn, down the terrace stair, in ${r1.t.toFixed(2)} s, then ${taps} taps; eye ${(zh * 100).toFixed(1)} cm before the plane`);
     assert.equal(halfway.world, '0,0', 'still on the Threshold side');
     assert.ok(zh > 0 && zh < 0.05, 'standing in the doorway with the eye just before the plane');
     // Look around while standing in the doorway: real mouse movement.
@@ -253,7 +254,7 @@ try {
   if (want('persistence')) {
     const page = await open('play&nolock&fresh&quality=2');
     // take the instrument from the pedestal with E, raise it with Q
-    await page.evaluate(() => THR.place('0,0', [2.6, 60, 24.2], 0, -0.5));
+    await page.evaluate(() => { const p = THR.app.descs.get('0,0').instrument.p; THR.place('0,0', [p[0], p[1] - 1.45, p[2] + 2.6], 0, -0.4); });
     await render(page, 4);
     await page.keyboard.press('KeyE'); await render(page, 1);
     const took = await page.evaluate(() => THR.app.save.data.instrument);

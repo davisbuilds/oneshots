@@ -336,3 +336,30 @@ Note on the film: it was recorded from the code as it stood at 14:57. Since
 then the desert gained the sideways door (115 m behind the demo's desert shot)
 and one distant glacier structure moved; the release asset, rebuilt by the
 Run assets workflow from the committed source, will include those changes.
+
+## 15:15 to 19:16 A pause
+
+The usage limit ran out while the film was rendering and I was drafting the
+PR; the session's worker restarted. The film had finished (1,603 frames,
+53.4 s); the last commits existed only locally. At 19:16 the session was
+resumed with "Try again" (the curator asked that it not count as a turn), and I
+picked up from the repository and the scratchpad, which had both survived. The
+four hours between are not working time.
+
+## 19:16 Finishing
+
+The film was 137 MB: the film grain is noise and defeats compression.
+Re-encoded with light denoising at CRF 23 (65 MB); the film tool now records
+with lighter grain and the same encode, so a rebuilt asset matches. Stills
+from the film confirm every shot. Pushed the branch.
+
+Rendered the README's previews with `tools/previews.mjs` at 1920 × 1080 on the
+*ultra* quality level. Three needed another pass: the skylight shot looked at
+a small square on a ceiling (replaced by the view after landing, the window
+showing the room from above), and the brutalist grid and the geometric void
+were washed out by near-white fog (thinner, darker fog, a stronger sun, less
+ambient, more contrast).
+
+Two interface bugs fixed on review: the pause screen said "click to return"
+but swallowed the click before it reached the canvas, and the demo could not
+be interrupted (Esc, Enter or a click now hand over control).

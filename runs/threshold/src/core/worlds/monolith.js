@@ -43,10 +43,10 @@ export function monolith(ctx) {
   d.scatter.push({ id: 1, kind: 'pillar', cell: 32, prob: 0.55, scale: [0.6, 1.5], clear: 18, reach: 60, collide: { box: PILLARS.map(([x, y, z]) => [x / 2, y / 2, z / 2]) }, variants: 4, mat: 'concrete' });
   d.scatter.push({ id: 2, kind: 'beam', cell: 64, prob: 0.35, scale: [0.8, 1.3], clear: 44, reach: 60, collide: { box: [[30, 1.5, 3, 14], [3, 1.5, 30, 22]] }, variants: 2, mat: 'concreteDark' });
   const sd = warm ? norm([0.6, 0.35, -0.7]) : norm([-0.3, 0.75, 0.4]);
-  d.atmos = { fogColor: warm ? [0.62, 0.58, 0.54] : [0.56, 0.6, 0.66], sunDir: sd, sunColor: warm ? [2.8, 2.2, 1.6] : [2.4, 2.4, 2.4], fogDensity: 0.0016, fogFalloff: 0.004, fogBase: 0, inscatter: 0.6 };
+  d.atmos = { fogColor: warm ? [0.5, 0.47, 0.45] : [0.44, 0.48, 0.54], sunDir: sd, sunColor: warm ? [2.8, 2.2, 1.6] : [2.4, 2.4, 2.4], fogDensity: 0.0011, fogFalloff: 0.004, fogBase: 0, inscatter: 0.6 };
   d.sky = { zenith: warm ? [0.2, 0.25, 0.4] : [0.3, 0.36, 0.46], horizon: d.atmos.fogColor, ground: [0.4, 0.4, 0.4], sunSize: 0.012, sunGlow: 1.0, sunDisc: warm ? 22 : 0, moons: [], stars: 0, aurora: 0, clouds: warm ? 0.3 : 0.85, cloudScale: 0.4, cloudColor: [0.8, 0.8, 0.82] };
-  d.light = { sun: warm ? 4.2 : 2.4, hemi: 0.7, hemiSky: [0.6, 0.62, 0.68], hemiGround: [0.42, 0.4, 0.38], env: 0.6, shadowRange: 70 };
-  d.post = { exposure: 0.72, saturation: 0.85, contrast: 1.14, lift: [0.0, 0.0, 0.005], gain: [1.0, 1.0, 1.0], bloom: 0.3 };
+  d.light = { sun: warm ? 4.6 : 3.0, hemi: 0.38, hemiSky: [0.6, 0.62, 0.68], hemiGround: [0.42, 0.4, 0.38], env: 0.6, shadowRange: 70 };
+  d.post = { exposure: 0.7, saturation: 0.9, contrast: 1.2, lift: [0.0, 0.0, 0.005], gain: [1.0, 1.0, 1.0], bloom: 0.3 };
   d.fill = mixRGB(d.atmos.fogColor, d.sky.horizon, 0.5);
   d.features.push({ type: 'particles', kind: 'dust', count: 700, box: 50, color: [0.9, 0.88, 0.85], size: 0.025, speed: 0.6, wind: [1, 0, 0.2], glow: 0.1 });
   d.audio = { base: 'hum', tone: 82, wind: 0.6 };

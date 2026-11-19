@@ -1,7 +1,9 @@
 # Brief
 
-The prompt that started this run, verbatim. It was the only human message during the run;
-the session opened at about 12:36 UTC on 2026-11-19.
+The prompt that started this run, verbatim. It was the only human message that
+directed the run; the session opened at about 12:36 UTC on 2026-11-19. (The
+session paused when the usage limit ran out and was resumed at 19:16 UTC with
+"Try again", which the curator asked not to count as a turn; see the log.)
 
 > THRESHOLD — An Infinity of Elsewheres
 >

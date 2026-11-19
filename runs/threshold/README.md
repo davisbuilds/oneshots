@@ -19,6 +19,24 @@ lattice of generated worlds that does not stop.
 | **Full-size outputs** | release `run-threshold`: the demo film, `threshold_demo.mp4` |
 | **Process** | [`process/PROGRESS.md`](process/PROGRESS.md), [snapshots](process/snapshots/) |
 
+| | |
+| :--- | :--- |
+| ![From the desert, the dawn platform through the great door](preview/detail-turnaround.webp) | ![Standing in the doorway: one jamb lit by two suns](preview/detail-halfway.webp) |
+| *Ashmere: turn round, and the Threshold is behind you.* | *Standing in the doorway, 2.5 cm from the plane.* |
+| ![The endless stoa, with the traveller seen far ahead](preview/detail-stoa.webp) | ![The room that contains itself](preview/detail-mirror.webp) |
+| *The Endless Stoa. The figure far ahead is you.* | *The room that contains itself, with you in it.* |
+| ![The cell's door opens into a hall of columns](preview/detail-cell.webp) | ![The Inner Hall](preview/detail-hall.webp) |
+| *The Cell, seven metres across, opens into…* | *…the Inner Hall, 160 m long.* |
+| ![A window in the sand, with the hall inside](preview/detail-window.webp) | ![After falling through the ceiling, the window shows the room from above](preview/detail-skylight.webp) |
+| *A window standing in the dunes.* | *The window that opens through the room's own ceiling.* |
+| ![Velloria, the lumen forest](preview/detail-forest.webp) | ![Isenholm and the Vault](preview/detail-vault.webp) |
+| *Velloria.* | *Isenholm, and the door at the foot of the Vault.* |
+
+![Six generated worlds: islands, ruins, a cavern, the brutalist grid, the geometric void, the forest](preview/archetypes.webp)
+
+*Generated worlds: an archipelago, temple ruins, a crystal cavern, the endless
+brutalist grid, the geometric void, and the curated forest for comparison.*
+
 ## Play it
 
 ES modules cannot load from `file://`, so serve the directory (no install,
@@ -261,13 +279,13 @@ mistake in my own invariant.
 SwiftShader, about twenty minutes). Results from the last run are in the PR
 and in `output/verify/report.txt` when you run it:
 
-- *The acceptance test.* Walk 58 m to the great door, ease in with key taps
-  until the eye is 3.3 cm from the plane, look left, right and down (the
+- *The acceptance test.* From the spawn, walk 68 m down the terrace stair to
+  the great door, ease in with key taps until the eye is 3.1 cm from the plane, look left, right and down (the
   doorway is lit by dawn on one half and twilight on the other; the deck meets
   the sand at the plane), cross, walk out, turn round with the mouse (the
   doorway is brighter than the desert around it: the platform is behind), walk
   back: exactly two crossings. The frame 5 mm before the plane and the frame
-  after a 1 cm step across it differ by a mean of 0.24/255, with 0.01 % of
+  after a 1 cm step across it differ by a mean of 0.23/255, with 0.01 % of
   pixels changing by more than 40.
 - *Impossible spaces.* 25 s north in the 44 m stoa never leaves it; the cell's
   door leads into a hall in which the walker runs 99 m; the room's east door

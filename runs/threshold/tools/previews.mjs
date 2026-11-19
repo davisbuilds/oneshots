@@ -8,7 +8,7 @@ import { launchBrowser } from '../../../scripts/browser.mjs';
 import { startServer } from './serve.mjs';
 import { GL_ARGS } from './shoot.mjs';
 
-const [width = '1920', height = '1080'] = process.argv.slice(2);
+const [width = '1920', height = '1080', ...only] = process.argv.slice(2);
 const OUT = fileURLToPath(new URL('../output/previews/', import.meta.url));
 await mkdir(OUT, { recursive: true });
 
@@ -19,7 +19,7 @@ const SHOTS = [
   ['halfway', '0,0', [0.6, 60, -31.975], 0.95, -0.12],
   ['stoa', '0,0', [16.5, 60.24, 16], 0, 0.02],
   ['mirror', '3,0/mirror', [-2.5, 0, 0.6], -Math.PI / 2, 0.03],
-  ['skylight', '3,0/mirror', [0.4, 0, 0.6], 0.1, 1.45],
+  ['skylight', '3,0/mirror', [0.3, 0, -1.4], 0.02, 0.2],
   ['cell', '0,0', [-1.2, 60, -6.6], Math.PI / 2 + 0.04, 0.05],
   ['hall', '0,0/hall', [6, 0.3, -96], -0.15, 0.16],
   ['window', '1,0', 'hallwin:8:1.6', 0.15, 0.06],
@@ -39,7 +39,7 @@ try {
   page.on('pageerror', (e) => console.log('page error:', e.message));
   await page.goto(`${server.url}index.html?play&nosave&nolock&quality=4&mute`);
   await page.waitForFunction(() => window.THR && window.THR.ready);
-  for (const [name, world, at, yaw, pitch] of SHOTS) {
+  for (const [name, world, at, yaw, pitch] of SHOTS.filter((s) => !only.length || only.includes(s[0]))) {
     await page.evaluate(([world, at, yaw, pitch]) => {
       const app = THR.app; app.manual = true;
       const d = app.descs.get(world);
