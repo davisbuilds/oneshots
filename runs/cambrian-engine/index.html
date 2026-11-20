@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#0c1213" />
+    <title>The Cambrian Engine · Evolutionary Observatory</title>
+    <link rel="stylesheet" href="station.css" />
+  </head>
+  <body>
+    <header class="mast">
+      <div class="mast-inner">
+        <a class="brand" href="#field" aria-label="Cambrian Observatory home"
+          ><span class="mark" aria-hidden="true">✺</span
+          ><span>CAMBRIAN<span class="brand-light"> / LAB</span></span></a
+        >
+        <nav aria-label="Views">
+          <button data-view="field" class="active"><i data-icon="aperture"></i>Observatory</button
+          ><button data-view="atlas"><i data-icon="branch"></i>Lineage atlas</button
+          ><button data-view="ecology"><i data-icon="pulse"></i>Ecology</button>
+        </nav>
+        <div class="mast-actions">
+          <button id="guide" aria-label="Field guide">
+            <i data-icon="book"></i><span>Field guide</span></button
+          ><button id="export" aria-label="Export run">
+            <i data-icon="download"></i><span>Export run</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <div class="eyebrow accent"><span class="rule"></span>EVOLUTIONARY OBSERVATORY</div>
+          <h1>The Cambrian <em>Engine</em></h1>
+          <p>Life without a script.</p>
+        </div>
+        <div class="culture">
+          <div class="eyebrow">CULTURE SEED</div>
+          <div class="seed-row">
+            <span id="seedLabel"></span
+            ><button id="configure" title="Configure a new culture" aria-label="Configure a new culture">
+              <i data-icon="sliders"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+      <div class="workspace">
+        <section class="instrument" id="instrument" aria-label="Observation instrument">
+          <div class="panel-head">
+            <div class="section-title">
+              <i id="viewIcon" data-icon="aperture"></i>
+              <h2 id="viewTitle">Microscope</h2>
+            </div>
+            <div class="head-actions">
+              <button id="perturb" aria-label="Environment">
+                <i data-icon="wave"></i><span>Environment</span></button
+              ><button id="cinema" aria-label="Cinematic" aria-pressed="false">
+                <i data-icon="cinema"></i><span>Cinematic</span>
+              </button>
+            </div>
+          </div>
+          <div class="viewport" id="fieldView">
+            <canvas
+              id="fieldCanvas"
+              aria-label="Living organisms. Select a body to inspect it or use the specimen controls below."
+            ></canvas>
+            <div class="glass-label">
+              <span id="liveLamp" class="lamp"></span><span id="liveText">LIVE FIELD</span>
+            </div>
+            <div class="glass-corner tr"></div>
+            <div class="glass-corner bl"></div>
+            <div id="reticle" hidden><span></span><b></b></div>
+            <div id="selectedTag" hidden></div>
+            <div id="caption" hidden></div>
+            <div class="ruler"><span id="scaleLine"></span><small id="scaleText">50 µm</small></div>
+            <div class="lens">
+              <button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomValue"></span
+              ><button id="zoomIn" aria-label="Zoom in">+</button>
+            </div>
+          </div>
+          <div id="atlasView" class="analysis-view" hidden>
+            <div class="subhead">
+              <div><h3 id="familyTitle">Founder family</h3></div>
+              <label
+                >Founder family
+                <select id="family"></select
+              ></label>
+            </div>
+            <p class="hint" id="familyStats"></p>
+            <div class="tree-scroll">
+              <canvas id="treeCanvas" aria-label="Time-scaled lineage tree"></canvas>
+            </div>
+            <div class="atlas-foot">
+              <span><b class="key mint"></b>Living <b class="key extinct"></b>Extinct</span>
+              <div>
+                <button id="prevBranches" aria-label="Previous branches">‹</button
+                ><span id="treePage"></span
+                ><button id="nextBranches" aria-label="Next branches">›</button>
+              </div>
+            </div>
+            <div class="branch-tools">
+              <label
+                >Branch
+                <select id="branch"></select></label
+              ><button id="parentBranch" hidden></button
+              ><button id="branchOrigin">Revisit origin <i data-icon="rewind"></i></button
+              ><button id="findMember">Find living member <i data-icon="arrow"></i></button>
+            </div>
+          </div>
+          <div id="ecologyView" class="analysis-view" hidden>
+            <div class="subhead">
+              <div><h3 id="mixtureTitle">Balanced chamber</h3></div>
+              <label
+                >Trait
+                <select id="trait"></select
+              ></label>
+            </div>
+            <div class="eco-charts">
+              <div>
+                <h4>Living trait distribution</h4>
+                <canvas id="histogram"></canvas>
+              </div>
+              <div>
+                <h4>Lineage diversity <small>SHANNON H</small></h4>
+                <canvas id="diversityChart"></canvas>
+              </div>
+            </div>
+            <div class="habitat">
+              <h4>Gut chemistry × occupied habitat</h4>
+              <canvas
+                id="habitatChart"
+                aria-label="Select a plotted organism to inspect it in the microscope"
+              ></canvas>
+              <p id="occupancy" class="hint"></p>
+            </div>
+            <h4>Energy acquired <small>CUMULATIVE</small></h4>
+            <div id="diet"></div>
+            <div class="feeding">
+              <h4>Feeding links <small>RECORDED LETHAL CONTACTS</small></h4>
+              <div id="links"></div>
+            </div>
+            <div id="comparison"></div>
+          </div>
+          <div class="transport">
+            <button id="play" aria-label="Pause simulation"><i data-icon="pause"></i></button
+            ><button id="step" title="Advance one tick" aria-label="Advance one tick">
+              <i data-icon="step"></i></button
+            ><span class="transport-div"></span
+            ><label class="speed"
+              ><span>Speed</span
+              ><select id="speed" aria-label="Simulation speed">
+                <option value="1">1×</option>
+                <option value="4">4×</option>
+                <option value="16">16×</option>
+                <option value="64">64×</option>
+              </select></label
+            >
+            <div class="tick"><span class="eyebrow">TICK</span> <span id="tickLabel">000000</span></div>
+          </div>
+        </section>
+        <aside class="plate">
+          <div class="plate-head">
+            <div class="eyebrow"><i data-icon="target"></i> SPECIMEN INSPECTOR</div>
+            <button
+              id="nextSpecimen"
+              aria-label="Inspect next living specimen"
+              title="Next living specimen"
+            >
+              <i data-icon="next"></i>
+            </button>
+          </div>
+          <div class="plate-name">
+            <h2 id="specName">Specimen</h2>
+            <button class="clade-link" id="cladeLink"></button>
+          </div>
+          <div class="portrait">
+            <canvas
+              id="portrait"
+              aria-label="Enlarged anatomical view of the inspected organism"
+            ></canvas
+            ><span class="axis">y<br />└─ x</span><span class="plate-id" id="plateId"></span>
+          </div>
+          <div class="plate-tabs" role="group" aria-label="Inspector view">
+            <button data-detail="anatomy" class="active">Anatomy</button
+            ><button data-detail="genome">Genome</button
+            ><button data-detail="ancestry">Ancestors</button>
+          </div>
+          <div id="detail" class="detail"></div>
+          <button class="trace" id="trace">
+            <i data-icon="branch"></i>Trace lineage<i data-icon="arrow"></i>
+          </button>
+        </aside>
+        <section class="census">
+          <div class="panel-head">
+            <div class="section-title">
+              <i data-icon="pulse"></i>
+              <h2>Culture census</h2>
+            </div>
+            <label class="compact"
+              ><span>Plot</span
+              ><select id="metric" aria-label="Census plot">
+                <option value="population">Population</option>
+                <option value="activeLineages">Living lineages</option>
+                <option value="maxGeneration">Generation</option>
+                <option value="diversity">Shannon diversity</option>
+              </select></label
+            >
+          </div>
+          <div class="stats">
+            <div><span>Population</span><strong id="popStat"></strong></div>
+            <div><span>Living lineages</span><strong id="cladeStat"></strong></div>
+            <div><span>Deepest generation</span><strong id="genStat"></strong></div>
+            <div><span>Births</span><strong id="birthStat"></strong></div>
+          </div>
+          <canvas id="historyChart" aria-label="Historical census. Click to revisit a time."></canvas>
+          <div class="timeline">
+            <i data-icon="rewind"></i><label for="scrub">Time lens</label
+            ><input
+              type="range"
+              id="scrub"
+              min="0"
+              max="1"
+              value="1"
+              aria-label="Historical tick"
+            /><button id="returnLive" disabled>Live <i data-icon="arrow"></i></button>
+          </div>
+        </section>
+        <section class="log">
+          <div class="panel-head">
+            <div class="section-title">
+              <i data-icon="list"></i>
+              <h2>Field log</h2>
+            </div>
+            <span id="logCount" class="eyebrow"></span>
+          </div>
+          <div id="events"></div>
+        </section>
+      </div>
+      <footer>
+        <span class="mini-mark">✺</span> Cambrian Lab
+        <span class="footer-right">Seeded artificial life · Local instrument</span>
+      </footer>
+    </main>
+    <dialog id="modal">
+      <div class="modal-bar">
+        <span class="eyebrow accent" id="modalKicker"></span
+        ><button id="closeModal" aria-label="Close dialog">×</button>
+      </div>
+      <div id="modalBody"></div>
+    </dialog>
+    <div id="status" role="status"></div>
+    <script src="engine.js"></script>
+    <script src="optics.js"></script>
+    <script src="record.js"></script>
+    <script src="plots.js"></script>
+    <script src="station.js"></script>
+  </body>
+</html>
