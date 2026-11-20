@@ -17,6 +17,7 @@ harness = "Codex"
 [run]
 brief = "brief.md"
 human_turns = 1
+wall_clock_minutes = 32  # Approximate original run, 09:30–10:02 UTC on 19 November.
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 
