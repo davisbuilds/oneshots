@@ -315,7 +315,7 @@ try {
     log(`persistence: universe 2 starts at ${u2.w} ${u2.f.map((v) => v.toFixed(1))}; visited ${u2.visited.join(' ') || 'nothing'}; lit ${u2.lit.length}`);
     assert.ok(u2.w === '0,0' && !u2.visited.includes('1,0') && !u2.lit.length && !u2.inst, 'another universe does not inherit this journey');
     // forgetting everything there stays in that universe and leaves this one alone
-    await Promise.all([page.waitForURL(/fresh/), page.evaluate(() => THR.app.action('reset'))]);
+    await Promise.all([page.waitForEvent('domcontentloaded'), page.evaluate(() => THR.app.action('reset'))]);
     assert.match(page.url(), /universe=2/, 'reset keeps the universe');
     await page.goto(home);
     await page.waitForFunction(() => window.THR && window.THR.ready, null, { timeout: 120000 });
@@ -323,6 +323,34 @@ try {
     assert.equal(back.pos.world, pos.w, 'the benchmark did not move the saved position');
     assert.ok(back.inst && back.lit.includes('0,0') && !back.lit.includes('9,9') && back.visited.includes('1,0'), 'this journey survives the other universe and the benchmark');
     await ctx.close();
+  }
+
+  if (want('reset')) {
+    const page = await open('play&nolock&quality=1&universe=2');
+    await page.evaluate(() => {
+      const { save, player } = THR.app;
+      save.setPos(player.world, player.feet, player.look);
+      save.flush();
+      THR.app.hud.showPause(true);
+    });
+    await Promise.all([
+      page.waitForEvent('domcontentloaded'),
+      page.getByRole('button', { name: 'Forget everything' }).click(),
+    ]);
+    await page.waitForFunction(() => window.THR?.ready);
+    const freshPosition = await page.evaluate(() => {
+      const { save } = THR.app;
+      if (save.data.pos !== null) throw new Error('reset did not clear the old position');
+      save.setPos('0,0', [0, 60, -28], [0, 0, 0, 1]);
+      save.flush();
+      return save.data.pos;
+    });
+    await page.reload();
+    await page.waitForFunction(() => window.THR?.ready);
+    assert.deepEqual(await page.evaluate(() => THR.app.save.data.pos), freshPosition, 'reloading after a reset preserves the new journey');
+    assert.equal(new URL(page.url()).searchParams.get('universe'), '2', 'reset keeps the selected universe');
+    assert.ok(!new URL(page.url()).searchParams.has('fresh'), 'the reset flag is consumed');
+    await page.close();
   }
 
   // ── 4. Streaming stays bounded while travelling through many worlds ──────

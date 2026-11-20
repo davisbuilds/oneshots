@@ -59,7 +59,15 @@ export class App {
     const opaqueFrame = self !== top && self.origin === 'null';
     const persist = !opaqueFrame && !params.has('nosave') && !params.has('bench');
     this.save = new Save(persist ? window.localStorage : null, saveKey(this.universe));
-    if (params.has('fresh')) this.save.reset();
+    if (params.has('fresh')) {
+      this.save.reset();
+      params.delete('fresh');
+      if (self.origin !== 'null') {
+        const url = new URL(location.href);
+        url.search = params.toString();
+        history.replaceState(history.state, '', url);
+      }
+    }
     this.input = new Input(canvas, { dragLook: opaqueFrame });
     this.input.assumeLocked = params.has('nolock');
     this.hud = new Hud(ui, { dragLook: this.input.dragLook });
@@ -110,7 +118,7 @@ export class App {
     const pos = this.save.data.pos;
     let world = ORIGIN, feet, look;
     const d = this.descs.get(ORIGIN);
-    if (pos && !this.params.has('fresh') && this.descs.get(pos.world)) { world = pos.world; feet = pos.feet; look = pos.look; }
+    if (pos && this.descs.get(pos.world)) { world = pos.world; feet = pos.feet; look = pos.look; }
     else feet = d.spawn.feet;
     this.player = new Traveller(this.space, { world, feet, yaw: d.spawn.yaw || 0 });
     if (look) this.player.look = look;
@@ -148,7 +156,7 @@ export class App {
     else if (a === 'demo') { this.start(true); }
     else if (a === 'journal') { this.toggleJournal(true); }
     else if (a === 'resume') { this.hud.showPause(false); this.input.lock(); }
-    else if (a === 'reset') { this.save.reset(); location.search = '?fresh' + (this.universe !== UNIVERSE ? '&universe=' + this.universe : ''); }
+    else if (a === 'reset') { location.search = '?fresh' + (this.universe !== UNIVERSE ? '&universe=' + this.universe : ''); }
   }
   start(demo) {
     this.hud.fadeTitle();

@@ -57,7 +57,7 @@ Progress there lasts for the current page.
 
 **Address bar options.** `?demo` the cinematic demo; `?bench` measure fixed
 scenes on your machine; `?quality=0..4` pin the quality (otherwise it adapts);
-`?fresh` forget the saved journey; `?universe=N` a different multiverse;
+`?fresh` forget the saved journey once; `?universe=N` a different multiverse;
 `?mute`; `?nolock` look by dragging instead of pointer lock.
 
 The title screen also offers *Watch the journey* (the demo). Everything you
