@@ -314,6 +314,8 @@ and in `output/verify/report.txt` when you run it:
 
 ## Performance
 
+The original 720p software render took about 40 minutes for the 53.4-second cinematic. It began before the usage-limit pause and finished before the session resumed. Both fall within the recorded 434-minute wall clock. [Development log](process/PROGRESS.md)
+
 **Test hardware: none with a GPU.** This run was made in a cloud container
 with a 4-vCPU Intel Xeon at 2.1 GHz and no graphics card; every frame was
 rasterised by SwiftShader, Chromium's software renderer. I could not measure

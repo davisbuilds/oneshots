@@ -17,3 +17,7 @@ Times are UTC, 19 November 2026.
 - 13:19 · The packaged HTML, VP9 decode, twelve Node tests, full THRESHOLD browser route, staged publication scan and collection gate passed. The browser test also measured a live digital signal on the ambient output bus and its decay after mute. Added the small framebuffer fixture to the collection’s Linux browser job.
 - 13:25 · Linux validated the framebuffer witnesses and the first PR review returned clean. CodeQL separately flagged the upstream Three.js UUID generator. THRESHOLD uses these IDs for render objects. Replaced its four Math.random words with Web Crypto while retaining the r187 UUID formatting, and documented the vendor delta. A new test failed on the old call and checks the real BufferGeometry constructor.
 - 13:27 · Rebuilt and re-opened the corrected offline edition. All 13 Node tests and the full browser route passed. Repeated the seven-window benchmark on the final runtime and updated the measurement table and JSON. The Linux pixel samples on the first head exactly matched the Metal witnesses.
+
+## Timing reconstructed on 20 November
+
+The documented work spans about 59 minutes on 19 November, from the first work-log checkpoint around 12:30 UTC through the final original verification update to PR #45 at 13:28:43 UTC. The interval includes rendering previews, recording the gameplay clip and repeating browser verification. A separate elapsed time for the original film capture is unrecorded. [Frame measurements](MEASUREMENTS.md)

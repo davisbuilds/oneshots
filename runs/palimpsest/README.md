@@ -40,6 +40,8 @@ For an end-to-end check, install the collection's locked dependencies with `pnpm
 
 The simulation tests exercise the production `simulate` function. They sweep seeds 0–255 and a second deterministic sample across the unsigned 32-bit range, including limits and both featured outcomes. Checks cover reproducibility, event order, causal pointers, resource thresholds, structure provenance, object provenance, deposition dates, depth bounds, adjoining strata, and abandonment.
 
+The original fieldwork log includes the Chrome rendering and image capture checkpoints. A separate elapsed time for producing the preview images is unrecorded. [Fieldwork log](process/PROGRESS.md)
+
 ## Process notes and limitations
 
 The first playable prototype exposed the ledger-backed site with one excavation button. Browser inspection led to a larger model, actual trench cuts, manual brushing, illustrated records, and a second pass on the inhabited architecture. Broader testing caught a marginal seed that exhausted river traffic too early. The dated log and numbered captures preserve the iterations. [Progress log](process/PROGRESS.md) · [Snapshots](process/snapshots)

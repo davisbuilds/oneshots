@@ -29,3 +29,7 @@ At 10:19 UTC, review identified a second numerical-model issue. After a swimmer 
 7. [Mosaic study](snapshots/07-mosaic.webp) — positions, guts and patch occupancy reconstructed from seed 73 at tick 14,400.
 
 The images were captured in Chrome and reduced to WebP. The native-resolution anatomy crop comes from the live field. Full-size captures, superseded local experiment outputs and the standalone HTML build go in the ignored `output/` directory. The current experiment files include the engine digest. Earlier measurements are explicitly labelled in the calibration record.
+
+## Timing reconstructed on 20 November
+
+The documented work spans about 50 minutes on 19 November, from the first work-log checkpoint around 09:36 UTC through the final original verification update to PR #44 at 10:25:54 UTC. The interval includes rendering the previews, running the experiments and repeating browser verification. The live cinematic frame measurement is recorded above. A separate elapsed time for producing the preview images is unrecorded.
