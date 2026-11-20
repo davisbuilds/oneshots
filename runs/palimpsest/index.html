@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#181a17" />
+    <title>Palimpsest · Tell Ashara</title>
+    <link rel="stylesheet" href="src/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <path
+            d="m3 13 17-9 17 9-17 9z M3 19l17 9 17-9 M3 25l17 9 17-9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.1"
+            stroke-linejoin="round"
+          />
+          <path d="m10 13 10-5 10 5-10 5z" fill="currentColor" opacity=".42" /></svg
+        >PALIMPSEST
+      </div>
+      <nav aria-label="Workspace">
+        <button data-tab="site" class="active"><i data-icon="dig"></i>Excavation</button
+        ><button data-tab="journal"><i data-icon="book"></i>Field journal</button
+        ><button data-tab="replay"><i data-icon="film"></i>Reconstruction</button>
+      </nav>
+      <div class="head-end">
+        <span class="status-dot"></span><span>FIELD SESSION</span
+        ><button id="help" class="icon-btn" aria-label="Field guide" title="Field guide">
+          <i data-icon="help"></i>
+        </button>
+      </div>
+    </header>
+    <main>
+      <div class="site-heading">
+        <div>
+          <div class="eyebrow breadcrumb"><span>FIELD ATLAS</span><b>/</b> EXPEDITION 01</div>
+          <h1>Tell Ashara</h1>
+          <p class="locality">
+            <i data-icon="pin"></i> Lower Avar Basin <span>·</span> Alluvial terrace settlement
+          </p>
+        </div>
+        <button class="seed" id="seed">
+          <i data-icon="finger"></i><span id="seed-label">SEED 01842</span><i data-icon="down"></i>
+        </button>
+      </div>
+      <div id="work">
+        <div class="workspace">
+          <section class="plate">
+            <div id="stage">
+              <canvas id="contours" aria-hidden="true"></canvas>
+              <div id="viewport"></div>
+              <div class="view-label tiny">
+                <span class="reticle"></span><span id="view-label">SITE DIORAMA</span>
+              </div>
+              <div class="compass" aria-hidden="true">
+                <b>N</b
+                ><svg viewBox="0 0 40 44">
+                  <path d="m20 3-9 31 9-7z" fill="#d2c8ae" />
+                  <path d="m20 3 9 31-9-7z" fill="#726e61" />
+                  <path d="M3 31h34" stroke="#908d7c" stroke-width=".6" />
+                </svg>
+              </div>
+              <div id="markers">
+                <button class="marker" data-zone="0" aria-label="Select Trench A">A</button
+                ><button class="marker" data-zone="1" aria-label="Select Trench B">B</button
+                ><button class="marker" data-zone="2" aria-label="Select Trench C">C</button>
+              </div>
+              <div id="year-plate" class="year-plate" hidden></div>
+              <div class="scale"><span>0</span><span>2 m</span><b></b></div>
+              <div id="stage-note" aria-live="polite"></div>
+              <div class="zoom">
+                <button id="minus" aria-label="Zoom out">−</button
+                ><button id="plus" aria-label="Zoom in">+</button
+                ><button id="reset" aria-label="Reset view" title="Reset view">
+                  <i data-icon="frame"></i>
+                </button>
+              </div>
+            </div>
+            <div class="plate-caption">
+              <span><i data-icon="orbit"></i> Drag to orbit <b>·</b> Scroll to zoom</span
+              ><button id="labels" aria-pressed="true">
+                <i data-icon="tag"></i> Trench labels <span class="toggle"></span>
+              </button>
+            </div>
+          </section>
+          <aside id="desk"></aside>
+        </div>
+        <section id="strat"></section>
+      </div>
+      <section id="journal" hidden></section>
+      <footer>
+        <span>PALIMPSEST <b>/</b> FIELD ATLAS</span><span id="save-state">Local field record</span>
+      </footer>
+    </main>
+    <dialog id="dialog">
+      <div id="modal-body"></div>
+      <button class="close icon-btn" id="close" aria-label="Close dialog"><i data-icon="close"></i></button>
+    </dialog>
+    <script src="vendor/three.min.js"></script>
+    <script src="src/history.js"></script>
+    <script src="src/model.js"></script>
+    <script src="src/view.js"></script>
+    <script src="src/plates.js"></script>
+    <script src="src/recovery.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>

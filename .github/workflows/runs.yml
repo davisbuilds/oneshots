@@ -67,5 +67,12 @@ jobs:
       - name: Test Bit by Bit's puzzle logic
         run: node --test runs/bit-by-bit/tests/*.test.js
 
+      - name: Verify Palimpsest's historical and stratigraphic record
+        working-directory: runs/palimpsest
+        run: |
+          node --test tests/history.test.cjs
+          node tools/bundle.mjs
+          node tools/bundle.mjs --check
+
       - name: Test THRESHOLD's traversal, world graph and streaming
         run: node --test runs/threshold/tests/*.test.mjs
