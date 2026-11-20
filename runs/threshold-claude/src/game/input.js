@@ -1,4 +1,4 @@
-// Keyboard and mouse. Mouse look accumulates while the pointer is locked;
+// Keyboard and mouse. Mouse look accumulates during play in the active look mode;
 // actions are edge-triggered presses consumed once per frame.
 export class Input {
   constructor(canvas, { dragLook = false } = {}) {
@@ -9,7 +9,6 @@ export class Input {
     this.sensitivity = 0.0021;
     this.dragLook = dragLook;
     this.dragCaptured = false;
-    this.assumeLocked = false; // tests: keyboard and mouse without pointer lock
     addEventListener('keydown', (e) => {
       if (e.repeat) return;
       this.keys.add(e.code); this.pressed.add(e.code);
@@ -19,13 +18,12 @@ export class Input {
     addEventListener('blur', () => this.keys.clear());
     addEventListener('mousemove', (e) => {
       if (!this.locked) return;
-      // without pointer lock (tests, or a browser that refuses it) look by dragging
-      if ((this.dragLook || this.assumeLocked) && document.pointerLockElement !== this.canvas && !(e.buttons & 1)) return;
+      if (this.dragLook && !(e.buttons & 1)) return;
       this.look[0] += e.movementX; this.look[1] += e.movementY;
     });
     addEventListener('mousedown', (e) => { if (this.locked && e.button === 0) this.pressed.add('Mouse0'); });
   }
-  get locked() { return this.assumeLocked || this.dragCaptured || document.pointerLockElement === this.canvas; }
+  get locked() { return this.dragCaptured || document.pointerLockElement === this.canvas; }
   lock() {
     if (this.dragLook) {
       this.dragCaptured = true;

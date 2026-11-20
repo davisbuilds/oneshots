@@ -68,9 +68,8 @@ export class App {
         history.replaceState(history.state, '', url);
       }
     }
-    this.input = new Input(canvas, { dragLook: opaqueFrame });
-    this.input.assumeLocked = params.has('nolock');
-    this.hud = new Hud(ui, { dragLook: this.input.dragLook });
+    this.input = new Input(canvas, { dragLook: opaqueFrame || params.has('nolock') });
+    this.hud = new Hud(ui, { dragLook: this.input.dragLook, canReset: !opaqueFrame });
     this.hud.onAction = (a) => this.action(a);
     this.camera = new THREE.PerspectiveCamera(70, 1, 0.08, 6000);
     this.time = 0; this.acc = 0; this.frames = 0;
@@ -163,7 +162,7 @@ export class App {
     this.hud.showPause(false); // "Watch the journey" is also on the pause screen
     this.state = 'play';
     this.sound.start();
-    if (demo) this.demo.start(); else if (!this.input.assumeLocked) this.input.lock();
+    if (demo) this.demo.start(); else this.input.lock();
     this.hud.showDot(true);
     if (!demo && !this.save.data.hints.look) {
       const lookHint = this.input.dragLook ? 'Drag to look around' : 'Move the mouse to look around';

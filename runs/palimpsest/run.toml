@@ -10,8 +10,8 @@ entry = "index.html"
 curator_note = ""
 
 [agent]
-model = "GPT-6"
-model_id = "unrecorded"
+model = "GPT-6.2 Astra"
+model_id = "gpt-6.2-astra"
 harness = "Codex"
 
 [run]

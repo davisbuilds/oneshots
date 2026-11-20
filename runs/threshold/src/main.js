@@ -304,6 +304,7 @@ async function start() {
     const active = document.pointerLockElement === canvas;
     if (locked && !active && mode === 'walk') pause();
     locked = active;
+    el('look-hint').textContent = active ? 'Mouse or arrows to look' : 'Drag or arrows to look';
   });
   canvas.onpointerdown = (e) => {
     if (mode === 'cover') {

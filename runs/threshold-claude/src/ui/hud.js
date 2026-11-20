@@ -3,7 +3,7 @@
 const el = (tag, cls, html = '') => { const e = document.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
 
 export class Hud {
-  constructor(root, { dragLook = false } = {}) {
+  constructor(root, { dragLook = false, canReset = true } = {}) {
     this.root = root;
     this.title = el('div', 'title', `
       <div class="t-mark">THRESHOLD</div>
@@ -17,7 +17,7 @@ export class Hud {
     this.journalEl = el('div', 'journal');
     this.statsEl = el('pre', 'stats');
     this.pauseEl = el('div', 'pause', '<div class="p-in"><div class="p-t">Paused</div><div class="p-s">Click to return</div><div class="p-row"><button data-act="journal">Journal</button><button data-act="demo">Watch the journey</button><button data-act="reset">Forget everything</button></div></div>');
-    if (dragLook) this.pauseEl.querySelector('[data-act="reset"]').remove();
+    if (!canReset) this.pauseEl.querySelector('[data-act="reset"]').remove();
     this.banner = el('div', 'banner');
     for (const e of [this.card, this.hintEl, this.promptEl, this.dot, this.journalEl, this.statsEl, this.pauseEl, this.banner, this.title]) root.appendChild(e);
     this.hints = new Map();
