@@ -66,5 +66,5 @@ jobs:
       - name: Test Bit by Bit's puzzle logic
         run: node --test runs/bit-by-bit/tests/*.test.js
 
-      - name: Test Threshold's portal engine and multiverse
-        run: node --test runs/threshold/tests/*.test.js
+      - name: Test Claude THRESHOLD's portal engine and multiverse
+        run: node --test runs/threshold-claude/tests/*.test.js

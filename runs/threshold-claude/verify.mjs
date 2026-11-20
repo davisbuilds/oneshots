@@ -400,15 +400,33 @@ try {
     await page.close();
     // "Watch the journey" from the pause screen: the film is not hidden behind
     // the pause panel, and a click on the picture hands control back
-    const p2 = await open('play&nosave&nolock&quality=1');
+    const p2 = await open('play&fresh&nolock&quality=1');
+    const savedPosition = await p2.evaluate(() => {
+      const { save, player } = THR.app;
+      save.setPos(player.world, player.feet, player.look);
+      save.flush();
+      return JSON.parse(localStorage.getItem(save.key)).pos;
+    });
     await p2.evaluate(() => THR.app.hud.showPause(true)); // what releasing the pointer lock does
     await p2.click('.pause [data-act="demo"]');
     const during = await p2.evaluate(() => ({ demo: THR.app.demo.active, paused: document.querySelector('.pause').classList.contains('on') }));
+    const cinematicPosition = await p2.evaluate(() => {
+      THR.app.frames = 119;
+      THR.frame(1 / 60, { noRender: true });
+      return JSON.parse(localStorage.getItem(THR.app.save.key)).pos;
+    });
+    assert.deepEqual(cinematicPosition, savedPosition, 'watching the cinematic preserves the stored journey position');
     await p2.mouse.click(640, 360);
     const after = await p2.evaluate(() => ({ demo: THR.app.demo.active, paused: document.querySelector('.pause').classList.contains('on') }));
     log(`demo from pause: playing ${during.demo}, pause panel ${during.paused ? 'shown' : 'hidden'}; after a click playing ${after.demo}`);
     assert.ok(during.demo && !during.paused, 'the cinematic is not covered by the pause panel');
     assert.ok(!after.demo && !after.paused, 'a click on the picture ends the cinematic');
+    const resumed = await p2.evaluate(() => {
+      THR.app.frames = 239;
+      THR.frame(1 / 60, { noRender: true });
+      return JSON.parse(localStorage.getItem(THR.app.save.key)).pos;
+    });
+    assert.notDeepEqual(resumed, savedPosition, 'manual play resumes position autosaves');
     await p2.close();
   }
 } finally {

@@ -56,12 +56,13 @@ export class App {
     this.views.onBuild = (v) => this.applyPersistent(v);
     // ?bench teleports through fixed scenes: it keeps an empty save in memory so
     // measuring never changes the journey stored in this browser
-    const persist = !params.has('nosave') && !params.has('bench');
+    const opaqueFrame = self !== top && self.origin === 'null';
+    const persist = !opaqueFrame && !params.has('nosave') && !params.has('bench');
     this.save = new Save(persist ? window.localStorage : null, saveKey(this.universe));
     if (params.has('fresh')) this.save.reset();
-    this.input = new Input(canvas);
+    this.input = new Input(canvas, { dragLook: opaqueFrame });
     this.input.assumeLocked = params.has('nolock');
-    this.hud = new Hud(ui);
+    this.hud = new Hud(ui, { dragLook: this.input.dragLook });
     this.hud.onAction = (a) => this.action(a);
     this.camera = new THREE.PerspectiveCamera(70, 1, 0.08, 6000);
     this.time = 0; this.acc = 0; this.frames = 0;
@@ -74,10 +75,18 @@ export class App {
     document.addEventListener('pointerlockchange', () => this.onLock());
     canvas.addEventListener('click', () => {
       if (this.demo?.active) { this.demo.stop(); }
-      if (this.state === 'play' && !this.input.locked && !this.journalOpen) this.input.lock();
+      if (this.state === 'play' && !this.input.locked && !this.journalOpen) this.action('resume');
     });
     // Esc or Enter ends the demo and hands over control
-    addEventListener('keydown', (e) => { if (this.demo?.active && (e.code === 'Escape' || e.code === 'Enter')) { this.demo.stop(); this.input.lock(); } });
+    addEventListener('keydown', (e) => {
+      if (this.demo?.active && (e.code === 'Escape' || e.code === 'Enter')) {
+        this.demo.stop();
+        this.action('resume');
+      } else if (e.code === 'Escape' && !e.repeat && this.input.dragCaptured && !this.journalOpen) {
+        this.input.unlock();
+        this.onLock();
+      }
+    });
     this.spawn();
     this.instrument = new Instrument(this);
     this.demo = new Demo(this);
@@ -148,7 +157,10 @@ export class App {
     this.sound.start();
     if (demo) this.demo.start(); else if (!this.input.assumeLocked) this.input.lock();
     this.hud.showDot(true);
-    if (!demo && !this.save.data.hints.look) setTimeout(() => { if (!this.demo.active) this.hint('look', 'Move the mouse to look around'); }, 2600);
+    if (!demo && !this.save.data.hints.look) {
+      const lookHint = this.input.dragLook ? 'Drag to look around' : 'Move the mouse to look around';
+      setTimeout(() => { if (!this.demo.active) this.hint('look', lookHint); }, 2600);
+    }
   }
   onLock() {
     const locked = this.input.locked;
@@ -240,8 +252,10 @@ export class App {
     if (!this.qApplied) this.setQuality(this.qIndex);
     // input
     let mv = { forward: 0, right: 0, run: false, jump: false };
-    if (this.demo.active) mv = this.demo.control(dt);
-    else if (this.state === 'play' && inp.locked && !this.journalOpen) {
+    const cinematic = this.demo.active;
+    const manualPlay = !cinematic && this.state === 'play' && inp.locked && !this.journalOpen;
+    if (cinematic) mv = this.demo.control(dt);
+    else if (manualPlay) {
       mv = inp.move();
       const [lx, ly] = inp.takeLook();
       if (lx || ly) { pl.turn(-lx, -ly); this.hintState.looked += Math.abs(lx) + Math.abs(ly); }
@@ -294,7 +308,7 @@ export class App {
     }
     this.sound.update?.(dt);
     this.instrument.update(dt);
-    if (this.frames % 120 === 0 && this.state === 'play') { this.save.setPos(pl.world, pl.feet, pl.look); this.save.flush(); }
+    if (this.frames % 120 === 0 && manualPlay) { this.save.setPos(pl.world, pl.feet, pl.look); this.save.flush(); }
     this.perf.cpu = performance.now() - t0;
     if (this.showStats) this.hud.stats(this.statsText()); else this.hud.stats(null);
     inp.endFrame();

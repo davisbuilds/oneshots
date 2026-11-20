@@ -52,8 +52,8 @@ rebuilt on a CI machine (GPU renders, hours-long jobs), upload its assets to
 the same release by hand and include a `SHA256SUMS` file; say so in the README.
 
 Browser renderers require current Google Chrome locally (see the root README).
-The Run assets workflow provisions a pinned, checksum-verified Chrome for Testing
-for Antikythera Engine, Gate to Game, Luminal, Threshold and Tideline. When adding another
+The Run assets workflow provisions the collection’s locked Chromium
+for Antikythera Engine, Gate to Game, Luminal, THRESHOLD (Claude edition) and Tideline. When adding another
 browser renderer, include it in that provisioning step and use the shared browser
 launcher so its running version is checked before page content loads.
 

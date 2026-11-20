@@ -11,6 +11,16 @@ import { describe } from '../src/core/worlds/index.js';
 import { qaxis, qmul, qnorm } from '../src/core/math.js';
 import { makeAtmosUniforms } from '../src/render/atmosphere.js';
 
+test('renderer objects receive distinct v4 UUIDs through the platform random source', (t) => {
+  t.mock.method(Math, 'random', () => assert.fail('renderer UUID used Math.random'));
+  const first = new THREE.BufferGeometry().uuid;
+  const second = new THREE.BufferGeometry().uuid;
+  const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+  assert.match(first, uuid);
+  assert.match(second, uuid);
+  assert.notEqual(first, second);
+});
+
 function stubRenderer() {
   const noop = () => {};
   const stencil = { setLocked: noop, setTest: noop, setMask: noop, setFunc: noop, setOp: noop };

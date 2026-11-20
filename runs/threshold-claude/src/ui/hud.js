@@ -3,13 +3,13 @@
 const el = (tag, cls, html = '') => { const e = document.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
 
 export class Hud {
-  constructor(root) {
+  constructor(root, { dragLook = false } = {}) {
     this.root = root;
     this.title = el('div', 'title', `
       <div class="t-mark">THRESHOLD</div>
       <div class="t-sub">an infinity of elsewheres</div>
       <div class="t-actions"><button class="t-go" data-act="enter">Enter</button><button class="t-alt" data-act="demo">Watch the journey</button></div>
-      <div class="t-foot">Mouse to look · W A S D to walk · Shift to run · Space to jump · E to touch · Q instrument · J journal · Esc to pause</div>`);
+      <div class="t-foot">${dragLook ? 'Drag' : 'Mouse'} to look · W A S D to walk · Shift to run · Space to jump · E to touch · Q instrument · J journal · Esc to pause</div>`);
     this.card = el('div', 'card');
     this.hintEl = el('div', 'hint');
     this.promptEl = el('div', 'prompt');
@@ -17,6 +17,7 @@ export class Hud {
     this.journalEl = el('div', 'journal');
     this.statsEl = el('pre', 'stats');
     this.pauseEl = el('div', 'pause', '<div class="p-in"><div class="p-t">Paused</div><div class="p-s">Click to return</div><div class="p-row"><button data-act="journal">Journal</button><button data-act="demo">Watch the journey</button><button data-act="reset">Forget everything</button></div></div>');
+    if (dragLook) this.pauseEl.querySelector('[data-act="reset"]').remove();
     this.banner = el('div', 'banner');
     for (const e of [this.card, this.hintEl, this.promptEl, this.dot, this.journalEl, this.statsEl, this.pauseEl, this.banner, this.title]) root.appendChild(e);
     this.hints = new Map();

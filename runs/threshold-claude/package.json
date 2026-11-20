@@ -1,5 +1,5 @@
 {
-  "name": "threshold",
+  "name": "threshold-claude",
   "private": true,
   "description": "THRESHOLD: An Infinity of Elsewheres. A portal engine and procedural multiverse in three.js (vendored in vendor/three).",
   "type": "module",

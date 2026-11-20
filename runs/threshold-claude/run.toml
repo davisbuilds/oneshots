@@ -1,6 +1,6 @@
 # Run manifest — see RUNS.md at the repository root for the field reference.
 schema = 1
-slug = "threshold"
+slug = "threshold-claude"
 title = "THRESHOLD: An Infinity of Elsewheres"
 summary = "A first-person walk through an unbounded, procedurally generated multiverse joined by real stencil-rendered portals you can stand halfway inside, with impossible architecture (a hall larger than its cell, a stoa that never ends, a room whose window opens through its own ceiling), a discovery journal and instrument, and a cinematic demo, all checked by tests that walk through the doors with real input."
 date = 2026-11-19

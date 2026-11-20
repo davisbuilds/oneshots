@@ -1,13 +1,14 @@
 // Keyboard and mouse. Mouse look accumulates while the pointer is locked;
 // actions are edge-triggered presses consumed once per frame.
 export class Input {
-  constructor(canvas) {
+  constructor(canvas, { dragLook = false } = {}) {
     this.canvas = canvas;
     this.keys = new Set();
     this.pressed = new Set();
     this.look = [0, 0];
     this.sensitivity = 0.0021;
-    this.enabled = true;
+    this.dragLook = dragLook;
+    this.dragCaptured = false;
     this.assumeLocked = false; // tests: keyboard and mouse without pointer lock
     addEventListener('keydown', (e) => {
       if (e.repeat) return;
@@ -19,14 +20,24 @@ export class Input {
     addEventListener('mousemove', (e) => {
       if (!this.locked) return;
       // without pointer lock (tests, or a browser that refuses it) look by dragging
-      if (this.assumeLocked && document.pointerLockElement !== this.canvas && !(e.buttons & 1)) return;
+      if ((this.dragLook || this.assumeLocked) && document.pointerLockElement !== this.canvas && !(e.buttons & 1)) return;
       this.look[0] += e.movementX; this.look[1] += e.movementY;
     });
     addEventListener('mousedown', (e) => { if (this.locked && e.button === 0) this.pressed.add('Mouse0'); });
   }
-  get locked() { return this.assumeLocked || document.pointerLockElement === this.canvas; }
-  lock() { try { const p = this.canvas.requestPointerLock?.({ unadjustedMovement: true }); p?.catch?.(() => this.canvas.requestPointerLock?.()); } catch { this.canvas.requestPointerLock?.(); } }
-  unlock() { if (this.locked) document.exitPointerLock?.(); }
+  get locked() { return this.assumeLocked || this.dragCaptured || document.pointerLockElement === this.canvas; }
+  lock() {
+    if (this.dragLook) {
+      this.dragCaptured = true;
+      this.canvas.focus();
+      return;
+    }
+    try { const p = this.canvas.requestPointerLock?.({ unadjustedMovement: true }); p?.catch?.(() => this.canvas.requestPointerLock?.()); } catch { this.canvas.requestPointerLock?.(); }
+  }
+  unlock() {
+    this.dragCaptured = false;
+    if (document.pointerLockElement === this.canvas) document.exitPointerLock?.();
+  }
   move() {
     const k = this.keys;
     return {
