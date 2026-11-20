@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: Provision locked upstream Chromium for browser renders
-        if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "tideline"]'), inputs.run)
+        if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "threshold-claude", "tideline"]'), inputs.run)
         run: |
           corepack enable
           pnpm install --frozen-lockfile --ignore-scripts

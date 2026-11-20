@@ -1,0 +1,7 @@
+# Only the release film needs anything installed. The page, the engine, the
+# tests and the verifier use the vendored three.js and the repository's
+# locked @playwright/test (pnpm install --frozen-lockfile at the root).
+#
+# tools/film.mjs: Node 24 (the repository's .nvmrc), current Google Chrome or
+# CHROMIUM_PATH (see the root README), and an FFmpeg with libx264, from this wheel:
+imageio-ffmpeg==0.6.0

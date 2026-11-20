@@ -72,3 +72,6 @@ jobs:
           node --test tests/history.test.cjs
           node tools/bundle.mjs
           node tools/bundle.mjs --check
+
+      - name: Test Claude THRESHOLD's portal engine and multiverse
+        run: node --test runs/threshold-claude/tests/*.test.js

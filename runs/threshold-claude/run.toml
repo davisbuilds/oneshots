@@ -1,0 +1,37 @@
+# Run manifest — see RUNS.md at the repository root for the field reference.
+schema = 1
+slug = "threshold-claude"
+title = "THRESHOLD: An Infinity of Elsewheres"
+summary = "A first-person walk through an unbounded, procedurally generated multiverse joined by real stencil-rendered portals you can stand halfway inside, with impossible architecture (a hall larger than its cell, a stoa that never ends, a room whose window opens through its own ceiling), a discovery journal and instrument, and a cinematic demo, all checked by tests that walk through the doors with real input."
+date = 2026-11-19
+kind = "long-horizon"
+medium = ["web", "webgl", "three.js", "game", "procedural", "portals", "interactive", "audio"]
+hero = "preview/hero.webp"
+entry = "index.html"
+curator_note = ""
+
+[agent]
+model = "Claude Opus 5.5"
+model_id = "claude-opus-5-5"
+harness = "Claude Code (cloud session)"
+reasoning = "xhigh"
+
+[run]
+brief = "brief.md"
+human_turns = 1                   # the brief; the "Try again" that resumed after the usage-limit pause is not counted (curator's call)
+wall_clock_minutes = 434          # 12:36 to 19:50 UTC, including a usage-limit pause from about 15:15 to 19:16 (about 4 h); about 193 min of work
+log = "process/PROGRESS.md"
+snapshots = "process/snapshots"
+
+[build]
+requirements = "requirements.txt"
+# Records the cinematic demo in headless Chromium (SwiftShader) from the
+# committed page, one frame of engine time at a time, and encodes it with the
+# wheel's FFmpeg. About 40 minutes on four CPU cores.
+command = "(cd ../.. && pnpm install --frozen-lockfile) && FFMPEG=\"$(python3 -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')\" node tools/film.mjs"
+verify = "node --test tests/*.test.js && python3 tools/check_film.py"
+timeout_minutes = 110
+
+[[assets]]
+file = "threshold_demo.mp4"
+description = "The cinematic demo as played by the engine: about 53 s, 1280 x 720, 30 fps, H.264 CRF 23, silent (about 65 MB)"
