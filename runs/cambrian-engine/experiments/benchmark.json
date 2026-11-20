@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "study": "benchmark",
+  "engineSha256": "b51da670a6e49cc89a51c3950128b7a0d963154b5fb223e6574b54f655655504",
+  "host": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M4"
+  },
+  "parameters": {
+    "ticks": 18000,
+    "warmup": 1200,
+    "interval": 60
+  },
+  "rows": [
+    {
+      "seed": 17,
+      "environment": "balanced",
+      "minPopulation": 70,
+      "maxPopulation": 306,
+      "medianMsPerTick": 0.116546,
+      "p95BatchMsPerTick": 0.131502
+    },
+    {
+      "seed": 31,
+      "environment": "jade",
+      "minPopulation": 94,
+      "maxPopulation": 365,
+      "medianMsPerTick": 0.138804,
+      "p95BatchMsPerTick": 0.158457
+    },
+    {
+      "seed": 73,
+      "environment": "amber",
+      "minPopulation": 212,
+      "maxPopulation": 355,
+      "medianMsPerTick": 0.1478,
+      "p95BatchMsPerTick": 0.162415
+    }
+  ]
+}

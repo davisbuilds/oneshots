@@ -1,0 +1,1070 @@
+{
+  "schema": 1,
+  "study": "balanced-mosaic",
+  "engineSha256": "b51da670a6e49cc89a51c3950128b7a0d963154b5fb223e6574b54f655655504",
+  "parameters": {
+    "seeds": [
+      17,
+      31,
+      73,
+      101,
+      211,
+      307
+    ],
+    "sampleTicks": [
+      0,
+      4800,
+      9600,
+      14400
+    ]
+  },
+  "occupancySummary": {
+    "mutation": [
+      {
+        "tick": 0,
+        "livingWorlds": 6,
+        "worldsWithBothExtremes": 6,
+        "lowMinusHighShare": {
+          "values": [
+            -0.006884,
+            0.019244,
+            0.068829,
+            0.09641,
+            -0.077256,
+            -0.055546
+          ],
+          "mean": 0.007466,
+          "positive": 3,
+          "zero": 0,
+          "negative": 3
+        }
+      },
+      {
+        "tick": 4800,
+        "livingWorlds": 5,
+        "worldsWithBothExtremes": 5,
+        "lowMinusHighShare": {
+          "values": [
+            -0.338353,
+            0.071304,
+            0.176637,
+            0.278877,
+            0.192621
+          ],
+          "mean": 0.076217,
+          "positive": 4,
+          "zero": 0,
+          "negative": 1
+        }
+      },
+      {
+        "tick": 9600,
+        "livingWorlds": 5,
+        "worldsWithBothExtremes": 5,
+        "lowMinusHighShare": {
+          "values": [
+            0.256234,
+            0.261131,
+            0.253028,
+            0.287375,
+            0.236475
+          ],
+          "mean": 0.258849,
+          "positive": 5,
+          "zero": 0,
+          "negative": 0
+        }
+      },
+      {
+        "tick": 14400,
+        "livingWorlds": 5,
+        "worldsWithBothExtremes": 5,
+        "lowMinusHighShare": {
+          "values": [
+            0.200569,
+            0.269783,
+            0.248415,
+            0.269683,
+            0.184597
+          ],
+          "mean": 0.234609,
+          "positive": 5,
+          "zero": 0,
+          "negative": 0
+        }
+      }
+    ],
+    "noMutation": [
+      {
+        "tick": 0,
+        "livingWorlds": 6,
+        "worldsWithBothExtremes": 6,
+        "lowMinusHighShare": {
+          "values": [
+            -0.006884,
+            0.019244,
+            0.068829,
+            0.09641,
+            -0.077256,
+            -0.055546
+          ],
+          "mean": 0.007466,
+          "positive": 3,
+          "zero": 0,
+          "negative": 3
+        }
+      },
+      {
+        "tick": 4800,
+        "livingWorlds": 6,
+        "worldsWithBothExtremes": 2,
+        "lowMinusHighShare": {
+          "values": [
+            0.23995,
+            0.11633
+          ],
+          "mean": 0.17814,
+          "positive": 2,
+          "zero": 0,
+          "negative": 0
+        }
+      },
+      {
+        "tick": 9600,
+        "livingWorlds": 6,
+        "worldsWithBothExtremes": 1,
+        "lowMinusHighShare": {
+          "values": [
+            0.12542
+          ],
+          "mean": 0.12542,
+          "positive": 1,
+          "zero": 0,
+          "negative": 0
+        }
+      },
+      {
+        "tick": 14400,
+        "livingWorlds": 6,
+        "worldsWithBothExtremes": 1,
+        "lowMinusHighShare": {
+          "values": [
+            0.085036
+          ],
+          "mean": 0.085036,
+          "positive": 1,
+          "zero": 0,
+          "negative": 0
+        }
+      }
+    ]
+  },
+  "rows": [
+    {
+      "seed": 17,
+      "mutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 36,
+              "meanInitialJadeShare": 0.470548
+            },
+            "medium": {
+              "population": 36,
+              "meanInitialJadeShare": 0.560721
+            },
+            "high": {
+              "population": 24,
+              "meanInitialJadeShare": 0.477432
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 219,
+          "occupancy": {
+            "low": {
+              "population": 134,
+              "meanInitialJadeShare": 0.543565
+            },
+            "medium": {
+              "population": 82,
+              "meanInitialJadeShare": 0.490857
+            },
+            "high": {
+              "population": 3,
+              "meanInitialJadeShare": 0.881918
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 267,
+          "occupancy": {
+            "low": {
+              "population": 115,
+              "meanInitialJadeShare": 0.665629
+            },
+            "medium": {
+              "population": 47,
+              "meanInitialJadeShare": 0.429415
+            },
+            "high": {
+              "population": 105,
+              "meanInitialJadeShare": 0.409395
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 290,
+          "occupancy": {
+            "low": {
+              "population": 93,
+              "meanInitialJadeShare": 0.63421
+            },
+            "medium": {
+              "population": 40,
+              "meanInitialJadeShare": 0.442271
+            },
+            "high": {
+              "population": 157,
+              "meanInitialJadeShare": 0.433641
+            }
+          }
+        }
+      ],
+      "noMutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 36,
+              "meanInitialJadeShare": 0.470548
+            },
+            "medium": {
+              "population": 36,
+              "meanInitialJadeShare": 0.560721
+            },
+            "high": {
+              "population": 24,
+              "meanInitialJadeShare": 0.477432
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 95,
+          "occupancy": {
+            "low": {
+              "population": 95,
+              "meanInitialJadeShare": 0.602917
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 88,
+          "occupancy": {
+            "low": {
+              "population": 88,
+              "meanInitialJadeShare": 0.580922
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 99,
+          "occupancy": {
+            "low": {
+              "population": 99,
+              "meanInitialJadeShare": 0.587695
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seed": 31,
+      "mutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 26,
+              "meanInitialJadeShare": 0.485234
+            },
+            "medium": {
+              "population": 40,
+              "meanInitialJadeShare": 0.518896
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.46599
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 0,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 0,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 0,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        }
+      ],
+      "noMutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 26,
+              "meanInitialJadeShare": 0.485234
+            },
+            "medium": {
+              "population": 40,
+              "meanInitialJadeShare": 0.518896
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.46599
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 33,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 33,
+              "meanInitialJadeShare": 0.408031
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 29,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 29,
+              "meanInitialJadeShare": 0.47417
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 34,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 34,
+              "meanInitialJadeShare": 0.447536
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seed": 73,
+      "mutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 33,
+              "meanInitialJadeShare": 0.551241
+            },
+            "medium": {
+              "population": 33,
+              "meanInitialJadeShare": 0.473981
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.482412
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 165,
+          "occupancy": {
+            "low": {
+              "population": 31,
+              "meanInitialJadeShare": 0.572759
+            },
+            "medium": {
+              "population": 92,
+              "meanInitialJadeShare": 0.505543
+            },
+            "high": {
+              "population": 42,
+              "meanInitialJadeShare": 0.501455
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 239,
+          "occupancy": {
+            "low": {
+              "population": 94,
+              "meanInitialJadeShare": 0.601444
+            },
+            "medium": {
+              "population": 77,
+              "meanInitialJadeShare": 0.484276
+            },
+            "high": {
+              "population": 68,
+              "meanInitialJadeShare": 0.340313
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 258,
+          "occupancy": {
+            "low": {
+              "population": 96,
+              "meanInitialJadeShare": 0.608539
+            },
+            "medium": {
+              "population": 44,
+              "meanInitialJadeShare": 0.522572
+            },
+            "high": {
+              "population": 118,
+              "meanInitialJadeShare": 0.338756
+            }
+          }
+        }
+      ],
+      "noMutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 33,
+              "meanInitialJadeShare": 0.551241
+            },
+            "medium": {
+              "population": 33,
+              "meanInitialJadeShare": 0.473981
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.482412
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 83,
+          "occupancy": {
+            "low": {
+              "population": 44,
+              "meanInitialJadeShare": 0.563527
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 39,
+              "meanInitialJadeShare": 0.323577
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 86,
+          "occupancy": {
+            "low": {
+              "population": 46,
+              "meanInitialJadeShare": 0.547783
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 40,
+              "meanInitialJadeShare": 0.422363
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 82,
+          "occupancy": {
+            "low": {
+              "population": 57,
+              "meanInitialJadeShare": 0.551344
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 25,
+              "meanInitialJadeShare": 0.466308
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seed": 101,
+      "mutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 22,
+              "meanInitialJadeShare": 0.53889
+            },
+            "medium": {
+              "population": 35,
+              "meanInitialJadeShare": 0.586478
+            },
+            "high": {
+              "population": 39,
+              "meanInitialJadeShare": 0.44248
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 204,
+          "occupancy": {
+            "low": {
+              "population": 68,
+              "meanInitialJadeShare": 0.555977
+            },
+            "medium": {
+              "population": 46,
+              "meanInitialJadeShare": 0.629009
+            },
+            "high": {
+              "population": 90,
+              "meanInitialJadeShare": 0.37934
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 259,
+          "occupancy": {
+            "low": {
+              "population": 107,
+              "meanInitialJadeShare": 0.649366
+            },
+            "medium": {
+              "population": 51,
+              "meanInitialJadeShare": 0.489806
+            },
+            "high": {
+              "population": 101,
+              "meanInitialJadeShare": 0.396338
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 282,
+          "occupancy": {
+            "low": {
+              "population": 113,
+              "meanInitialJadeShare": 0.630332
+            },
+            "medium": {
+              "population": 45,
+              "meanInitialJadeShare": 0.529961
+            },
+            "high": {
+              "population": 124,
+              "meanInitialJadeShare": 0.381917
+            }
+          }
+        }
+      ],
+      "noMutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 22,
+              "meanInitialJadeShare": 0.53889
+            },
+            "medium": {
+              "population": 35,
+              "meanInitialJadeShare": 0.586478
+            },
+            "high": {
+              "population": 39,
+              "meanInitialJadeShare": 0.44248
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 32,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 32,
+              "meanInitialJadeShare": 0.319657
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 30,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.379105
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 35,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 35,
+              "meanInitialJadeShare": 0.363326
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seed": 211,
+      "mutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 28,
+              "meanInitialJadeShare": 0.479857
+            },
+            "medium": {
+              "population": 38,
+              "meanInitialJadeShare": 0.462217
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.557113
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 152,
+          "occupancy": {
+            "low": {
+              "population": 29,
+              "meanInitialJadeShare": 0.693695
+            },
+            "medium": {
+              "population": 60,
+              "meanInitialJadeShare": 0.519659
+            },
+            "high": {
+              "population": 63,
+              "meanInitialJadeShare": 0.414818
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 234,
+          "occupancy": {
+            "low": {
+              "population": 96,
+              "meanInitialJadeShare": 0.640806
+            },
+            "medium": {
+              "population": 48,
+              "meanInitialJadeShare": 0.486172
+            },
+            "high": {
+              "population": 90,
+              "meanInitialJadeShare": 0.353431
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 249,
+          "occupancy": {
+            "low": {
+              "population": 101,
+              "meanInitialJadeShare": 0.634269
+            },
+            "medium": {
+              "population": 56,
+              "meanInitialJadeShare": 0.518922
+            },
+            "high": {
+              "population": 92,
+              "meanInitialJadeShare": 0.364586
+            }
+          }
+        }
+      ],
+      "noMutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 28,
+              "meanInitialJadeShare": 0.479857
+            },
+            "medium": {
+              "population": 38,
+              "meanInitialJadeShare": 0.462217
+            },
+            "high": {
+              "population": 30,
+              "meanInitialJadeShare": 0.557113
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 64,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 64,
+              "meanInitialJadeShare": 0.432182
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 70,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 70,
+              "meanInitialJadeShare": 0.481773
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 66,
+          "occupancy": {
+            "low": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 66,
+              "meanInitialJadeShare": 0.437994
+            }
+          }
+        }
+      ]
+    },
+    {
+      "seed": 307,
+      "mutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 33,
+              "meanInitialJadeShare": 0.443032
+            },
+            "medium": {
+              "population": 30,
+              "meanInitialJadeShare": 0.539789
+            },
+            "high": {
+              "population": 33,
+              "meanInitialJadeShare": 0.498578
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 217,
+          "occupancy": {
+            "low": {
+              "population": 84,
+              "meanInitialJadeShare": 0.607529
+            },
+            "medium": {
+              "population": 68,
+              "meanInitialJadeShare": 0.437641
+            },
+            "high": {
+              "population": 65,
+              "meanInitialJadeShare": 0.414908
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 259,
+          "occupancy": {
+            "low": {
+              "population": 121,
+              "meanInitialJadeShare": 0.641742
+            },
+            "medium": {
+              "population": 26,
+              "meanInitialJadeShare": 0.475011
+            },
+            "high": {
+              "population": 112,
+              "meanInitialJadeShare": 0.405267
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 285,
+          "occupancy": {
+            "low": {
+              "population": 91,
+              "meanInitialJadeShare": 0.634019
+            },
+            "medium": {
+              "population": 60,
+              "meanInitialJadeShare": 0.507236
+            },
+            "high": {
+              "population": 134,
+              "meanInitialJadeShare": 0.449422
+            }
+          }
+        }
+      ],
+      "noMutation": [
+        {
+          "tick": 0,
+          "population": 96,
+          "occupancy": {
+            "low": {
+              "population": 33,
+              "meanInitialJadeShare": 0.443032
+            },
+            "medium": {
+              "population": 30,
+              "meanInitialJadeShare": 0.539789
+            },
+            "high": {
+              "population": 33,
+              "meanInitialJadeShare": 0.498578
+            }
+          }
+        },
+        {
+          "tick": 4800,
+          "population": 36,
+          "occupancy": {
+            "low": {
+              "population": 32,
+              "meanInitialJadeShare": 0.666672
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 4,
+              "meanInitialJadeShare": 0.550342
+            }
+          }
+        },
+        {
+          "tick": 9600,
+          "population": 30,
+          "occupancy": {
+            "low": {
+              "population": 30,
+              "meanInitialJadeShare": 0.633495
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        },
+        {
+          "tick": 14400,
+          "population": 29,
+          "occupancy": {
+            "low": {
+              "population": 29,
+              "meanInitialJadeShare": 0.5983
+            },
+            "medium": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            },
+            "high": {
+              "population": 0,
+              "meanInitialJadeShare": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
