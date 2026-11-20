@@ -20,4 +20,4 @@ Times are UTC, 19 November 2026.
 
 ## Timing reconstructed on 20 November
 
-The documented work spans about 59 minutes on 19 November, from the first work-log checkpoint around 12:30 UTC through the final original verification update to PR #45 at 13:28:43 UTC. The interval includes rendering previews, recording the gameplay clip and repeating browser verification. [Frame measurements](MEASUREMENTS.md)
+The documented work spans about 59 minutes on 19 November, from the first work-log checkpoint around 12:30 UTC through the final original verification update to PR #45 at 13:28:43 UTC. The interval includes rendering previews, recording the gameplay clip and repeating browser verification. A separate elapsed time for the original film capture is unrecorded. [Frame measurements](MEASUREMENTS.md)
