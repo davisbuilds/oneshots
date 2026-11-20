@@ -1,0 +1,451 @@
+{
+  "schema": 1,
+  "study": "prototype-calibration",
+  "revisions": [
+    {
+      "version": "initial",
+      "engineSha256": "66fdf6a901c9dfc7784ffe5b52ee0469d8b2073e0f85ae10177c569e1613bb22",
+      "balancedSeed73": [
+        {
+          "tick": 0,
+          "population": 96,
+          "births": 0,
+          "maxGeneration": 0
+        },
+        {
+          "tick": 1200,
+          "population": 3,
+          "births": 18,
+          "maxGeneration": 4
+        },
+        {
+          "tick": 2400,
+          "population": 0,
+          "births": 20,
+          "maxGeneration": 6
+        },
+        {
+          "tick": 3600,
+          "population": 0,
+          "births": 20,
+          "maxGeneration": 6
+        },
+        {
+          "tick": 4800,
+          "population": 0,
+          "births": 20,
+          "maxGeneration": 6
+        }
+      ],
+      "donorPopulationAt4800": [
+        {
+          "seed": 17,
+          "jade-mutation": 142,
+          "amber-mutation": 177,
+          "jade-no-mutation": 75,
+          "amber-no-mutation": 68
+        },
+        {
+          "seed": 31,
+          "jade-mutation": 142,
+          "amber-mutation": 150,
+          "jade-no-mutation": 122,
+          "amber-no-mutation": 56
+        },
+        {
+          "seed": 73,
+          "jade-mutation": 141,
+          "amber-mutation": 159,
+          "jade-no-mutation": 31,
+          "amber-no-mutation": 40
+        },
+        {
+          "seed": 101,
+          "jade-mutation": 142,
+          "amber-mutation": 131,
+          "jade-no-mutation": 46,
+          "amber-no-mutation": 38
+        },
+        {
+          "seed": 211,
+          "jade-mutation": 154,
+          "amber-mutation": 119,
+          "jade-no-mutation": 68,
+          "amber-no-mutation": 36
+        },
+        {
+          "seed": 307,
+          "jade-mutation": 153,
+          "amber-mutation": 0,
+          "jade-no-mutation": 7,
+          "amber-no-mutation": 0
+        }
+      ],
+      "reciprocalGarden": {
+        "mutation": {
+          "values": [
+            3.463542,
+            3.619792,
+            3.473958,
+            3.145833,
+            3.15625
+          ],
+          "mean": 3.371875,
+          "positive": 5,
+          "zero": 0,
+          "negative": 0
+        },
+        "noMutation": {
+          "values": [
+            1.697917,
+            2.078125,
+            1.125,
+            0.895833,
+            1.239583
+          ],
+          "mean": 1.407292,
+          "positive": 5,
+          "zero": 0,
+          "negative": 0
+        },
+        "extraWithMutation": {
+          "values": [
+            1.765625,
+            1.541667,
+            2.348958,
+            2.25,
+            1.916667
+          ],
+          "mean": 1.964583,
+          "positive": 5,
+          "zero": 0,
+          "negative": 0
+        },
+        "jadeOnJadeVsAncestor": {
+          "values": [
+            3.125,
+            3.385417,
+            3.270833,
+            3.416667,
+            3.354167,
+            3.291667
+          ],
+          "mean": 3.307292,
+          "positive": 6,
+          "zero": 0,
+          "negative": 0
+        },
+        "amberOnAmberVsAncestor": {
+          "values": [
+            3.9375,
+            3.614583,
+            3.479167,
+            2.947917,
+            2.833333
+          ],
+          "mean": 3.3625,
+          "positive": 5,
+          "zero": 0,
+          "negative": 0
+        }
+      }
+    },
+    {
+      "version": "sustainability retune",
+      "engineSha256": "f17cb7e0fb45eb26cf7fa2fe02fbc2c2abd33ea94c840aeab8e262923d46d865",
+      "balancedSeed73": [
+        {
+          "tick": 0,
+          "population": 96,
+          "births": 0,
+          "maxGeneration": 0
+        },
+        {
+          "tick": 1200,
+          "population": 123,
+          "births": 357,
+          "maxGeneration": 12
+        },
+        {
+          "tick": 2400,
+          "population": 157,
+          "births": 941,
+          "maxGeneration": 23
+        },
+        {
+          "tick": 3600,
+          "population": 171,
+          "births": 1593,
+          "maxGeneration": 29
+        },
+        {
+          "tick": 4800,
+          "population": 202,
+          "births": 2271,
+          "maxGeneration": 34
+        }
+      ],
+      "donorPopulationAt4800": [
+        {
+          "seed": 17,
+          "jade-mutation": 279,
+          "amber-mutation": 244,
+          "jade-no-mutation": 128,
+          "amber-no-mutation": 94
+        },
+        {
+          "seed": 31,
+          "jade-mutation": 254,
+          "amber-mutation": 276,
+          "jade-no-mutation": 237,
+          "amber-no-mutation": 220
+        },
+        {
+          "seed": 73,
+          "jade-mutation": 267,
+          "amber-mutation": 263,
+          "jade-no-mutation": 164,
+          "amber-no-mutation": 125
+        },
+        {
+          "seed": 101,
+          "jade-mutation": 221,
+          "amber-mutation": 273,
+          "jade-no-mutation": 134,
+          "amber-no-mutation": 139
+        },
+        {
+          "seed": 211,
+          "jade-mutation": 238,
+          "amber-mutation": 247,
+          "jade-no-mutation": 141,
+          "amber-no-mutation": 140
+        },
+        {
+          "seed": 307,
+          "jade-mutation": 251,
+          "amber-mutation": 188,
+          "jade-no-mutation": 131,
+          "amber-no-mutation": 43
+        }
+      ],
+      "reciprocalGarden": {
+        "mutation": {
+          "values": [
+            5.505208,
+            5.364583,
+            4.473958,
+            5.270833,
+            5.291667,
+            5.010417
+          ],
+          "mean": 5.152778,
+          "positive": 6,
+          "zero": 0,
+          "negative": 0
+        },
+        "noMutation": {
+          "values": [
+            1.723958,
+            4.546875,
+            1.166667,
+            2.333333,
+            2.3125,
+            2.046875
+          ],
+          "mean": 2.355035,
+          "positive": 6,
+          "zero": 0,
+          "negative": 0
+        },
+        "extraWithMutation": {
+          "values": [
+            3.78125,
+            0.817708,
+            3.307292,
+            2.9375,
+            2.979167,
+            2.963542
+          ],
+          "mean": 2.797743,
+          "positive": 6,
+          "zero": 0,
+          "negative": 0
+        },
+        "jadeOnJadeVsAncestor": {
+          "values": [
+            5.8125,
+            5.15625,
+            5.666667,
+            4.697917,
+            5.333333,
+            5.416667
+          ],
+          "mean": 5.347222,
+          "positive": 6,
+          "zero": 0,
+          "negative": 0
+        },
+        "amberOnAmberVsAncestor": {
+          "values": [
+            5.395833,
+            5.354167,
+            4.708333,
+            5.25,
+            5.270833,
+            4.0625
+          ],
+          "mean": 5.006944,
+          "positive": 6,
+          "zero": 0,
+          "negative": 0
+        }
+      }
+    }
+  ],
+  "profileBeforeSignedController": {
+    "host": {
+      "node": "v24.22.1",
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M4"
+    },
+    "engineSha256": "f17cb7e0fb45eb26cf7fa2fe02fbc2c2abd33ea94c840aeab8e262923d46d865",
+    "samples": 3872,
+    "experimentTicks": 18000,
+    "topFrames": [
+      {
+        "name": "wrap @ engine.js",
+        "share": 0.339779
+      },
+      {
+        "name": "_neighbor @ engine.js",
+        "share": 0.266485
+      },
+      {
+        "name": "_act @ engine.js",
+        "share": 0.242936
+      }
+    ]
+  },
+  "beforePortableMath": {
+    "engineSha256": "3a87d2499737c487e7214e800a454113fa1c97e4f51cd74ba46dcd53632a493c",
+    "balancedSeed73": {
+      "tick": 540000,
+      "population": 307,
+      "ancestryDepth": 2159
+    },
+    "meanReciprocalHomeAdvantagePerFounder": {
+      "mutation": 6.690972,
+      "noMutation": 2.542535,
+      "neutralGut": -0.00434
+    },
+    "balancedMosaic": {
+      "tick": 14400,
+      "livingWorlds": 5,
+      "worldsWithBothExtremes": 5,
+      "lowMinusHighShare": {
+        "values": [
+          0.238979,
+          0.209585,
+          0.253894,
+          0.256693,
+          0.277842
+        ],
+        "mean": 0.247399,
+        "positive": 5,
+        "zero": 0,
+        "negative": 0
+      }
+    },
+    "benchmark": {
+      "schema": 1,
+      "study": "benchmark",
+      "engineSha256": "3a87d2499737c487e7214e800a454113fa1c97e4f51cd74ba46dcd53632a493c",
+      "host": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M4"
+      },
+      "parameters": {
+        "ticks": 18000,
+        "warmup": 1200,
+        "interval": 60
+      },
+      "rows": [
+        {
+          "seed": 17,
+          "environment": "balanced",
+          "minPopulation": 50,
+          "maxPopulation": 297,
+          "medianMsPerTick": 0.099412,
+          "p95BatchMsPerTick": 0.115313
+        },
+        {
+          "seed": 31,
+          "environment": "jade",
+          "minPopulation": 76,
+          "maxPopulation": 386,
+          "medianMsPerTick": 0.124915,
+          "p95BatchMsPerTick": 0.147576
+        },
+        {
+          "seed": 73,
+          "environment": "amber",
+          "minPopulation": 219,
+          "maxPopulation": 373,
+          "medianMsPerTick": 0.130442,
+          "p95BatchMsPerTick": 0.154551
+        }
+      ]
+    },
+    "profileTopFrames": [
+      {
+        "name": "_act @ engine.js",
+        "share": 0.306939
+      },
+      {
+        "name": "_neighbor @ engine.js",
+        "share": 0.259889
+      },
+      {
+        "name": "wrap @ engine.js",
+        "share": 0.257375
+      }
+    ]
+  },
+  "beforeSpatialIndexCorrection": {
+    "recordedOn": "2026-11-19",
+    "engineSha256": "e92fc85dec116294b220fe9bf2e65b941f58996f20df557e3cc5a8093eaf28e8",
+    "reasonSuperseded": "Review found that moving organisms remained listed in their old spatial buckets until the next tick, although lookups used their current positions.",
+    "meanReciprocalHomeAdvantagePerFounder": {
+      "mutation": 6.68316,
+      "noMutation": 2.577257,
+      "neutralGut": -0.047743
+    },
+    "balancedMosaic": {
+      "tick": 14400,
+      "livingWorlds": 5,
+      "worldsWithBothExtremes": 5,
+      "lowMinusHighShare": {
+        "values": [
+          0.316164,
+          0.298227,
+          0.265648,
+          0.211117,
+          0.272321
+        ],
+        "mean": 0.272695,
+        "positive": 5,
+        "zero": 0,
+        "negative": 0
+      }
+    },
+    "balancedSeed73": {
+      "tick": 620000,
+      "population": 270,
+      "ancestryDepth": 2548
+    }
+  }
+}
