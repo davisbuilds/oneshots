@@ -74,5 +74,8 @@ jobs:
           node tools/bundle.mjs
           node tools/bundle.mjs --check
 
+      - name: Test Claude THRESHOLD's portal engine and multiverse
+        run: node --test runs/threshold-claude/tests/*.test.js
+
       - name: Test THRESHOLD's traversal, world graph and streaming
         run: node --test runs/threshold/tests/*.test.mjs

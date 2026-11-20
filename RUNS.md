@@ -53,9 +53,10 @@ the same release by hand and include a `SHA256SUMS` file; say so in the README.
 
 Browser renderers require current Google Chrome locally (see the root README).
 The Run assets workflow provisions the collection’s locked Chromium
-for Antikythera Engine, Gate to Game, Luminal, THRESHOLD and Tideline. When adding another
-browser renderer, include it in that provisioning step and use the shared browser
-launcher so its running version is checked before page content loads.
+for Antikythera Engine, Gate to Game, Luminal, both editions of THRESHOLD and
+Tideline. When adding another browser renderer, include it in that provisioning
+step and use the shared browser launcher so its running version is checked
+before page content loads.
 
 ## Manifest (`run.toml`)
 

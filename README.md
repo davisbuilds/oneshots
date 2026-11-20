@@ -15,6 +15,7 @@ that reproduces it. Each run also records how many times a human stepped in.
 <!-- runs:start -->
 | Run | What it is | Model | Human turns | Lineage |
 | :-- | :--------- | :---- | :---------- | :------ |
+| [**THRESHOLD: An Infinity of Elsewheres**](runs/threshold-claude/) | A first-person walk through an unbounded, procedurally generated multiverse joined by real stencil-rendered portals you can stand halfway inside, with impossible architecture (a hall larger than its cell, a stoa that never ends, a room whose window opens through its own ceiling), a discovery journal and instrument, and a cinematic demo, all checked by tests that walk through the doors with real input. | Claude Opus 5.5 (xhigh) | 1 | [brief](runs/threshold-claude/brief.md) · [log](runs/threshold-claude/process/PROGRESS.md) · [snapshots](runs/threshold-claude/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-threshold-claude) |
 | [**THRESHOLD — An Infinity of Elsewheres**](runs/threshold/) | Walk a tide-worn causeway into a three-moon desert, sound the instruments of a luminous forest and follow a library aisle back into itself through live recursive portals. | GPT 6.2 Astra (max) | 1 | [brief](runs/threshold/brief.md) · [log](runs/threshold/process/PROGRESS.md) · [snapshots](runs/threshold/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-threshold) |
 | [**Palimpsest**](runs/palimpsest/) | Excavate a miniature river settlement, brush eight objects from its surviving record, and test a historical interpretation against the centuries that produced it. | GPT-6 | 1 | [brief](runs/palimpsest/brief.md) · [log](runs/palimpsest/process/PROGRESS.md) · [snapshots](runs/palimpsest/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-palimpsest) |
 | [**The Cambrian Engine**](runs/cambrian-engine/) | An artificial-life microscope with inherited anatomy, an evolving food web, and a replayable record of every lineage. | GPT-6.2 Astra (xhigh) | 1 | [brief](runs/cambrian-engine/brief.md) · [log](runs/cambrian-engine/process/PROGRESS.md) · [snapshots](runs/cambrian-engine/process/snapshots) · [outputs](https://github.com/davisbuilds/oneshots/releases/tag/run-cambrian-engine) |
@@ -90,8 +91,9 @@ Several runs include a headless `verify.mjs` smoke test that uses
 `@playwright/test` from this repository's `node_modules`. With Node 24 (`.nvmrc`) and pnpm
 (pinned in `package.json`; `corepack enable` provides it), install current Google Chrome
 and run `pnpm install --frozen-lockfile`, then
-`node runs/<slug>/verify.mjs` or `pnpm run verify:browser` for all nine configured
-verifiers (`antikythera-engine`'s also calls `python3` for its expected values).
+`node runs/<slug>/verify.mjs` or `pnpm run verify:browser` for all ten configured
+verifiers (`antikythera-engine`'s also calls `python3` for its expected values;
+`threshold-claude`'s renders in software and takes about ten minutes).
 All active JavaScript verifiers/render tools and the Antikythera Python renderer
 use the supported Playwright `chrome` channel, with a temporary automation profile.
 Install and update Google Chrome using your platform's official installer; existing
@@ -126,8 +128,8 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
 `scripts/validate_runs.py`, the fast renderer build-recovery tests, and the
-`gate-to-game`, `luminal`, `bit-by-bit`, `palimpsest` and `threshold` logic tests
-(Node's built-in test runner, no dependencies).
+`gate-to-game`, `luminal`, `bit-by-bit`, `palimpsest`, `threshold-claude` and
+`threshold` logic tests (Node's built-in test runner, no dependencies).
 The validator checks manifests, size caps on
 committed files, that release assets stay out of git, and that the index above
 is current. Workflow changes also run a pinned, offline zizmor security audit.
