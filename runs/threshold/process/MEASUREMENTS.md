@@ -33,3 +33,5 @@ The most expensive sampled GPU view was the returning aisle, where nested doors 
 ## Reproduction
 
 Run the commands in the run README. The verifier writes full-resolution screenshots, the sampled pixel values, disposal counts and the observed cinematic wall time under `output/playwright/`. The guide ran for 52.1 wall-clock seconds in the recorded end-to-end pass. The benchmark writes a fresh `performance.json`. A system without the timer-query extension reports a null GPU measurement. [Run instructions](../README.md)
+
+A follow-up on 20 November timed `node tools/capture.mjs` at 14.9 seconds elapsed on Apple M5 Pro with Chrome 157.0.8103.80 through ANGLE Metal. This includes browser startup, the live 1280 × 720 recording, remuxing and full VP9 decoding. The resulting clip plays for 12.9 seconds. This is a timing of the follow-up build.

@@ -18,6 +18,7 @@ reasoning = "xhigh"
 [run]
 brief = "brief.md"
 human_turns = 1
+wall_clock_minutes = 50  # Approximate, 09:36–10:26 UTC on 19 November.
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 

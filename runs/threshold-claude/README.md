@@ -314,6 +314,8 @@ and in `output/verify/report.txt` when you run it:
 
 ## Performance
 
+The original 720p software render took about 40 minutes for the 53.4-second cinematic. The subsequent Linux Run assets job rendered and encoded 1,603 frames in 56 minutes at 1280 × 720 and 30 fps, then verified the result. GitHub rejected that upload. The release contains a rebuild using Chromium's Metal backend. [Linux render log](https://github.com/davisbuilds/oneshots/actions/runs/44660370159) · [Published MP4](https://github.com/davisbuilds/oneshots/releases/tag/run-threshold-claude)
+
 **Test hardware: none with a GPU.** This run was made in a cloud container
 with a 4-vCPU Intel Xeon at 2.1 GHz and no graphics card; every frame was
 rasterised by SwiftShader, Chromium's software renderer. I could not measure

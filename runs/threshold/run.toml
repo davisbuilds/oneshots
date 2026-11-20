@@ -18,6 +18,7 @@ reasoning = "max"
 [run]
 brief = "brief.md"
 human_turns = 1
+wall_clock_minutes = 59  # Approximate, 12:30–13:29 UTC on 19 November.
 log = "process/PROGRESS.md"
 snapshots = "process/snapshots"
 
