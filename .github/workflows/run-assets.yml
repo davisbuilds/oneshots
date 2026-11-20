@@ -76,12 +76,16 @@ jobs:
           fi
 
       - name: Provision locked upstream Chromium for browser renders
-        if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "threshold-claude", "tideline"]'), inputs.run)
+        if: contains(fromJSON('["antikythera-engine", "gate-to-game", "luminal", "threshold", "threshold-claude", "tideline"]'), inputs.run)
         run: |
           corepack enable
           pnpm install --frozen-lockfile --ignore-scripts
           pnpm exec playwright install-deps chromium
           bash scripts/install-ci-chrome.sh
+
+      - name: Install FFmpeg for THRESHOLD
+        if: inputs.run == 'threshold'
+        run: sudo apt-get install -y --no-install-recommends ffmpeg
 
       - name: Build
         timeout-minutes: ${{ fromJSON(steps.manifest.outputs.timeout) }}

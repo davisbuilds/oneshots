@@ -1,0 +1,11 @@
+{
+  "name": "threshold-elsewheres",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 tools/build.py",
+    "test": "node --test tests/*.test.mjs",
+    "verify:browser": "python3 tools/build.py && node tools/verify.mjs",
+    "start": "python3 -m http.server 8080 --bind 127.0.0.1"
+  }
+}
