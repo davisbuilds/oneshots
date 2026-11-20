@@ -25,3 +25,9 @@ Use original, procedurally created assets. The finished experience must run in a
 Work autonomously for as long as useful. Build an early functioning prototype, run it, inspect actual browser screenshots, identify weaknesses, and iterate. Prioritize a few remarkable moments and a coherent underlying simulation over superficial feature count.
 
 Follow RUNS.md and AGENTS.md in the oneshots repository. Preserve the verbatim brief, progress log, snapshots, reproducible source, honest limitations, manifest, and tests. Work on a dedicated branch and submit a PR for review.
+
+<!-- after delivery -->
+
+**20 November 2026, recorded around 15:47 UTC**
+
+how long did this take you to make? looks like clock time was not recorded
