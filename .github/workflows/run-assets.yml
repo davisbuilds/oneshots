@@ -83,6 +83,10 @@ jobs:
           pnpm exec playwright install-deps chromium
           bash scripts/install-ci-chrome.sh
 
+      - name: Install FFmpeg for THRESHOLD
+        if: inputs.run == 'threshold'
+        run: sudo apt-get install -y --no-install-recommends ffmpeg
+
       - name: Build
         timeout-minutes: ${{ fromJSON(steps.manifest.outputs.timeout) }}
         working-directory: runs/${{ inputs.run }}

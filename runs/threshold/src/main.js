@@ -146,6 +146,8 @@ async function start() {
   addEventListener('resize', resize);
   function lock() {
     canvas.focus({ preventScroll: true });
+    // The top-level offline file can still lock the pointer with an opaque origin.
+    if (self !== top && self.origin === 'null') return;
     try {
       canvas.requestPointerLock?.()?.catch(() => {});
     } catch {}
