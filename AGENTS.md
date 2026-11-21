@@ -70,6 +70,12 @@ collection does not need separate `docs/project/` or `docs/system/` trees.
   handoff only when needed to resume unfinished work. Commit shared docs and
   keep status current. Before archiving, preserve lasting decisions and open
   work in maintained docs and repair links.
+- **Comments.** Don't add code comments. The one exception is a decision record:
+  start it with `WHY:` and state a non-obvious reason the code can't express.
+  Never justify a shortcut in a comment; fix it or record it in the PR or the
+  run's README limitations. `python3 scripts/check_comments.py` enforces a
+  ratchet: after deleting comments run it with `--update`, and never raise a
+  count in `.comment-baseline.json`.
 - **TDD:** red/green for features, major refactors and large changes; the red
   test must fail on the behavior, not on a missing symbol. For smaller edits, run
   the relevant existing checks.

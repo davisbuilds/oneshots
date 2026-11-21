@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "exclude": [
+    "runs/**"
+  ],
+  "files": {
+    ".github/workflows/run-assets.yml": 3,
+    "scripts/browser.mjs": 4,
+    "scripts/check_publication_hygiene.py": 4,
+    "scripts/install-ci-chrome.sh": 1,
+    "scripts/validate_runs.py": 6,
+    "templates/run/run.toml": 3
+  }
+}
