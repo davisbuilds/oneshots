@@ -127,7 +127,9 @@ their READMEs. There is no root Python package or shared renderer lockfile.
 ## Checks
 
 CI runs `scripts/check_publication_hygiene.py` (no personal paths or emails),
-`scripts/validate_runs.py`, the fast renderer build-recovery tests, and the
+`scripts/validate_runs.py`, the comment ratchet `scripts/check_comments.py`
+(collection tooling only; runs are excluded as records), the fast renderer
+build-recovery tests, and the
 `gate-to-game`, `luminal`, `bit-by-bit`, `palimpsest`, `threshold-claude` and
 `threshold` logic tests (Node's built-in test runner, no dependencies).
 The validator checks manifests, size caps on
@@ -137,7 +139,7 @@ Actions and the optional browser dependency receive weekly Dependabot updates.
 
 ```bash
 python3 scripts/build_index.py        # after changing run metadata
-pnpm run check                       # manifests and publication hygiene
+pnpm run check                       # manifests, comment ratchet, publication hygiene
 pnpm test                            # build-recovery and run regression tests
 ```
 

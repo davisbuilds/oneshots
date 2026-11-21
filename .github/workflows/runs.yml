@@ -26,6 +26,9 @@ jobs:
       - name: Validate manifests, size caps and index
         run: python3 scripts/validate_runs.py
 
+      - name: Comment ratchet
+        run: python3 scripts/check_comments.py
+
       - name: Check resumable build recovery
         run: |
           python3 runs/three-worlds-chatgpt/src/test_build.py
