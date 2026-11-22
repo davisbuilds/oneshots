@@ -1,8 +1,5 @@
 name: Run assets
 
-# Rebuilds a run's full-size outputs from the committed source and publishes
-# them, with SHA256SUMS, to the release `run-<slug>`. Manual trigger only.
-
 on:
   workflow_dispatch:
     inputs:
@@ -21,7 +18,7 @@ concurrency:
 jobs:
   build:
     permissions:
-      contents: write # This manually dispatched job publishes the run's release.
+      contents: write # WHY: this manually dispatched job publishes the run's release.
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     env:

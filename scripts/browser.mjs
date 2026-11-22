@@ -1,4 +1,3 @@
-// Shared browser policy for every active verifier and renderer.
 import { readFileSync } from 'node:fs';
 import { chromium } from '@playwright/test';
 
@@ -13,14 +12,14 @@ export function assertSafeBrowserVersion(version) {
 }
 
 export async function launchBrowser(options = {}, browserType = chromium, env = process.env) {
-  // Only CHROMIUM_PATH can override the default Chrome channel. Validate the
+  // WHY: only CHROMIUM_PATH can override the default Chrome channel. Validate the
   // launched process, rather than a plist or an executable's --version output.
   const { channel, executablePath, ...rest } = options;
   const target = env.CHROMIUM_PATH ? { executablePath: env.CHROMIUM_PATH } : { channel: 'chrome' };
   const browser = await browserType.launch({ ...rest, ...target });
   try {
     const version = browser.version();
-    assertSafeBrowserVersion(version); // before the caller can create a page
+    assertSafeBrowserVersion(version);
     console.log(`Browser: Chrome/Chromium ${version}`);
     return browser;
   } catch (error) {

@@ -21,8 +21,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import runs_lib as R  # noqa: E402
 import build_index  # noqa: E402
 
-MAX_FILE = 2 * 1024 * 1024        # any single tracked file under runs/
-MAX_RUN = 8 * 1024 * 1024         # all tracked files of one run together
+MAX_FILE = 2 * 1024 * 1024
+MAX_RUN = 8 * 1024 * 1024
 
 
 def tracked_files() -> list[Path]:
@@ -44,7 +44,7 @@ def prose_lines(text: str) -> list[str]:
     for line in text.splitlines():
         m = FENCE.match(line)
         if fence:
-            # A closer is the fence character alone, at least as long, then
+            # WHY: a closer is the fence character alone, at least as long, then
             # only whitespace; anything else on the line is still code.
             if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not line[m.end():].strip():
                 fence = None
@@ -60,8 +60,8 @@ def check_delivery_marker(where: str, text: str, errs: list[str]):
     would leave post-delivery messages on display without any error."""
     lines = prose_lines(text)
     exact = sum(line == DELIVERY_MARKER for line in lines)
-    # Only a line that is itself a comment (indented under 4 spaces, so not
-    # code): a prompt quoting the marker inline is fine.
+    # WHY: count only a line that is itself a comment (indented under 4 spaces, so
+    # not code): a prompt quoting the marker inline is fine.
     near = [line for line in lines if line != DELIVERY_MARKER and re.match(r" {0,3}<!--", line)
             and re.search(r"after\s*delivery", line, re.IGNORECASE)]
     if exact > 1:
